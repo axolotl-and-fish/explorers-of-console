@@ -1,0 +1,1049 @@
+                                         █                               
+          ███            ██            ███                               
+      ████  ███          ██         ███                                  
+     █████    ██         ██       ██                                     
+        ██     █         ███         ████                                
+        ██     █         ███   █   ██   ██  ██ ██          ██            
+        ██    ██  ████   ██████   █C4'26██  █████████    ██████  ██      
+        ██████   ███ ██  ████    ██   ███   ██  ██  ██  ███   ██ ████    
+        ██      ███   █  ███     █████      ██  ██  ██  ███    █ ██ ██   
+        ███     ███   ██ ███      █     █   ██  ██  ██ ███     █ █    █  
+        ███     ███ ████ █████    ██████    ██  █   ██ ███   ██  █    █  
+        ███     ███████  ███ ███            ██      █  ████████  █    █  
+         ██       ███    ███   ██                   █  ███████   █    █  
+                                                        █████    █    █  
+													   
+		█  █  █                       ███                                 
+		████      ███  ██  █ ██ █  █  █  █ █  █ █ █   ███  ██   ██  █ █   
+		████  █  ███  █  █ ██   █  █  █  █ █  █ ██ █ █  █ █  █ █  █ ██ █  
+		█  █  █     █ ███  █     ███  █  █ █ ██ █  █  ███ ███  █  █ █  █  
+		█  █  █  ███   ███ █       █  ███   █ █ █  █    █  ███  ██  █  █  
+								 ██                   ██                  
+							   
+						✩ Explorers of the Console ✩                          
+							  beta ver. 0.1.0
+							  August 26, 2026
+								  
+						2026 C437RP13 / Axolotl and Fish
+						   
+===============================================================================
+					0. About PMD: Explorers of the Console
+===============================================================================
+Some speak of a very special Mystery Dungeon known as the "Misery Dungeon", a 
+50-floor long gauntlet of Pokémon out for blood and ruin, but also a treasure
+trove of loot, money and glory. Many Rescue Teams and Explorer Guilds have
+tried their hands at this dungeon, but few have ever lived to tell the tale and
+reap the benefits. Now you, a lowly Pokémon explorer, have dared to defy the
+odds and try to conquer this Misery Dungeon; will you succeed where others have
+failed?
+
+Pokémon Misery Dungeon: Explorers of the Console is a text-based PMD fangame 
+presented in the style of a traditional "roguelike" game. Choose a starter 
+Pokémon from any of the 11 canon PMD starters from gen 1 and lead them through
+fifty randomly-generated floors full of useful items and dangerous foes. By no 
+means must you undertake this task alone, however; you can recruit the
+dungeon's Pokémon to your side by enticing them with special Apricorn items.
+Lead a team of up to six Pokemon to the top of the dungeon, and aim for a high 
+score! Will YOU be the first person to beat the legendary score of 1 million?
+
+The game and its engine were written entirely by hand in Python and the entire
+game runs entirely in CP437 text-mode graphics within a console window, hence 
+the name "Explorers of the Console". This may very well be the only 100% text-
+based Pokémon fan-game as of me writing this, and I consider it to be a
+stand-out feature of this game... it also helps that I suck at actually doing
+graphics ;)
+
+The game's source is open. If you're feeling up to it, you can use the game
+engine for anything you want, whether that's implementing new features, adding
+new Pokemon or moves, or hell, even adding a proper story. Just make sure you
+follow the license terms, which can be found in the LICENSE file.
+===============================================================================
+					           TABLE OF CONTENTS
+===============================================================================
+
+!. Reporting Bugs [IMPORTANT - PLEASE READ]
+1. Installing & Running the Game
+	1a. System Requirements
+2. Controls
+3. Starting the Game
+4. The Game Screen
+	4a. The In-Game Menu
+5. The Pokémon Summary
+	5a. Stats and Experience Points
+	5b. Types & Type Effectiveness
+	5c. Status Effects
+6. Looking Around
+7. Moves, PP & Combat
+8. Items & Inventory
+9. Food & Belly
+10. Recruiting Pokémon
+11. Saving Your Game
+12. Winning & Losing
+A. Modding
+B. pokemon.json
+C. moves.json
+D. items.json
+E. Legal Crap
+
+===============================================================================
+					!. Reporting Bugs [IMPORTANT - PLEASE READ]
+===============================================================================
+IMPORTANT:
+As an early beta, PMD: Explorers of the Console is lacking many features and
+contains a lot of bugs, many of which may potentially crash your game.
+If you encounter bugs or crashes, PLEASE PLEASE report them to me via one of
+the following:
+
+1. Open an issue in the GitHub repo: [LINK TO GITHUB REPO HERE WHEN IT'S UP]
+
+2. Post a message on the Pokecommunity thread:
+   https://www.pokecommunity.com/threads/pok%C3%A9mon-misery-dungeon-explorers-of-the-console.543129/
+   
+3. Shoot me a message on my Discord server https://discord.gg/qr9V6FvMEz 
+   Discord accounts with private profiles are STRICTLY prohibited from the 
+   server.
+   
+Make sure to include a description of the issue and what you were doing at the
+time it occured! If it's a game crash, please attach the debug.log file, which 
+contains the stack backtrace which will help me pinpoint where exactly the 
+problem is. After a crash, you will find the file in the game's directory.
+The more detail you include in your description, the better; screenshots are
+nice to have, too.
+
+The game will attempt to save your progress if it encounters a fatal error,
+but there is no guarantee that the save file will be usable or that the game
+will even be able to save, depending on the error.
+===============================================================================
+					   1. Installing & Running the Game
+===============================================================================
+For executable versions of the game, simply download the release package from
+the game's GitHub repo for your OS, in the Releases tab, and unzip the file.
+Then run the game's executable from within a Terminal/Command Prompt/Powershell
+window. (Don't just double click the file)
+
+For other operating systems that do not have an executable version of the game,
+you will need to have Python 3.10 or higher installed on your system. If it's
+not already installed, you can get the installer for your operating system from 
+https://www.python.org/ .
+
+Select the source code (zip) download from the GitHub releases tab and unzip
+the file. Then to run the game, either run PMD_Explorers_of_the_Console.bat or
+open the game's directory in your terminal and type
+
+python3 visualize.py --play
+
+Note that the executable files are not actually compiled, they're just bundled
+in a PyInstaller wrapper, so performance will be the same. The executable
+versions are simply provided for your convenience.
+===============================================================================
+						1a. System Requirements
+===============================================================================
+Since the game is text-based, it will run on just about anything. The game 
+consumes less than 32 MB of RAM on my system. It even runs well on my Pentium 
+N6000 laptop underclocked to 0.8 GHz!
+
+For the executable versions however, you will need a x64 processor and a
+64-bit version of Windows 10 or higher, or Linux. For other OSes, you will need
+to install and use Python (see 1. Installing & Running the Game)
+
+The game was tested on Windows 11 and Linux Mint, using Windows Powershell and
+the GNOME Terminal respectively. I have not tested any other operating systems
+or terminal emulators and they may have their own issues - your mileage may
+vary! The game is intentionally designed to be as multi-platform as possible,
+so feel free to send a bug report if you encounter a problem, though I may not
+be able to help you with more esoteric platforms and terminal emulators.
+
+As long as your terminal emulator supports 16 colors and code page 437 ASCII 
+you should be good. The vast majority of modern terminals should support these.
+
+If your terminal does NOT support 16 colors then you may see garbage ANSI codes 
+filling the screen. If this is the case, run the game with the --compat flag, 
+which removes all color and ANSI codes from the game. The compat mode is meant
+as a last resort as the game is intended to be played in color, so you should 
+consider using a different terminal in this situation!
+
+The minimum (& recommended) terminal size is 76 columns x 48 rows. You must use
+a fixed-width or "monospace" font that supports all CP437 characters, or you
+will experience graphical issues. If you need fonts for the terminal that work
+with the game, I would highly recommend the free Ultimate Old School Font Pack:
+https://int10h.org/oldschool-pc-fonts/
+===============================================================================
+						    2. Controls
+===============================================================================
+PMD: Explorers of the Console is entirely controlled with your keyboard.
+The controls for the game are intended to be simple and intuitive.
+
+Use the numpad or arrow keys to move your character around the dungeon.
+MAKE SURE YOUR NUMLOCK IS TURNED ON!
+
+                       7  8  9    [Return/Enter] - Confirm
+						\ | /	  [Esc] - Cancel/Open pause menu
+					   4- @ -6    [Z][X][C][V] - Use a move
+						/ | \	  [A][S][D][F][G][H] - Open Pokemon summary
+					   1  2  3    [I] - Open inventory
+					  Movement	  [P] - Open message history
+								  [L] - Enable "look around" mode
+								  [>] - Use stairs
+					  
+Some smaller laptops ("notebooks") have a smaller keyboard without a numpad,
+so alternatively you can use the Shift, CTRL and arrow keys to move your
+character, like so:
+
+					Shift+←  ↑  Shift+→
+				     	   \ | /  
+					      ←- @ -→ 
+						   / | \	
+				     CTRL+←  ↓  CTRL+→
+				  
+To wait a turn without moving or attacking, press the [5] key on the numpad,
+or the [.] key on your keyboard.
+
+Items will automatically be picked up if there is inventory space (see Section
+8. Items) when walking over them. You can also press the [,] key to pick up 
+items manually.
+
+To navigate menus, use the arrow keys or numpad keys, as with movement.
+===============================================================================
+						  3. Starting the Game
+===============================================================================
+When the game starts, you will be presented with the title screen, from which
+you can begin a new game, load an existing game, or view the high score list.
+
+To start a new game, select "New Game". You will be asked to choose which
+Pokémon you would like to play as initially (the "starter Pokémon"). Each of
+the starter choices has their own strengths and weaknesses, so make your choice
+carefully. A table of the general relative stats of each of the starters is
+given below.
+
+You will then be asked for your name. Type in a name for your Pokémon, then
+press [Return] to enter the game, or [Esc] to skip and just use the species
+name. The less mature the name is, the better ;)
+
+Name		Type		HP		ATK		SP.ATK		DEF		SP.DEF		SPEED
+Bulbasaur	Grass/Poison☼☼		☼☼		☼☼☼☼		☼☼		☼☼☼☼		☼☼
+Charmander	Fire		☼		☼☼☼		☼☼☼☼		☼☼		☼☼☼			☼☼☼☼
+Squirtle	Water		☼☼		☼☼		☼☼☼			☼☼☼☼	☼☼☼☼		☼☼
+Pikachu		Electric	☼☼		☼☼☼☼☼☼	☼☼☼☼☼		☼☼☼		☼☼☼☼		☼☼☼☼☼☼
+Vulpix		Fire		☼		☼☼		☼☼☼			☼		☼☼☼☼		☼☼☼☼
+Growlithe	Fire		☼☼☼		☼☼☼☼☼	☼☼☼☼☼		☼☼		☼☼☼			☼☼☼☼
+Meowth		Normal		☼		☼☼		☼			☼		☼			☼☼☼☼☼☼
+Psyduck		Water		☼☼☼		☼☼☼		☼☼☼☼		☼☼		☼☼☼☼		☼☼☼
+Machop		Fighting	☼☼☼☼☼	☼☼☼☼☼☼	☼			☼☼		☼			☼
+Cubone		Ground		☼☼☼		☼☼☼		☼			☼☼☼☼☼☼	☼☼			☼
+Eevee		Normal		☼☼☼☼	☼☼☼☼☼	☼☼☼☼		☼☼☼☼	☼☼☼☼☼☼		☼☼☼☼☼
+
+Not only do the different starters have different stats and types, they will
+also have different movesets, both starting out and learned over the course of
+the game. Having good moves is arguably even more important than having good
+stats!
+===============================================================================
+						    4. The Game Screen
+===============================================================================
+Once you've started the game and selected your starter, you'll be presented
+with the main game screen, which should look something like this:
+
+┌─1F─────────────────────────────────────────────────0 P─┐┌─────────────[A]┐
+│                                               ███████  ││Bulbasaur   Lv 2│
+│                                               █.....█  ││HP 14/ 14███████│
+│                                               █.....█  ││PP100/100███████│
+│                                              ██.....█  ││EXP    48       │
+│                                             ........█  ││Belly100%███████│
+│                                               █•☻@..█  ││                │
+│                                               █.....█  │└────────────────┘
+│                                               █.....█  │┌─────────────[S]┐
+│                                               █████.█  ││                │
+│                                                    .█  ││                │
+│                                                     █  ││                │
+│                                                        ││                │
+│                                                        ││                │
+│                                                        ││                │
+│                                                        │└────────────────┘
+│                                                        │┌─────────────[D]┐
+│                                                        ││                │
+│                                                        ││                │
+│                                                        ││                │
+│                                                        ││                │
+│                                                        ││                │
+│                                                        ││                │
+│                                                        │└────────────────┘
+│                                                        │┌─────────────[F]┐
+│                                                        ││                │
+│                                                        ││                │
+│                                                        ││                │
+│                                                        ││                │
+│                                                        ││                │
+│                                                        ││                │
+│                                                        │└────────────────┘
+│                                                        │┌─────────────[G]┐
+└Clear─────────────────────────────────────────────Turn 0┘│                │
+┌────────────────────────────────────────────────────────┐│                │
+│                                                        ││                │
+│                                                        ││                │
+│                                                        ││                │
+│                                                        ││                │
+│You enter the Misery Dungeon...                         │└────────────────┘
+└────────────────────────────────────────────────────────┘┌─────────────[H]┐
+┌────────────┐┌────────────┐┌────────────┐┌────────────┐  │                │
+│[Z]     2 PP││[X]     1 PP││            ││            │  │                │
+│   Tackle   ││   Growl    ││            ││            │  │                │
+│            ││            ││            ││            │  │                │
+│Normal  Phys││Normal  Stat││            ││            │  │                │
+└────────────┘└────────────┘└────────────┘└────────────┘  │                │
+                                                          └────────────────┘
+
+Starting from the top left, in clockwise order:
+- The main map screen, which displays the current state of the dungeon floor.
+  The player-controlled Pokémon (the "leader") is represented by an @ symbol.
+  Other symbols represent items and other Pokémon. Allied Pokémon (once you
+  have gotten them) are represented by numbers. The floor number, amount of
+  money in your team's wallet, weather and turn counter are displayed in this
+  window's border.
+- The Pokémon summary windows, displaying a teammate's name, level, HP, PP,
+  EXP to the next level, Belly, and any status effects they have. The key
+  shortcut on the top right of each window will open that Pokémon's summary
+  screen.
+- The move windows, which display the moves that the leader knows along with
+  their type, category and PP cost. These windows change color depending on
+  the status of the move; white means the move is usable, red means you don't
+  have enough PP to use it, and pink means that the move is disabled.
+- The message log, displaying the five most recent messages. These messages
+  describe all of the key events going on in the game, so pay close attention
+  to it! A [MORE] prompt will appear here if there are more unread messages in 
+  the log; press any key to display and read the next set of messages until 
+  [MORE] disappears.
+  
+To progress through the dungeon, you must find the stairs, which appear as a
+greater than sign (">") on the map. Once you've found them, move on top of them
+and press the [>] key to move to the next floor. Moving to the next floor
+immediately is usually not the best idea though; you'll want to find items and
+fight enemies for experience points first.
+===============================================================================
+						    4a. The In-Game Menu
+===============================================================================
+Pressing [Esc] from the main screen brings up a "Pause" menu of sorts, giving
+you access to the following options:
+
+- "Pokémon on this Floor" - Displays a list of all species that can spawn on
+  the current floor. This list changes with every floor.
+- "Save & Quit" - Saves and exits the game, so that you can resume from where
+  you left off later. See the section "11. Saving Your Game" for more details.
+- "Give Up" - Ends your game immediately. Be very careful, because this will
+  cause you to lose all progress!
+  
+Press [Esc] or select "Return to Game" to return to the game.
+===============================================================================
+						    5. The Pokémon Summary
+===============================================================================
+The Pokémon summary screen displays crucial information and statistics
+regarding your teammates. It can be called up by pressing the key shortcut
+displayed on the top right corner of a Pokémon's window. It looks like this:
+
+┌──────────────────────────────────────────────────────────────────────────┐
+│ Eevee (Level 5) [Normal]                                         No. 133 │
+│──────────────────────────────────────────────────────────────────────────│
+│ HP   16/   22             ██████████████████████████████████▌            │
+│ PP   78/  100             ████████████████████████████████████▌          │
+│ EXP      160 (Next:    56)██████████████████                             │
+│ Belly   74%               ██████████████████████████████████             │
+│──────────────────────────────────────────────────────────────────────────│
+│ Description:                                                             │
+│   Eevee has an unstable genetic makeup that suddenly mutates due to the  │
+│   environment in which it lives. Radiation from various stones causes    │
+│   this Pokémon to evolve.                                                │
+│──────────────────────────────────────────────────────────────────────────│
+│ Stats:                                                                   │
+│                                  │Value│ Eff.│ EVs │IVs                  │
+│                      ────────────┼─────┼─────┼─────┼───                  │
+│                       HP         │   22│   16│    7│ 28                  │
+│                       Attack     │   12│    6│    1│  7  ↓↓              │
+│                       Sp. Attack │   11│   11│    1│  1                  │
+│                       Defense    │   12│   12│   13│ 13                  │
+│                       Sp.Defense │   13│   13│    0│  2                  │
+│                       Speed      │   13│   13│    5│ 17                  │
+│──────────────────────────────────────────────────────────────────────────│
+│ Known Moves:                                                             │
+│   • [Z] Sand Attack (Ground / Status)                                    │
+│     Power: --    Accuracy: 100%   PP Cost: 1                             │
+│     Lowers an enemy's accuracy by one level. Cuts corners.               │
+│   • [X] Helping Hand (Normal / Status)                                   │
+│     Power: --    Accuracy: --     PP Cost: 5                             │
+│     Raises the Attack and Special Attack of every team member in the     │
+│     room by one stage each.                                              │
+│   • [C] Tackle (Normal / Physical)                                       │
+│     Power: 60    Accuracy: 100%   PP Cost: 2                             │
+│     Damages an enemy.                                                    │
+│   • [V] Covet (Normal / Physical)                                        │
+│     Power: 90    Accuracy: 90%    PP Cost: 4                             │
+│     Damages an enemy and attempts to steal their item.                   │
+│──────────────────────────────────────────────────────────────────────────│
+│ Next move: Quick Attack at Level 10                                      │
+│ Evolution: Evolves into Vaporeon using Water Stone / Evolves into Jolteon│
+│ using Thunder Stone / Evolves into Flareon using Fire Stone              │
+│──────────────────────────────────────────────────────────────────────────│
+│ Status effects: Confusion                                                │
+│──────────────────────────────────────────────────────────────────────────│
+│[Return] Options   [↑/↓] Scroll   [Esc] Close                             │
+│                                                                          │
+│                                                                          │
+└──────────────────────────────────────────────────────────────────────────┘
+Pressing [Return] on this screen gives you a list of additional options for the
+selected party member, depending on circumstances. These include:
+
+- Evolve: If the Pokémon is elligible to evolve, use this option to evolve
+  them. If there are multiple possible evolutions that the Pokémon is elligible
+  for, you can choose which one they evolve into.
+- Make Leader: Changes the player-controlled Pokémon to the selected teammate,
+  allowing you to control them directly. This is a crucial ability in some
+  situations! Note that this option is disabled if either the current leader or
+  the selected teammate are under certain status effects.
+- Switch Places: Switches this member's placement on the list with another
+  member.
+- Farewell: Removes the Pokémon from the team permanently. Be careful with
+  this!
+
+Pretty much everything on this screen is absolutely crucial in understanding
+how the game works, so let's briefly go over all of this information.
+===============================================================================
+						5a. Stats and Experience Points
+===============================================================================
+Every Pokémon has six primary stats:
+
+- HP (Hit Points): When the Pokémon is damaged, HP is deducted. If it reaches 0
+  or less, the Pokémon is defeated.
+- Attack: Determines how much damage is dealt by this Pokémon's Physical moves.
+- Defense: Determines how much damage is taken when this Pokémon is hit by
+  Physical moves.
+- Special Attack: Determines how much damage is dealt by this Pokémon's Special
+  moves.
+- Special Defense: Determines how much damage is taken when this Pokémon is hit
+  by Special moves.
+- Speed: Determines how often this Pokémon will score a critical hit, and how
+  often critical hits will be scored against it. The higher Speed is, the more
+  critical hits this Pokémon will get, and the fewer that will be gotten
+  against it. Critical hits do 50% extra damage. This is not to be confused
+  with Movement Speed - see below.
+
+There are three additional stats that are not displayed in the stats section,
+and can only be affected by moves and items, but are nonetheless very 
+important:
+
+- Movement Speed: Affects how many actions a Pokémon can take per turn. By
+  default anyone can take a single action per turn, but raised movement speed
+  can allow for 2, 3 or even 4 actions per turn. Conversely, being slowed
+  causes a Pokémon to skip every other turn. Movement Speed changes do not
+  last very long and will slowly return to normal after a couple turns.
+- Accuracy: Affects the accuracy of moves used by the Pokémon.
+- Evasion: Affects the accuracy of moves used against the Pokémon.
+
+Some moves can temporarily affect stats, either raising or lowering them.
+Temporary stat changes are displayed as up or down arrows (↑/↓) next to the
+affected stat. The "base" statistic on the summary screen is the stat's
+intrinsic value for that Pokémon, while the "effective" stat is the actual
+value of it after stat changes have been accounted for. Stat changes wear off
+when moving to the next floor.
+
+A Pokémon can have up to a maximum of six positive or negative stat changes in
+each set. The multipliers for each stat level are as follows:
+
+							Level			Multiplier
+							↓↓↓↓↓↓				25%
+							↓↓↓↓↓			   ~28%
+							↓↓↓↓			   ~33%
+							↓↓↓					40%
+							↓↓					50%
+							↓				   ~67%
+							-				   100%
+							↑				   150%
+							↑↑				   200%
+							↑↑↑				   250%
+							↑↑↑↑               300%
+							↑↑↑↑↑              350%
+							↑↑↑↑↑↑             400%
+							
+These stat multipliers only apply to Attack, Defense, Special Attack, Special
+Defense and Speed. Accuracy and Evasion use a different set of multipliers,
+while Movement Speed has a different system altogether.
+
+When a team Pokémon defeats or recruits an enemy, it gains Experience Points
+(EXP). Once a Pokémon has enough EXP, it will level up, raising its stats and
+occasionally learning a new move. For most Pokémon, once they have reached a
+high enough level, they will gain the ability to evolve into a new form.
+Evolved Pokémon generally have much higher stats than their unevolved forms,
+making them even more capable. However, there are two things about evolution to
+keep in mind:
+
+- Evolved Pokémon tend to learn moves at higher levels than their unevolved
+  forms. If there's a move you really want, you may want to keep them unevolved
+  so that they can learn it sooner.
+- Unevolved Pokémon that are ready to evolve gain an additional bonus to earned
+  EXP and can thus level up faster.
+  
+So evolution may not always be the best idea, depending on the circumstances!
+
+Not all species evolve by level. Some species will instead evolve when a
+specific item is used on them. These items can be found on the dungeon floor,
+but they tend to be very rare. Some Pokémon are completely incapable of
+evolution!
+
+There are three factors that determine a Pokémon's stats:
+
+- The species' BASE STATS. These are intrinsic to each species and are by far
+  the largest factor.
+- IVs (Individual Values), which are different for each individual Pokémon,
+  even in the same species. These range between 0 and 31 and cannot be changed.
+  The higher an IV is, the better the stat will be, though IVs have a
+  relatively small impact.
+- EVs (Effort Values), which are earned when a Pokémon defeats another. These
+  directly increase a Pokémon's stats. Unlike other Pokémon games, EVs are
+  not capped and an unlimited amount can be gained... if you survive that long!
+
+The summary screen displays the next move that a Pokémon will learn by leveling
+up, and the requirements for that Pokémon to evolve (if it is capable of
+doing so). To evolve a Pokémon when it is elligible, select the Evolve option
+from the summary screen options.
+
+Finally, stats can be restored to their normal level by stepping on a Wonder
+Tile, displayed as a green up arrow (↑). One Wonder Tile is guaranteed to spawn
+on each floor and they can be very useful if your stats are in tough shape.
+Be careful, though; they remove positive stat changes too!
+===============================================================================
+						5b. Types & Type Effectiveness
+===============================================================================
+A Pokémon and its moves can have one of eighteen different types:
+
+Normal, Fighting, Bug, Grass, Water, Fire, Ice, Ghost, Psychic, Fairy, Dark,
+Electric, Ground, Rock, Steel, Dragon, Flying and Poison
+
+Pokémon can have either one or two types. Moves always have exactly one type,
+except for the "Unique" type, which functions as a combination of two or more
+types and is only found in a select few moves.
+
+Types determine type effectiveness of moves and the Same-Type Attack Bonus
+(STAB). Each type has its own weaknesses, resistances and "immunities".
+
+Note that type effectiveness works differently than in the main series games.
+Each weak type ("super effective") adds a +25% bonus to attack damage. Each
+resistant type ("not very effective") adds a -25% malus to attack damage.
+"Immunities" reduce damage to 25% instead of completely negating it; so calling
+them "immunities" is a big misnomer here!
+
+As for STAB, if a Pokémon uses a move whose type matches one of the user's
+types, the power of that move is boosted by 50%. STAB moves take this bonus
+into account for Power on the summary screen.
+
+A miniature version of the type effectiveness chart is reproduced below:
+
+									DEFENDING
+		Nrm Fgt Fly Psn Gnd Rck Bug Ghs Stl Fir Wtr Grs Elc Psy Ice Drg Drk Fai
+	Nrm  ▬   ▬   ▬   ▬   ▬   ↓   ▬   X   ↓   ▬   ▬   ▬   ▬   ▬   ▬   ▬   ▬   ▬
+	Fgt  ↑   ▬   ↓   ↓   ▬   ↑   ▬   X   ↑   ▬   ▬   ▬   ▬   ↓   ↑   ▬   ↑   ↓
+	Fly  ▬   ↑   ▬   ▬   ▬   ↓   ↑   ▬   ↓   ▬   ▬   ↑   ↓   ▬   ▬   ▬   ▬   ▬
+	Psn  ▬   ▬   ▬   ↓   ↓   ↓   ▬   ↓   X   ▬   ▬   ↑   ▬   ▬   ▬   ▬   ▬   ↑
+A	Gnd  ▬   ▬   X   ↑   ▬   ↑   ↓   ▬   ↑   ↑   ▬   ↓   ↑   ▬   ▬   ▬   ▬   ▬
+T	Rck  ▬   ↓   ↑   ▬   ↓   ▬   ↑   ▬   ↓   ↑   ▬   ▬   ▬   ▬   ↑   ▬   ▬   ▬
+T	Bug  ▬   ↓   ↓   ↓   ▬   ▬   ▬   ▬   ↓   ↓   ▬   ↑   ▬   ↑   ▬   ▬   ↑   ↓
+A	Ghs  X   ▬   ▬   ▬   ▬   ▬   ▬   ↑   ▬   ▬   ▬   ▬   ▬   ↑   ▬   ▬   ↓   ▬
+C	Stl  ▬   ▬   ▬   ▬   ▬   ↑   ▬   ▬   ↓   ↓   ↓   ▬   ↓   ▬   ↑   ▬   ▬   ↑
+K	Fir  ▬   ▬   ▬   ▬   ▬   ↓   ↑   ▬   ↑   ↓   ↓   ↑   ▬   ▬   ↑   ↓   ▬   ▬
+I	Wtr  ▬   ▬   ▬   ▬   ↑   ↑   ▬   ▬   ▬   ↑   ↓   ↓   ▬   ▬   ↓   ↓   ▬   ▬
+N	Grs  ▬   ▬   ↓   ↓   ↑   ↑   ↓   ▬   ↓   ↓   ↑   ↓   ▬   ▬   ▬   ↓   ▬   ▬
+G	Elc  ▬   ▬   ↑   ▬   X   ▬   ▬   ▬   ▬   ▬   ↑   ↓   ↓   ▬   ▬   ↓   ▬   ▬
+	Psy  ▬   ↑   ▬   ↑   ▬   ▬   ▬   ↓   ▬   ▬   ▬   ▬   ▬   ↓   ▬   ▬   X   ▬
+	Ice  ▬   ▬   ↑   ▬   ↑   ▬   ▬   ▬   ↓   ↓   ↓   ↑   ▬   ▬   ↓   ↑   ▬   ▬
+	Drg  ▬   ▬   ▬   ▬   ▬   ▬   ▬   ▬   ↓   ▬   ▬   ▬   ▬   ▬   ▬   ↑   ▬   X
+	Drk  ▬   ↓   ▬   ▬   ▬   ▬   ▬   ↑   ▬   ▬   ▬   ▬   ▬   ↑   ▬   ▬   ↓   ↓
+	Fai  ▬   ↑   ▬   ↓   ▬   ▬   ▬   ▬   ↓   ↓   ▬   ▬   ▬   ▬   ▬   ↑   ↑   ▬
+	
+	▬ - normal effectiveness (1x)
+	↑ - super effective (1.25x)
+	↓ - not very effective (0.75x)
+	X - little effect (0.25x)
+===============================================================================
+							  5c. Status Effects
+===============================================================================
+Certain moves can inflict a large variety of status effects, both positive and
+negative. These are displayed one-at-a-time on each Pokémon window, and a
+complete listing on the summary screen.
+
+Some of the most common status effects are:
+- Poison: Causes a Pokémon to steadily lose HP. This is one of the most
+  dangerous statuses early on. Special Attack is lowered by 50%. Poison- and
+  Steel-types cannot be poisoned.
+- Toxic: Like Poison, but HP is lost even faster.
+- Confusion: Causes movement and attacks to go in a random direction. This does
+  not affect throwing.
+- Burn: Causes a Pokémon to steadily lose HP. Less common than Poison early on,
+  but still dangerous! Attack is lowered by 50%. Fire-types cannot be burned.
+- Sleep: Prevents any action until the Pokémon is woken up by an attack.
+  Defense & Special Defense are lowered by 50%.
+- Paralysis: 50% chance of skipping a turn. Speed is lowered by 50%. Electric-
+  types cannot be paralyzed.
+- Frozen: Prevents any action until the Pokémon is thawed out by Fire-type
+  moves or over time. The Pokémon also cannot be hit by any moves except Fire-
+  type moves. Fire- and Ice-types cannot be frozen.
+- Flinch: Certain moves may cause flinching, which causes the victim to skip
+  their next turn.
+
+There are many more status effects than this in the game, this is just a sample
+of the most common ones you'll encounter.
+
+Most status effects are bad and can be cured using certain items, the most
+useful of which is the Lum Berry, which can cure all bad status conditions at
+once. Some status effects have positive effects though. Red status effects are
+bad, and green ones are good.
+===============================================================================
+						      6. Looking Around
+===============================================================================
+One of the most useful features of Explorers of the Console is the "look
+around" mode, activated by pressing [L] from the main game view. Using this
+mode, you can learn the identity and gain information about Pokémon and items
+on the floor. Since many Pokémon and items have the same appearance, this tool
+is invaluable!
+
+The cursor, represented by a flashing "X", can be moved using the movement
+keys. The message log is temporarily replaced with a description of the Pokémon
+or item underneath the cursor.
+
+- Team Pokémon display their level, exact HP and max HP, moveset and 
+  description.
+- Enemy Pokémon display their remaining HP percentage, description and moveset.
+  Moves you haven't seen that enemy using yet will be hidden and displayed as
+  "???".
+- Items display the item's rarity tier and description (more on item rarity
+  tiers in Section 8. Items).
+===============================================================================
+							7. Moves, PP & Combat
+===============================================================================
+Combat in the dungeon is performed via Pokémon using attacks known as "moves".
+Moves consume a Pokémon's PP (Power Points).
+
+Unlike in other Pokémon games, PP is a single pool that all moves draw from, 
+like Mana Points in any other standard RPG. Every Pokémon begins with 100 PP,
+but maximum PP can be increased by using some rare and special items
+occasionally found in the dungeon. Moves cannot be used if the Pokémon doesn't
+have enough PP, but you can drink Elixirs and Max Elixirs or eat Leppa Berries
+to restore PP; these items are common throughout the dungeon.
+
+The more powerful a move is, the more PP it tends to cost, though Normal-type
+moves tend to cost fewer PP than equivalent moves of other types, and
+Dragon-type moves tend to cost more.
+
+The three primary variables shared by most moves are Power, Accuracy and PP
+Cost. Power is only used for damaging moves and determines, along with the
+user's Attack and target's Defense stats, how much damage the move will do.
+Accuracy determines how often a move will successfully hit, and will change if
+your Accuracy stat is changed. PP cost determines how much PP will be deducted
+when this move is used.
+
+Each move also has a specified range, which determines what tiles it can
+target. Most moves only affect either enemies or allies, and usually only on
+tiles right next to the user ("adjacent tiles"). Some moves can affect distant
+targets however, and these moves tend to be more versatile and useful, but cost
+more PP to use. Additionally, moves that hit multiple targets have reduced
+damage.
+
+Generally, moves can only be used if there's a valid target within the move's 
+range. If there are multiple targets available, you will be prompted to choose
+a target or direction. For choosing a direction, simply press the movement key
+corresponding to the direction you wish to choose. Choosing a specific target
+meanwhile works the same as look around mode: use the direction keys to move
+the cursor and press [Return] to confirm a target. Note that there are some
+status effects, such as confusion, which bypass targeting, which may cause
+your moves to fail if they don't choose a proper direction.
+
+If a Pokémon's HP reaches 0 or less, then that Pokémon is defeated. If,
+Swampert forbid, one of your team members experiences this fate, they will be
+permanently removed from the team unless revived. Be careful not to let your
+allies' HP get too low... but sometimes, it may be impossible to avoid.
+
+But if you do manage to defeat a Pokémon, you will earn EXP (experience points)
+for your trouble, pushing you towards a new level. You will also earn EVs
+depending on the species that you have defeated. Experience points are shared
+between all Pokémon in your party, with lower-leveled members receiving a
+larger share to help them catch up. Note that recruiting Pokémon instead of
+defeating them gives much more EXP, so you should try to recruit where possible,
+even if your party is full! See Section 10. Recruiting Pokémon for more info on
+recruitment.
+
+Pokémon will occasionally learn moves when leveling up. A Pokémon can only know
+four moves at a time. If a Pokémon tries to learn a new move while already
+knowing four, you will be prompted to replace one of the Pokémon's existing
+moves. You are not required to actually do this, though; you can press [Esc] to
+keep a Pokémon's current moves, but in general, better moves are learned at
+higher levels!
+===============================================================================
+							  8. Items & Inventory
+===============================================================================
+The reason why the Misery Dungeon is such a popular destination for explorers
+is the untold amounts of treasure and money littered throughout the dungeon.
+
+Press [I] to open your inventory. Your inventory is known as the Toolbox and has
+a limited capacity. Starting out it can only hold up to 20 items, but each 
+additional party member adds four more slots, up to a maximum of 40 items with a
+full party. Losing a party member will result in these additional slots being 
+lost, and any items past the new capacity will be dropped to the ground.
+
+Items can be broadly categorized depending on their function:
+
+- FOOD ITEMS: These items restore a lot of Belly, and some food items can even
+  restore Belly beyond 100%. Be careful though; if your Belly is over 100%, 
+  you won't be able to eat anything else, even non-food items like Seeds or
+  Berries.
+- SEEDS: Edible items with various effects, usually negative. While these 
+  restore Belly slightly, it is usually better to just throw them at enemies
+  instead, where their effects will activate when they hit a Pokémon.
+- ORBS: Like seeds, these items have various effects when activated, but they
+  cannot be eaten and can only be used by the leader. Some orbs affect the
+  team, while others affect nearby enemies or a specific enemy. In the latter
+  case, you will be asked to choose a direction, like when targeting
+  directional moves.
+- BERRIES: Berries are edible and always have positive effects on the eater,
+  including restoring HP, PP, granting positive status effects, raising stats,
+  and more. There are a very wide variety of berries in the dungeon!
+- APRICORNS: When thrown at an adjacent enemy, attempts to recruit them on to
+  the team. See Section 10. Recruiting Pokémon for more information.
+- VITAMINS: These items are very rare and permanently raise one of your stats,
+  by giving the imbiber a significant amount of EVs. They also restore Belly
+  more than Seeds and Berries do.
+- THROWN WEAPONS: These items come in stacks of up to 40, meaning that you can
+  fit as many as 40 of single type of thrown weapon in a single inventory slot.
+  These items inflict damage on Pokémon when thrown. Some thrown items deal
+  a fixed amount of damage regardless of stats, while others depend on stats,
+  like with moves. The rarer a thrown weapon, the more damage it does!
+- POKÉ - Poké, often referred to simply as P, is the currency of the Pokémon
+  world. In the current version Poké has no function other than contributing to
+  your final score.
+  
+There are six different rarity tiers for items: Common, Uncommon, Rare, Very
+Rare, Epic and Legendary. Rarer items are (mostly) better and more valuable.
+
+Items will be by far your most useful tool for getting an upper hand over
+enemies in the dungeon; use them wisely, and use them well.
+===============================================================================
+								9. Food & Belly
+===============================================================================
+Traversing the Misery Dungeon is hard, gruelling work and you and your 
+teammates will get hungry over time. All teammates have a "Belly" that begins at 
+100% and slowly decreases over time. Each action a Pokémon can take consumes a 
+different amount of Belly; using moves consumes more Belly than walking around, 
+and walking around consumes more Belly than standing still. There are even some
+powerful moves that consume Belly in place of PP...
+
+When the Belly is empty, Pokémon will take constant starvation damage and
+eventually die. Needless to say, you do not want this to happen, so keep your
+party well fed at all times!
+
+Belly is restored by consuming edible items (those with the "Eat" option in
+the inventory screen). Apples and Big Apples are the go-to for keeping your
+party nourished, and are generally quite common. Other edible items such as
+seeds, health drinks and berries also restore a small amount of Belly, but
+shouldn't be relied on for a nutritious diet.
+
+Stronger Pokémon species generally require more food, and thus their Belly
+will deplete faster. Keep this in mind!
+===============================================================================
+							10. Recruiting Pokémon
+===============================================================================
+With the amount of enemies that can spawn in the misery dungeon, a single
+Pokémon is unlikely to get very far. So you'll need a few teammates to keep
+you company.
+
+Enemy Pokémon can be recruited to your side by feeding them Apricorn items.
+To "feed" an enemy Pokémon an Apricorn, throw the Apricorn at them while the
+leader is directly adjacent to them. Keep the "directly adjacent" part in mind;
+Apricorns will not work if the leader isn't right next to the target!
+
+Apricorns are not guaranteed to work, though. The success rate of an Apricorn
+depends on many factors, namely:
+
+- The type of the Apricorn and the type of the target. Apricorns are most
+  likely to work if the Apricorn's type matches the target's type. You can
+  check an Apricorn's type by examining its description in the inventory.
+- The remaining HP of the target; lower HP makes recruiting easier.
+- The target's status effects; inflicting certain bad status effects on an
+  enemy can increase their chance of recruiting them.
+- The target's species. As a rule of thumb, the more powerful a Pokémon is,
+  the harder it is to recruit them. Some special Pokémon can indeed be very
+  hard to recruit no matter what!
+
+There's no penalty for failing to recruit a Pokémon aside from lost time, so
+as long as you have Apricorns handy, you can keep trying until you win them
+over! But once that Pokémon is defeated, there is no recruiting them anymore.
+
+Allies are displayed as numbers on the map screen corresponding to their
+position in your party, and they will move, pick up items and fight enemies
+automatically. As the leader, you can freely switch positions with party
+members by simply moving into them. You can also change the leader to any party
+member at almost any time through the Pokémon summary screen (see section 5. 
+The Pokémon Summary for more information). If the leader is defeated and not
+revived, the leader will automatically switch to the next party member on the
+list.
+===============================================================================
+							11. Saving Your Game
+===============================================================================
+You can save the game at any time by using the "Save & Quit" option from the
+in-game menu. This will save the game to a file in the /save_data directory in
+the game's main directory. You can then load the save file by using the "Load
+Game" option from the title screen. All of the available saves will be listed
+on this screen alongside the floor number and leader's information.
+
+Save files are only intended to be used once; once you load a save file, it
+will be deleted. You can Save & Quit an unlimited amount of times during a run,
+though.
+
+Please note that save files are generally not compatible between major
+versions, i.e., save files from 0.1.0 will not work with 0.2.0. They are
+usually compatible with minor updates though, i.e., save files from 0.1.0
+should work with 0.1.1.
+===============================================================================
+							12. Winning & Losing
+===============================================================================
+To win the game you must successfully traverse all 50 floors of the dungeon and
+use the stairs on the 50th floor to exit. Doing so is no easy feat!
+
+Conversely, you will lose if all Pokémon on your team are defeated and you have
+no items to revive them with.
+
+Regardless of whether you win or lose, you will be taken to a summary screen
+displaying the final state of your party, a history of all the Pokémon that
+were on your team, a listing of all the items in your inventory at the time the
+game ended, and the most recent messages in the log before your demise or
+victory. Most importantly, however is your SCORE.
+
+Your score is an overall rating of your skill level during a session of
+Explorers of the Console. It also determines your rank; the higher your score,
+the more impressive rank you will receive! Your score and the end of the game
+is calculated as follows:
+
+(	Total EXP Earned
++	Total Value of Items in Toolbox
++	Amount of Money on Hand			x10)
+x(	Floor Reached
+ +	No. of Pokémon Recruited		   )
+/	Sq. Root of No. of Turns Taken	+ 1
+
+= 	Your Final Score
+
+If you won the game, you get an additional 1.5x multiplier to your final
+score.
+
+Aim for a high score and compete with your friends! Some say that a
+certain fish has the world record of 1 million points... if you can somehow
+top that, he'd like to hear about it :)
+===============================================================================
+									A. Modding
+===============================================================================
+PMD: Explorers of the Console is designed to be easily moddable, even for users
+with little-to-no programming knowledge. It's very easy to modify pokemon.json
+to modify existing Pokémon species or even add entirely new ones. moves.json
+and items.json are also easy to modify, but some move effects and most items 
+are hardcoded due to their complexity. Explanations of these JSON files are
+given in the subsections below.
+
+If JSON editing is not enough for you, you can also edit the game's source
+files directly if you are familiar with Python, where you can pretty much do
+anything... as long as it's within the confines of the terminal, anyway :>
+I'd love to see what kind of forks and mods people make for this game.
+
+Note that I cannot be held responsible if you accidentally break the game by
+trying to mod it, so I would not recommend trying to mod the game if you don't
+know what you're doing.
+===============================================================================
+								 B. pokemon.json
+===============================================================================
+"id": The Pokémon's numeric ID, or Pokédex number, if you will. Has no in-game
+effect, just displayed in the summary screen.
+
+"name": The name of this Pokémon species. Max 12 characters.
+
+"base_stats": These values are used to determine the six basic stats of a 
+Pokémon, together with IVs and EVs. They generally range from 1 to 255, though
+the game does support base stat values over 255, so go nuts.
+
+"types": A Pokémon's types, used to determine type effectiveness and STAB. Up
+to 2 types can be defined for each species.
+
+"ev_yield": The type and number of EVs that will be gained if this Pokémon is
+defeated in battle. Recruiting a Pokémon does not yield EVs.
+
+"exp_yield": Determines, along with the Pokémon's level, the amount of EXP
+gained upon defeating this Pokémon.
+
+"gender_ratio": Currently unused as gender is not yet implemented. Determines
+how often this Pokémon will be male (i.e., 0.875 = 87.5% male). If null, then
+this species is genderless.
+
+"recruit_rate": Analogus to catch rate, determines how difficult it is for
+this species to be recruited by the player. A lower recruit rate means
+increased difficulty. As a general rule of thumb, "weak" Pokémon should have a
+rate close to 250, "strong" Pokémon should have a rate close to 25-45, and
+legendaries and mythicals should have a rate of 3.
+
+"experience_group": Determines the number of experience points a Pokémon would
+need to gain levels. There are six possible experience groups: Erratic, Fast,
+Medium Fast, Medium Slow, Slow and Fluctuating. Adding more experience groups
+is possible by modifying the source code.
+
+"legendary": Defaults to false. If set to true, this Pokémon will not spawn in
+the dungeon and will thus currently be unused. A way to encounter and recruit
+legendaries is planned in the near future.
+
+"weight": The Pokémon's base weight in kilograms. Used for certain move effects
+(Low Kick, Heavy Slam)
+
+"description": A textual description of this Pokémon, used for flavor in the 
+summary screen and look around mode.
+
+"level_up_moves": This contains a list of level-move pairs, which determine
+which moves a Pokémon can learn and at what level. A level of "0" means that
+the Pokémon will learn this move on evolution.
+
+"tm_moves": Currently unused.
+
+"evolutions": Defines a Pokémon's possible evolutions and the criteria for it
+evolving. There are currently two definable types of evolution criteria; level
+("min_level") and item ("item"). Pokémon that can evolve will not have their
+unevolved forms be able to spawn on earlier floors if they would spawn below
+their evolution level (for item-based evolutions, this is roughly fixed to
+level 30, i.e., the 30th floor).
+
+===============================================================================
+								 C. moves.json
+===============================================================================
+"name": The move's name. Max 24 characters. Note that some existing moves have
+hardcoded effects based on their name, so naming a modded move after one of
+those moves may produce unexpected results without modifications to the source.
+
+"type": The move's inherent type, can be one of the 18 different Pokémon types,
+"typeless" (neutrally effective against all types) or "Unique" (has hardcoded
+combination of multiple types).
+
+"description": The description of the move as it will appear in game. Try to
+keep these succinct as space is limited.
+
+"category": One of "physical" (damaging, using Physical Attack & Defense),
+"special" (damaging, using Special Attack & Defense), or "status" (non-
+damaging, though they may be able to still do damage indirectly through
+effects).
+
+"power": The move's base power, used for damage calculation. This must be set 
+to "null" for non-damaging Status moves or else JSON validation will fail. It
+can also be set to null for moves where damage is not handled through the
+normal damage formula (like fixed-damage moves)
+
+"accuracy": The move's base accuracy, basically the % chance it will hit
+without any changes to accuracy or evasion. If set to "null", the move will
+bypass accuracy checks to always hit.
+
+"range": Affects which tiles the move will affect. The valid range values are:
+"User"
+"Adjacent enemy"
+"All adjacent enemies"
+"Enemy up to 2 tiles away"
+"Enemy up to 3 tiles away"
+"Straight line up to 4 tiles"
+"Straight line" (10 tiles)
+"Straight line piercing" (all enemies in a line up to 10 tiles)
+"Adjacent enemy or ally"
+"Adjacent ally"
+"All adjacent allies"
+"All enemies in room"
+"All allies in room"
+"All allies in room, including user"
+"All enemies and allies in room"
+"All enemies and allies in room, including user"
+"All enemies on floor"
+"All allies on floor"
+"All allies on floor, including user"
+"All enemies and allies on floor"
+"All enemies and allies on floor, including user"
+Most of these should be self-explanatory. Range is not displayed in-game, so it
+would be wise to also mention the move's range in its description field.
+
+"pp_cost": The amount of PP this move costs to use. Must be a non-negative
+integer.
+
+"cuts_corners": By default, moves cannot cut corners. Define this to be true
+to allow the move to cut corners for targeting purposes. This does not
+affect moves with certain ranges, namely floor and room-wide ranges or user
+only.
+
+"sound_based": Currently used to denote moves that will be disabled by the
+Silence status effect. Will also be used by abilities in the future.
+
+"high_crit_ratio": Moves with this flag set true will have a doubled critical
+hit rate.
+
+"always_crit": Moves with this flag set true always result in a critical hit. 
+Conflicts with high_crit_ratio.
+
+"effects": Hoo boy. This array determines the secondary effects a move will
+have if it successfully hits. There are many different possible secondary
+effects, but the main ones apply or remove status effects or stat levels.
+There's too many effects to go over here, but its pretty self-explanatory
+if you look at the pre-defined ones in moves.json. (TODO: Maybe actually
+write something here?)
+===============================================================================
+								 D. moves.json
+===============================================================================
+As stated above, currently most items have their effects hardcoded into the
+source code, so you will need to make source code changes to properly change or
+add new items here. I'm hoping there will be a solution to this someday.
+
+"name": The name of the item. Items currently have hardcoded effects based on
+their name, so the item will most likely break if this is changed.
+
+"edible": If set to true, the item will restore 5% Belly (by default) and be
+usable using the "Eat" option.
+
+"usable": If set to true, the item will be usable using the "Use" option (try
+saying that 5 times fast). "edible" and "usable" should not be both set to
+true; just the one or the other.
+
+"stackable": If set to true, this item will spawn in stacks of 3-6 in the
+dungeon, and can stack up to 40 while only using a single item slot. This is
+meant for use with thrown weapons.
+
+"description": The item's description that will be displayed in-game.
+
+"appearance": A single character in the CP437 character set. Determines what
+the item will look like in-game on the map screen.
+
+"color": Determines what color the item will be on the map screen. Combined
+with appearance, this determines the look of the item. Valid colors are
+"green", "red", "blue", "yellow", "cyan", "magenta", "purple", "brown",
+"white" and "gray".
+
+"rarity": The item's rarity tier, which is used for item spawning during
+floor generation, and also color-codes the item in the inventory. Valid
+rarity tiers are currently "Common", "Uncommon", "Rare", "Very Rare", "Epic"
+and "Legendary".
+
+"value": The value of one of these items in P. Currently only used as part of
+the game-end score calculation, but will be used for shops in a future update.
+
+===============================================================================
+								E. Legal Crap
+===============================================================================
+Pokémon Misery Dungeon: Explorers of the Console
+Engine & Code Copyright (C) 2026 C437RP13 (GitHub: Axolotl and Fish)
+
+This program is free software: you can redistribute it and/or modify it under 
+the terms of the GNU General Public License as published by the Free Software 
+Foundation, either version 3 of the License, or any later version.
+
+This program is distributed WITH ABSOLUTELY NO WARRANTY; without even the
+implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+
+Please read the LICENSE file for further information and how this will affect 
+your rights with this program. If you have not received the LICENSE file with
+this program, you can get a copy at https://www.gnu.org/licenses/ .
+
+Additionally, Pokémon Misery Dungeon: Explorers of the Console is a 
+free-of-charge FAN-GAME. It must not be sold or distributed for profit by any 
+means. If you paid for this game, you have been scammed and should demand your 
+money back immediately.
+
+This project is not associated with or endorsed by Nintendo, Game Freak,
+The Pokémon Company or Spike Chunsoft in any way. All trademarks used in the
+game belong to their respective owners.

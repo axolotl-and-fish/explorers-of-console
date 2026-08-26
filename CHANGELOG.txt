@@ -1,0 +1,126 @@
+		Pokémon Misery Dungeon: Explorers of the Console CHANGELOG
+------------------------------PRIVATE BETA-------------------------------------
+===============================================================================
+			   0.1.0 "The Initial Release" - August 26, 2026
+===============================================================================
+- First public release!
+-------------------------------------FIXES-------------------------------------
+- Fixed eating Grimy Food resulting in a double message.
+===============================================================================
+				0.1.0 Release Candidate 6 - August 24, 2026
+===============================================================================
+------------------------------------CHANGES------------------------------------
+- Recruiting an enemy Pokémon now resets their Movement Speed to normal.
+- Wonder Tiles and initial floor Pokémon don't spawn on room tiles in front of
+  corridor entrances.
+- Update CREDITS.txt
+-------------------------------------FIXES-------------------------------------
+- Fixed low HP window flashing threshold being based on the interal HP float
+  rather than the integer.
+- Fixed the Warp Orb being non-functional.
+- Fixed some typos.
+===============================================================================
+				0.1.0 Release Candidate 5 - August 23, 2026
+===============================================================================
+------------------------------------CHANGES------------------------------------
+- Changed the [MORE] prompt and message log coloring so that it is based on the
+  player's Movement Speed rather than game turns.
+- The effective stat column in the summary screen now takes Reflect & Light
+  Screen into account.
+-------------------------------------FIXES-------------------------------------
+- i forgot to actually update the version number in-game lmao
+- Optimized the code for HP-draining moves.
+===============================================================================
+				0.1.0 Release Candidate 4 - August 23, 2026
+===============================================================================
+-----------------------------------ADDITIONS-----------------------------------
+- Added messages for when a Pokémon is sped up or slowed while already at
+  max/min speed, respectively.
+------------------------------------CHANGES------------------------------------
+- The message log has been reworked so that it updates with every new message,
+  not just at the end of the turn. The [MORE] prompt still appears once >5
+  messages are logged per turn.
+- Changed the cursor on the inventory screen to match the cursor character used
+  in other menus.
+- The Switch Places option is no longer displayed in the Pokémon options when
+  there is only 1 Pokémon on the team.
+- Allies can now target Poké even if the Toolbox is full.
+- Update manual with information about the compatability mode.
+- Update CREDITS.txt (thanks everyone!)
+-------------------------------------FIXES-------------------------------------
+- Fixed the AI trying to use slowing moves (i.e., String Shot) when the target
+  is already slowed.
+- Fixed Copycat always failing when used by enemies.
+- Fixed stackable items duplicating when picked up manually.
+===============================================================================
+				0.1.0 Release Candidate 3 - August 21, 2026
+===============================================================================
+Note that loading a previous save file in this version may lead to incorrect
+stats and movesets for Pokémon.
+------------------------------------CHANGES------------------------------------
+- Poison Sting was killing a lot of players on the first floor before they
+  could get any healing items or any more team members, so Pokémon learnsets 
+  have been changed so that (most) unevolved Pokémon don't start with poisoning 
+  moves anymore.
+	- Weedle starts with Tackle instead of Poison Sting like Caterpie, and
+	  learns Poison Sting at level 5 instead.
+	- Tackle and Poison Sting have been swapped for Nidoran♀.
+	- Peck and Poison Sting have been swapped for Nidoran♂.
+	- Instead of Poison Sting, Tentacool now starts with Acid, and it learns
+	  Acid Spray at level 4.
+	- Similarly, Grimer has had Poison Gas and Harden swapped in its learnset.
+	- Koffing has had Poison Gas and Smokescreen swapped in its learnset.
+- Belly consumption rate has been rebalanced, low-BST Pokémon consume belly
+  slightly faster now, while high-BST Pokémon consume belly slightly slower.
+- Improved Pokémon AI obstacle avoidance, this should hopefully make allies
+  actually properly target enemies in rooms now instead of just getting stuck
+  at the entrance.
+- Overhauled the effect of Snatch to be more robust, as it was bugged before and
+  snatching moves that it was not supposed to.
+- EVs now affect stats twice as much as before.
+-------------------------------------FIXES-------------------------------------
+- Fixed incorrect values being displayed when healing using a healing item.
+- Fixed HP-draining moves healing 0 HP instead of 1 when they did 1 damage.
+- Fixed some status effects having timers that did not actually decrement.
+===============================================================================
+				0.1.0 Release Candidate 2 - August 20, 2026
+===============================================================================
+-----------------------------------ADDITIONS-----------------------------------
+- Added a compatability mode to the game for terms that still have issues with 
+  ANSI garbage instead of color. The mode strips all ANSI from the game's text, 
+  making it play without color. This mode is only recommended as a last resort 
+  as color is crucial for this game! You can enable it by adding the --compat
+  or --c flag when starting the game from the terminal.
+------------------------------------CHANGES------------------------------------
+- Confused AI-controlled Pokémon don't try to attack anymore without an enemy
+  in range
+- Updated the crash handler message to mention GitHub
+- Update CREDITS.txt
+-------------------------------------FIXES-------------------------------------
+- Properly save the team leader's position when saving the game. This fixes a 
+  game-breaking bug where changing the party leader to a Pokémon that is not 
+  first on the team, and then saving and reloading the game, caused the game to 
+  think that both the first Pokémon on the list and the new leader  were both 
+  leader at the same time.
+- Enable VT100 emulation when starting the game, as some terminals on Windows
+  display ANSI garbage without color without it
+- Fixed confused players randomly choosing blocked directions when moving
+- Fixed double messages when using Berries that cure status effects
+===============================================================================
+				0.1.0 Release Candidate 1 - August 19, 2026
+===============================================================================
+- Initial private beta release!
+- 146 fully featured and obtainable Pokémon species (plus 5 legendaries,
+  currently unobtainable)
+- (Mostly) PMD Rescue Team-compliant dungeon generation with room merging, dead
+  end placement, and more. Only the default generator is currently implemented,
+  more to come in the future.
+- 376 moves with their own unique effects!
+- Enemy Pokémon spawning and a serviceable enemy AI.
+- Over 150 unique items to find in the dungeon. They can be thrown and used.
+  Most items are from Red Rescue Team, some from main series Pokémon with unique
+  effects.
+- Ally AI that attacks and collects items for you.
+- A high score system; the further you get, the higher your score. Challenge
+  your friends!
+- Reach the end of the 50th floor to clear the dungeon.
