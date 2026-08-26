@@ -1,0 +1,1467 @@
+[
+  {
+    "name": "Oran Berry",
+    "edible": true,
+    "description": "Restores 100 HP. Belly +5%.",
+    "appearance": "%",
+    "color": "blue",
+    "value": 50,
+    "rarity": "Common"
+  },
+  {
+    "name": "Apple",
+    "edible": true,
+    "description": "Belly +50%.",
+    "appearance": "o",
+    "color": "red",
+    "value": 50,
+    "rarity": "Common"
+  },
+  {
+    "name": "Big Apple",
+    "edible": true,
+    "description": "Fully fills Belly.",
+    "appearance": "o",
+    "color": "red",
+    "value": 150,
+    "rarity": "Uncommon"
+  },
+  {
+    "name": "Pecha Berry",
+    "edible": true,
+    "description": "Cures Poison. Belly +5%.",
+    "appearance": "%",
+    "color": "magenta",
+    "value": 30,
+    "rarity": "Common"
+  },
+  {
+    "name": "Cheri Berry",
+    "edible": true,
+    "description": "Cures Paralysis. Belly +5%.",
+    "appearance": "%",
+    "color": "red",
+    "value": 30,
+    "rarity": "Common"
+  },
+  {
+    "name": "Elixir",
+    "edible": true,
+    "description": "+50 PP. Belly +5%.",
+    "appearance": "!",
+    "color": "cyan",
+    "value": 25,
+    "rarity": "Common"
+  },
+  {
+    "name": "Max Elixir",
+    "edible": true,
+    "description": "Fully restores PP. Belly +5%.",
+    "appearance": "!",
+    "color": "green",
+    "value": 50,
+    "rarity": "Uncommon"
+  },
+  {
+    "name": "Blast Seed",
+    "edible": true,
+    "description": "Can be thrown to cause a small explosion.",
+    "appearance": "*",
+    "color": "yellow",
+    "value": 50,
+    "rarity": "Rare"
+  },
+  {
+    "name": "Iron Thorn",
+    "edible": false,
+    "description": "Can be thrown at a Pokémon to inflict some damage.",
+    "appearance": "/",
+    "color": "gray",
+    "rarity": "Uncommon",
+    "value": 5,
+    "stackable": true
+  },
+  {
+    "name": "Stick",
+    "edible": false,
+    "description": "Can be thrown at a Pokémon to inflict a little damage.",
+    "appearance": "/",
+    "color": "brown",
+    "rarity": "Common",
+    "value": 2,
+    "stackable": true
+  },
+  {
+    "name": "Silver Spike",
+    "edible": false,
+    "description": "Can be thrown at a Pokémon to inflict a good bit of damage.",
+    "appearance": "/",
+    "color": "white",
+    "rarity": "Rare",
+    "value": 20,
+    "stackable": true
+  },
+  {
+    "name": "Gold Fang",
+    "edible": false,
+    "description": "Can be thrown at a Pokémon to inflict a tremendous amount of damage.",
+    "appearance": "/",
+    "color": "yellow",
+    "rarity": "Legendary",
+    "value": 1000,
+    "stackable": true
+  },
+  {
+    "name": "Cacnea Spike",
+    "edible": false,
+    "description": "Can be thrown at a Pokémon to inflict a lot of damage.",
+    "appearance": "/",
+    "color": "green",
+    "rarity": "Very Rare",
+    "value": 100,
+    "stackable": true
+  },
+  {
+    "name": "Corsola Twig",
+    "edible": false,
+    "description": "Can be thrown at a Pokémon to inflict a huge amount of damage.",
+    "appearance": "/",
+    "color": "magenta",
+    "rarity": "Epic",
+    "value": 200,
+    "stackable": true
+  },
+  {
+    "name": "Plain Apricorn",
+    "edible": true,
+    "apricorn": true,
+    "type": "Normal",
+    "description": "Throw this at an adjacent enemy to attempt to recruit them. Normal-types seem to like it best.",
+    "appearance": "☻",
+    "color": "white",
+    "value": 100,
+    "rarity": "Uncommon"
+  },
+  {
+    "name": "Black Apricorn",
+    "edible": true,
+    "apricorn": true,
+    "type": "Dark",
+    "description": "Throw this at an adjacent enemy to attempt to recruit them. Dark-types seem to like it best.",
+    "appearance": "☻",
+    "color": "gray",
+    "value": 200,
+    "rarity": "Legendary"
+  },
+  {
+    "name": "Blue Apricorn",
+    "edible": true,
+    "apricorn": true,
+    "type": "Water",
+    "description": "Throw this at an adjacent enemy to attempt to recruit them. Water-types seem to like it best.",
+    "appearance": "☻",
+    "color": "blue",
+    "value": 200,
+    "rarity": "Rare"
+  },
+  {
+    "name": "Brown Apricorn",
+    "edible": true,
+    "apricorn": true,
+    "type": "Ground",
+    "description": "Throw this at an adjacent enemy to attempt to recruit them. Ground-types seem to like it best.",
+    "appearance": "☻",
+    "color": "brown",
+    "value": 200,
+    "rarity": "Rare"
+  },
+  {
+    "name": "White Apricorn",
+    "edible": true,
+    "apricorn": true,
+    "type": "Ice",
+    "description": "Throw this at an adjacent enemy to attempt to recruit them. Ice-types seem to like it best.",
+    "appearance": "☻",
+    "color": "white",
+    "value": 200,
+    "rarity": "Rare"
+  },
+  {
+    "name": "Gold Apricorn",
+    "edible": true,
+    "apricorn": true,
+    "type": "Psychic",
+    "description": "Throw this at an adjacent enemy to attempt to recruit them. Psychic-types seem to like it best.",
+    "appearance": "☻",
+    "color": "yellow",
+    "value": 200,
+    "rarity": "Rare"
+  },
+  {
+    "name": "Green Apricorn",
+    "edible": true,
+    "apricorn": true,
+    "type": "Grass",
+    "description": "Throw this at an adjacent enemy to attempt to recruit them. Grass-types seem to like it best.",
+    "appearance": "☻",
+    "color": "green",
+    "value": 200,
+    "rarity": "Rare"
+  },
+  {
+    "name": "Bronze Apricorn",
+    "edible": true,
+    "apricorn": true,
+    "type": "Rock",
+    "description": "Throw this at an adjacent enemy to attempt to recruit them. Rock-types seem to like it best.",
+    "appearance": "☻",
+    "color": "brown",
+    "value": 200,
+    "rarity": "Rare"
+  },
+  {
+    "name": "Orange Apricorn",
+    "edible": true,
+    "apricorn": true,
+    "type": "Fighting",
+    "description": "Throw this at an adjacent enemy to attempt to recruit them. Fighting-types seem to like it best.",
+    "appearance": "☻",
+    "color": "red",
+    "value": 200,
+    "rarity": "Rare"
+  },
+  {
+    "name": "Transparent Apricorn",
+    "edible": true,
+    "apricorn": true,
+    "type": "Ghost",
+    "description": "Throw this at an adjacent enemy to attempt to recruit them. Ghost-types seem to like it best.",
+    "appearance": "☻",
+    "color": "cyan",
+    "value": 200,
+    "rarity": "Rare"
+  },
+  {
+    "name": "Purple Apricorn",
+    "edible": true,
+    "apricorn": true,
+    "type": "Poison",
+    "description": "Throw this at an adjacent enemy to attempt to recruit them. Poison-types seem to like it best.",
+    "appearance": "☻",
+    "color": "purple",
+    "value": 200,
+    "rarity": "Rare"
+  },
+  {
+    "name": "Pink Apricorn",
+    "edible": true,
+    "apricorn": true,
+    "type": "Fairy",
+    "description": "Throw this at an adjacent enemy to attempt to recruit them. Fairy-types seem to like it best.",
+    "appearance": "☻",
+    "color": "magenta",
+    "value": 200,
+    "rarity": "Rare"
+  },
+  {
+    "name": "Red Apricorn",
+    "edible": true,
+    "apricorn": true,
+    "type": "Fire",
+    "description": "Throw this at an adjacent enemy to attempt to recruit them. Fire-types seem to like it best.",
+    "appearance": "☻",
+    "color": "red",
+    "value": 200,
+    "rarity": "Rare"
+  },
+  {
+    "name": "Indigo Apricorn",
+    "edible": true,
+    "apricorn": true,
+    "type": "Dragon",
+    "description": "Throw this at an adjacent enemy to attempt to recruit them. Dragon-types seem to like it best.",
+    "appearance": "☻",
+    "color": "purple",
+    "value": 300,
+    "rarity": "Very Rare"
+  },
+  {
+    "name": "Violet Apricorn",
+    "edible": true,
+    "apricorn": true,
+    "type": "Flying",
+    "description": "Throw this at an adjacent enemy to attempt to recruit them. Flying-types seem to like it best.",
+    "appearance": "☻",
+    "color": "magenta",
+    "value": 200,
+    "rarity": "Rare"
+  },
+  {
+    "name": "Yellow Apricorn",
+    "edible": true,
+    "apricorn": true,
+    "type": "Electric",
+    "description": "Throw this at an adjacent enemy to attempt to recruit them. Electric-types seem to like it best.",
+    "appearance": "☻",
+    "color": "yellow",
+    "value": 200,
+    "rarity": "Rare"
+  },
+  {
+    "name": "Silver Apricorn",
+    "edible": true,
+    "apricorn": true,
+    "type": "Steel",
+    "description": "Throw this at an adjacent enemy to attempt to recruit them. Steel-types seem to like it best.",
+    "appearance": "☻",
+    "color": "white",
+    "value": 300,
+    "rarity": "Legendary"
+  },
+  {
+    "name": "Lime Apricorn",
+    "edible": true,
+    "apricorn": true,
+    "type": "Bug",
+    "description": "Throw this at an adjacent enemy to attempt to recruit them. Bug-types seem to like it best.",
+    "appearance": "☻",
+    "color": "green",
+    "value": 150,
+    "rarity": "Uncommon"
+  },
+  {
+    "name": "Rainbow Apricorn",
+    "edible": true,
+    "apricorn": true,
+    "type": "Rainbow",
+    "description": "Throw this at an adjacent enemy to attempt to recruit them. A very rare Apricorn that every Pokémon loves!",
+    "appearance": "☻",
+    "color": "yellow",
+    "value": 3000,
+    "rarity": "Epic"
+  },
+  {
+    "name": "Huge Apple",
+    "edible": true,
+    "description": "Fully fills Belly and overfills it to 120%.",
+    "appearance": "O",
+    "color": "red",
+    "value": 300,
+    "rarity": "Very Rare"
+  },
+  {
+    "name": "Banana",
+    "edible": true,
+    "description": "An extremely rare and coveted food item. Fully fills Belly and overfills to 150%.",
+    "appearance": ")",
+    "color": "yellow",
+    "value": 10000,
+    "rarity": "Legendary"
+  },
+  {
+    "name": "Chestnut",
+    "edible": true,
+    "description": "+10% Belly. Really quite spiky. Don't eat at home!",
+    "appearance": "o",
+    "color": "brown",
+    "value": 10,
+    "rarity": "Common"
+  },
+  {
+    "name": "Grimy Food",
+    "edible": true,
+    "description": "Belly +30%, but it doesn't look very appetizing...",
+    "appearance": "o",
+    "color": "green",
+    "value": 5,
+    "rarity": "Common"
+  },
+  {
+    "name": "Chesto Berry",
+    "edible": true,
+    "description": "Wakes up user. User becomes sleepless if already awake. Belly +5%.",
+    "appearance": "%",
+    "color": "purple",
+    "value": 30,
+    "rarity": "Uncommon"
+  },
+  {
+    "name": "Rawst Berry",
+    "edible": true,
+    "description": "Cures Burn. Belly +5%.",
+    "appearance": "%",
+    "color": "cyan",
+    "value": 30,
+    "rarity": "Common"
+  },
+  {
+    "name": "Leppa Berry",
+    "edible": true,
+    "description": "Restores 20 PP. Belly +5%.",
+    "appearance": "%",
+    "color": "red",
+    "value": 20,
+    "rarity": "Common"
+  },
+  {
+    "name": "Persim Berry",
+    "edible": true,
+    "description": "Cures Confusion. Belly +5%.",
+    "appearance": "%",
+    "color": "yellow",
+    "value": 30,
+    "rarity": "Common"
+  },
+  {
+    "name": "Lum Berry",
+    "edible": true,
+    "description": "Cures all negative status effects. Belly +5%.",
+    "appearance": "%",
+    "color": "green",
+    "value": 80,
+    "rarity": "Uncommon"
+  },
+  {
+    "name": "Sitrus Berry",
+    "edible": true,
+    "description": "Fully restores HP and raises max HP a little. Belly +5%.",
+    "appearance": "%",
+    "color": "yellow",
+    "value": 250,
+    "rarity": "Rare"
+  },
+  {
+    "name": "Razz Berry",
+    "edible": true,
+    "description": "Restores up to 100 HP and gives user a higher chance to recruit Pokémon this floor. Belly +5%.",
+    "appearance": "%",
+    "color": "magenta",
+    "value": 500,
+    "rarity": "Epic"
+  },
+  {
+    "name": "Nanab Berry",
+    "edible": true,
+    "description": "Restores up to 100 HP and raises Movement Speed by one level. Belly +5%.",
+    "appearance": "%",
+    "color": "yellow",
+    "value": 250,
+    "rarity": "Very Rare"
+  },
+  {
+    "name": "Pinap Berry",
+    "edible": true,
+    "description": "Restores up to 100 HP and gives user more EXP when defeating enemies this floor. Belly +5%.",
+    "appearance": "%",
+    "color": "yellow",
+    "value": 500,
+    "rarity": "Epic"
+  },
+  {
+    "name": "Occa Berry",
+    "edible": true,
+    "description": "Raises user's resistance to Fire moves for this floor when eaten. Belly +5%.",
+    "appearance": "%",
+    "color": "red",
+    "value": 500,
+    "rarity": "Epic"
+  },
+  {
+    "name": "Passho Berry",
+    "edible": true,
+    "description": "Raises user's resistance to Water moves for this floor when eaten. Belly +5%.",
+    "appearance": "%",
+    "color": "blue",
+    "value": 500,
+    "rarity": "Epic"
+  },
+  {
+    "name": "Wacan Berry",
+    "edible": true,
+    "description": "Raises user's resistance to Electric moves for this floor when eaten. Belly +5%.",
+    "appearance": "%",
+    "color": "yellow",
+    "value": 500,
+    "rarity": "Epic"
+  },
+  {
+    "name": "Rindo Berry",
+    "edible": true,
+    "description": "Raises user's resistance to Grass moves for this floor when eaten. Belly +5%.",
+    "appearance": "%",
+    "color": "green",
+    "value": 500,
+    "rarity": "Epic"
+  },
+  {
+    "name": "Yache Berry",
+    "edible": true,
+    "description": "Raises user's resistance to Ice moves for this floor when eaten. Belly +5%.",
+    "appearance": "%",
+    "color": "cyan",
+    "value": 500,
+    "rarity": "Epic"
+  },
+  {
+    "name": "Chople Berry",
+    "edible": true,
+    "description": "Raises user's resistance to Fighting moves for this floor when eaten. Belly +5%.",
+    "appearance": "%",
+    "color": "red",
+    "value": 500,
+    "rarity": "Epic"
+  },
+  {
+    "name": "Kebia Berry",
+    "edible": true,
+    "description": "Raises user's resistance to Poison moves for this floor when eaten. Belly +5%.",
+    "appearance": "%",
+    "color": "purple",
+    "value": 500,
+    "rarity": "Epic"
+  },
+  {
+    "name": "Shuca Berry",
+    "edible": true,
+    "description": "Raises user's resistance to Ground moves for this floor when eaten. Belly +5%.",
+    "appearance": "%",
+    "color": "yellow",
+    "value": 500,
+    "rarity": "Epic"
+  },
+  {
+    "name": "Coba Berry",
+    "edible": true,
+    "description": "Raises user's resistance to Flying moves for this floor when eaten. Belly +5%.",
+    "appearance": "%",
+    "color": "cyan",
+    "value": 500,
+    "rarity": "Epic"
+  },
+  {
+    "name": "Payapa Berry",
+    "edible": true,
+    "description": "Raises user's resistance to Psychic moves for this floor when eaten. Belly +5%.",
+    "appearance": "%",
+    "color": "magenta",
+    "value": 500,
+    "rarity": "Epic"
+  },
+  {
+    "name": "Tanga Berry",
+    "edible": true,
+    "description": "Raises user's resistance to Bug moves for this floor when eaten. Belly +5%.",
+    "appearance": "%",
+    "color": "green",
+    "value": 500,
+    "rarity": "Epic"
+  },
+  {
+    "name": "Charti Berry",
+    "edible": true,
+    "description": "Raises user's resistance to Rock moves for this floor when eaten. Belly +5%.",
+    "appearance": "%",
+    "color": "yellow",
+    "value": 500,
+    "rarity": "Epic"
+  },
+  {
+    "name": "Kasib Berry",
+    "edible": true,
+    "description": "Raises user's resistance to Ghost moves for this floor when eaten. Belly +5%.",
+    "appearance": "%",
+    "color": "purple",
+    "value": 500,
+    "rarity": "Epic"
+  },
+  {
+    "name": "Haban Berry",
+    "edible": true,
+    "description": "Raises user's resistance to Dragon moves for this floor when eaten. Belly +5%.",
+    "appearance": "%",
+    "color": "purple",
+    "value": 500,
+    "rarity": "Epic"
+  },
+  {
+    "name": "Colbur Berry",
+    "edible": true,
+    "description": "Raises user's resistance to Dark moves for this floor when eaten. Belly +5%.",
+    "appearance": "%",
+    "color": "darkgray",
+    "value": 500,
+    "rarity": "Epic"
+  },
+  {
+    "name": "Babiri Berry",
+    "edible": true,
+    "description": "Raises user's resistance to Steel moves for this floor when eaten. Belly +5%.",
+    "appearance": "%",
+    "color": "white",
+    "value": 500,
+    "rarity": "Epic"
+  },
+  {
+    "name": "Roseli Berry",
+    "edible": true,
+    "description": "Raises user's resistance to Fairy moves for this floor when eaten. Belly +5%.",
+    "appearance": "%",
+    "color": "magenta",
+    "value": 500,
+    "rarity": "Epic"
+  },
+  {
+    "name": "Chilan Berry",
+    "edible": true,
+    "description": "Raises user's resistance to Normal moves for this floor when eaten. Belly +5%.",
+    "appearance": "%",
+    "color": "white",
+    "value": 400,
+    "rarity": "Very Rare"
+  },
+  {
+    "name": "Enigma Berry",
+    "edible": true,
+    "description": "A very rare and enigmatic berry. Raises user's resistance to all moves for this floor when eaten. Belly +5%.",
+    "appearance": "%",
+    "color": "magenta",
+    "value": 2500,
+    "rarity": "Legendary"
+  },
+  {
+    "name": "Fire Stone",
+    "usable": true,
+    "evolution_item": true,
+    "description": "A peculiar stone that can make certain species of Pokémon evolve.",
+    "appearance": "*",
+    "color": "red",
+    "value": 1200,
+    "rarity": "Very Rare"
+  },
+  {
+    "name": "Water Stone",
+    "usable": true,
+    "evolution_item": true,
+    "description": "A peculiar stone that can make certain species of Pokémon evolve.",
+    "appearance": "*",
+    "color": "blue",
+    "value": 1200,
+    "rarity": "Very Rare"
+  },
+  {
+    "name": "Thunder Stone",
+    "usable": true,
+    "evolution_item": true,
+    "description": "A peculiar stone that can make certain species of Pokémon evolve.",
+    "appearance": "*",
+    "color": "yellow",
+    "value": 1200,
+    "rarity": "Very Rare"
+  },
+  {
+    "name": "Leaf Stone",
+    "usable": true,
+    "evolution_item": true,
+    "description": "A peculiar stone that can make certain species of Pokémon evolve.",
+    "appearance": "*",
+    "color": "green",
+    "value": 1200,
+    "rarity": "Very Rare"
+  },
+  {
+    "name": "Moon Stone",
+    "usable": true,
+    "evolution_item": true,
+    "description": "A peculiar stone that can make certain species of Pokémon evolve.",
+    "appearance": "*",
+    "color": "white",
+    "value": 1500,
+    "rarity": "Epic"
+  },
+  {
+    "name": "Sun Stone",
+    "usable": true,
+    "evolution_item": true,
+    "description": "A peculiar stone that can make certain species of Pokémon evolve.",
+    "appearance": "*",
+    "color": "yellow",
+    "value": 1500,
+    "rarity": "Legendary"
+  },
+  {
+    "name": "Link Cable",
+    "usable": true,
+    "evolution_item": true,
+    "description": "A mysterious cable that can make certain species of Pokémon evolve.",
+    "appearance": "*",
+    "color": "cyan",
+    "value": 2000,
+    "rarity": "Epic"
+  },
+  {
+    "name": "Pomeg Berry",
+    "edible": true,
+    "description": "+5 HP EVs. Belly +5%.",
+    "appearance": "%",
+    "color": "red",
+    "value": 500,
+    "rarity": "Rare"
+  },
+  {
+    "name": "Kelpsy Berry",
+    "edible": true,
+    "description": "+5 Attack EVs. Belly +5%.",
+    "appearance": "%",
+    "color": "blue",
+    "value": 500,
+    "rarity": "Rare"
+  },
+  {
+    "name": "Qualot Berry",
+    "edible": true,
+    "description": "+5 Defense EVs. Belly +5%.",
+    "appearance": "%",
+    "color": "brown",
+    "value": 500,
+    "rarity": "Rare"
+  },
+  {
+    "name": "Hondew Berry",
+    "edible": true,
+    "description": "+5 Special Attack EVs. Belly +5%.",
+    "appearance": "%",
+    "color": "green",
+    "value": 500,
+    "rarity": "Rare"
+  },
+  {
+    "name": "Grepa Berry",
+    "edible": true,
+    "description": "+5 Special Defense EVs. Belly +5%.",
+    "appearance": "%",
+    "color": "yellow",
+    "value": 500,
+    "rarity": "Rare"
+  },
+  {
+    "name": "Tamato Berry",
+    "edible": true,
+    "description": "+5 Speed EVs. Belly +5%.",
+    "appearance": "%",
+    "color": "red",
+    "value": 400,
+    "rarity": "Rare"
+  },
+  {
+    "name": "Liechi Berry",
+    "edible": true,
+    "description": "Raises Attack by two levels. Belly +5%.",
+    "appearance": "%",
+    "color": "brown",
+    "value": 100,
+    "rarity": "Uncommon"
+  },
+  {
+    "name": "Ganlon Berry",
+    "edible": true,
+    "description": "Raises Defense by two levels. Belly +5%.",
+    "appearance": "%",
+    "color": "gray",
+    "value": 100,
+    "rarity": "Uncommon"
+  },
+  {
+    "name": "Petaya Berry",
+    "edible": true,
+    "description": "Raises Special Attack by two levels. Belly +5%.",
+    "appearance": "%",
+    "color": "magenta",
+    "value": 100,
+    "rarity": "Uncommon"
+  },
+  {
+    "name": "Apicot Berry",
+    "edible": true,
+    "description": "Raises Special Defense by two levels. Belly +5%.",
+    "appearance": "%",
+    "color": "blue",
+    "value": 100,
+    "rarity": "Uncommon"
+  },
+  {
+    "name": "Salac Berry",
+    "edible": true,
+    "description": "Raises Speed by two levels. Belly +5%.",
+    "appearance": "%",
+    "color": "green",
+    "value": 90,
+    "rarity": "Uncommon"
+  },
+  {
+    "name": "Micle Berry",
+    "edible": true,
+    "description": "Raises Accuracy by two levels. Belly +5%.",
+    "appearance": "%",
+    "color": "green",
+    "value": 80,
+    "rarity": "Uncommon"
+  },
+  {
+    "name": "Starf Berry",
+    "edible": true,
+    "description": "A very rare berry. Raises all stats by one level. Belly +5%.",
+    "appearance": "%",
+    "color": "green",
+    "value": 500,
+    "rarity": "Epic"
+  },
+  {
+    "name": "Hopo Berry",
+    "edible": true,
+    "description": "A very rare berry. Restores 30 PP and raises Movement Speed by one level. Belly +5%.",
+    "appearance": "%",
+    "color": "yellow",
+    "value": 500,
+    "rarity": "Epic"
+  },
+  {
+    "name": "Plain Seed",
+    "edible": true,
+    "description": "Belly +5%.",
+    "appearance": "*",
+    "color": "yellow",
+    "value": 1,
+    "rarity": "Common"
+  },
+  {
+    "name": "Quick Seed",
+    "edible": true,
+    "description": "Raises Movement Speed by one level. Belly +5%.",
+    "appearance": "*",
+    "color": "yellow",
+    "value": 50,
+    "rarity": "Uncommon"
+  },
+  {
+    "name": "Sleep Seed",
+    "edible": true,
+    "description": "Causes Sleep. Belly +5%.",
+    "appearance": "*",
+    "color": "yellow",
+    "value": 20,
+    "rarity": "Common"
+  },
+  {
+    "name": "Stun Seed",
+    "edible": true,
+    "description": "Causes Petrification. Belly +5%.",
+    "appearance": "*",
+    "color": "yellow",
+    "value": 30,
+    "rarity": "Uncommon"
+  },
+  {
+    "name": "Totter Seed",
+    "edible": true,
+    "description": "Causes Confusion. Belly +5%.",
+    "appearance": "*",
+    "color": "yellow",
+    "value": 20,
+    "rarity": "Common"
+  },
+  {
+    "name": "HP Up",
+    "edible": true,
+    "description": "+10 HP EVs. Belly +10%.",
+    "appearance": "!",
+    "color": "green",
+    "value": 1000,
+    "rarity": "Very Rare"
+  },
+  {
+    "name": "Protein",
+    "edible": true,
+    "description": "+10 Attack EVs. Belly +10%.",
+    "appearance": "!",
+    "color": "bright_red",
+    "value": 1000,
+    "rarity": "Very Rare"
+  },
+  {
+    "name": "Iron",
+    "edible": true,
+    "description": "+10 Defense EVs. Belly +10%.",
+    "appearance": "!",
+    "color": "yellow",
+    "value": 1000,
+    "rarity": "Very Rare"
+  },
+  {
+    "name": "Calcium",
+    "edible": true,
+    "description": "+10 Special Attack EVs. Belly +10%.",
+    "appearance": "!",
+    "color": "red",
+    "value": 1000,
+    "rarity": "Very Rare"
+  },
+  {
+    "name": "Zinc",
+    "edible": true,
+    "description": "+10 Special Defense EVs. Belly +10%.",
+    "appearance": "!",
+    "color": "brown",
+    "value": 1000,
+    "rarity": "Very Rare"
+  },
+  {
+    "name": "Carbos",
+    "edible": true,
+    "description": "+10 Attack EVs. Belly +10%.",
+    "appearance": "!",
+    "color": "blue",
+    "value": 800,
+    "rarity": "Very Rare"
+  },
+  {
+    "name": "PP Up",
+    "edible": true,
+    "description": "+10 Max PP. Belly +10%.",
+    "appearance": "!",
+    "color": "magenta",
+    "value": 1000,
+    "rarity": "Very Rare"
+  },
+  {
+    "name": "PP Max",
+    "edible": true,
+    "description": "+30 Max PP. Belly +10%.",
+    "appearance": "!",
+    "color": "yellow",
+    "value": 2500,
+    "rarity": "Epic"
+  },
+  {
+    "name": "Lansat Berry",
+    "edible": true,
+    "description": "Belly +5%. Grants Focus Energy for the remainder of the floor, raising the critical hit rate.",
+    "appearance": "%",
+    "color": "magenta",
+    "value": 200,
+    "rarity": "Rare"
+  },
+  {
+    "name": "Jaboca Berry",
+    "edible": true,
+    "description": "Belly +5%. Grants Counter for the remainder of the floor, causing Physical moves to be reflected back to the attacker.",
+    "appearance": "%",
+    "color": "yellow",
+    "value": 400,
+    "rarity": "Very Rare"
+  },
+  {
+    "name": "Rowap Berry",
+    "edible": true,
+    "description": "Belly +5%. Grants Mirror Coat for the remainder of the floor, causing Special moves to be reflected back to the attacker.",
+    "appearance": "%",
+    "color": "blue",
+    "value": 400,
+    "rarity": "Very Rare"
+  },
+  {
+    "name": "Kee Berry",
+    "edible": true,
+    "description": "Belly +5%. Grants Reflect for the remainder of the floor, reducing damage taken from Physical moves.",
+    "appearance": "%",
+    "color": "yellow",
+    "value": 200,
+    "rarity": "Rare"
+  },
+  {
+    "name": "Maranga Berry",
+    "edible": true,
+    "description": "Belly +5%. Grants Light Screen for the remainder of the floor, reducing damage taken from Special moves.",
+    "appearance": "%",
+    "color": "blue",
+    "value": 200,
+    "rarity": "Rare"
+  },
+  {
+    "name": "Geo Pebble",
+    "stackable": true,
+    "description": "Can be thrown at a Pokémon to deal 10 damage.",
+    "appearance": "o",
+    "color": "brown",
+    "value": 2,
+    "rarity": "Common"
+  },
+  {
+    "name": "Gravelerock",
+    "stackable": true,
+    "description": "Can be thrown at a Pokémon to deal 20 damage.",
+    "appearance": "o",
+    "color": "gray",
+    "value": 3,
+    "rarity": "Uncommon"
+  },
+  {
+    "name": "Blinker Seed",
+    "edible": true,
+    "description": "+5% Belly. Inflicts Blindness, preventing Pokémon from being able to see.",
+    "appearance": "*",
+    "color": "yellow",
+    "value": 50,
+    "rarity": "Uncommon"
+  },
+  {
+    "name": "Crosseye Seed",
+    "edible": true,
+    "description": "+5% Belly. Causes Pokémon to hallucinate for 10 turns.",
+    "appearance": "*",
+    "color": "yellow",
+    "value": 50,
+    "rarity": "Uncommon"
+  },
+  {
+    "name": "Doom Seed",
+    "edible": true,
+    "description": "+5% Belly. Lowers level by one.",
+    "appearance": "*",
+    "color": "yellow",
+    "value": 60,
+    "rarity": "Very Rare"
+  },
+  {
+    "name": "Eyedrop Seed",
+    "edible": true,
+    "description": "+5% Belly. Cures Blindness when eaten.",
+    "appearance": "*",
+    "color": "yellow",
+    "value": 50,
+    "rarity": "Uncommon"
+  },
+  {
+    "name": "Hunger Seed",
+    "edible": true,
+    "description": "-50% Belly. Throw this at an enemy to slow them down.",
+    "appearance": "*",
+    "color": "yellow",
+    "value": 100,
+    "rarity": "Rare"
+  },
+  {
+    "name": "Reviver Seed",
+    "edible": true,
+    "description": "Automatically used when a party member faints, fully restoring their HP, PP and Belly, curing all negative status effects and raising all lowered stats.",
+    "appearance": "*",
+    "color": "yellow",
+    "value": 800,
+    "rarity": "Rare"
+  },
+  {
+    "name": "Tiny Reviver Seed",
+    "edible": true,
+    "description": "Automatically used when a party member faints, fully restoring their HP and curing all negative status effects.",
+    "appearance": "*",
+    "color": "yellow",
+    "value": 300,
+    "rarity": "Uncommon"
+  },
+  {
+    "name": "Warp Seed",
+    "edible": true,
+    "description": "+5% Belly. Warps a Pokémon somewhere else on the floor.",
+    "appearance": "*",
+    "color": "yellow",
+    "value": 150,
+    "rarity": "Uncommon"
+  },
+  {
+    "name": "Rare Candy",
+    "edible": true,
+    "description": "+5% Belly. Raises user's level by one.",
+    "appearance": "*",
+    "color": "cyan",
+    "value": 1500,
+    "rarity": "Epic"
+  },
+  {
+    "name": "Beat Up Orb",
+    "usable": true,
+    "description": "Warps the team near a Pokémon in the distance.",
+    "appearance": "•",
+    "color": "blue",
+    "value": 500,
+    "rarity": "Epic"
+  },
+  {
+    "name": "Blowback Orb",
+    "edible": false,
+    "usable": true,
+    "description": "Knocks back an adjacent enemy.",
+    "appearance": "•",
+    "color": "blue",
+    "value": 150,
+    "rarity": "Rare"
+  },
+  {
+    "name": "Decoy Orb",
+    "edible": false,
+    "usable": true,
+    "description": "Turns an adjacent enemy into a Decoy. Pokémon will prioritize attacking Decoys over anyone else.",
+    "appearance": "•",
+    "color": "blue",
+    "value": 150,
+    "rarity": "Very Rare"
+  },
+  {
+    "name": "Hail Orb",
+    "edible": false,
+    "usable": true,
+    "description": "Changes the floor's weather to Hail.",
+    "appearance": "•",
+    "color": "blue",
+    "value": 100,
+    "rarity": "Rare"
+  },
+  {
+    "name": "Hurl Orb",
+    "edible": false,
+    "usable": true,
+    "description": "Throws an adjacent enemy toward another enemy, or in a random direction if there are no other enemies.",
+    "appearance": "•",
+    "color": "blue",
+    "value": 150,
+    "rarity": "Very Rare"
+  },
+  {
+    "name": "Invisify Orb",
+    "edible": false,
+    "usable": true,
+    "description": "Turns all team members invisible for 10 turns. Enemies can't detect you while invisible!",
+    "appearance": "•",
+    "color": "blue",
+    "value": 200,
+    "rarity": "Rare"
+  },
+  {
+    "name": "Itemizer Orb",
+    "edible": false,
+    "usable": true,
+    "description": "Transforms an enemy into a random item, but this won't work on all enemies.",
+    "appearance": "•",
+    "color": "blue",
+    "value": 500,
+    "rarity": "Epic"
+  },
+  {
+    "name": "Power Toss Orb",
+    "edible": false,
+    "usable": true,
+    "description": "Strengthens the power of the user's thrown items.",
+    "appearance": "•",
+    "color": "blue",
+    "value": 150,
+    "rarity": "Very Rare"
+  },
+  {
+    "name": "Luminous Orb",
+    "edible": false,
+    "usable": true,
+    "description": "Fully illuminates the dungeon floor.",
+    "appearance": "•",
+    "color": "blue",
+    "value": 100,
+    "rarity": "Rare"
+  },
+  {
+    "name": "Mobile Orb",
+    "edible": false,
+    "usable": true,
+    "description": "Allows the team to walk anywhere on the floor, even through walls and other obstacles; but this drains Belly very quickly.",
+    "appearance": "•",
+    "color": "blue",
+    "value": 200,
+    "rarity": "Very Rare"
+  },
+  {
+    "name": "Rainy Orb",
+    "edible": false,
+    "usable": true,
+    "description": "Changes the floor's weather to Rain.",
+    "appearance": "•",
+    "color": "blue",
+    "value": 50,
+    "rarity": "Uncommon"
+  },
+  {
+    "name": "Sunny Orb",
+    "edible": false,
+    "usable": true,
+    "description": "Changes the floor's weather to Sunny.",
+    "appearance": "•",
+    "color": "blue",
+    "value": 50,
+    "rarity": "Uncommon"
+  },
+  {
+    "name": "Sandy Orb",
+    "edible": false,
+    "usable": true,
+    "description": "Changes the floor's weather to Sandstorm.",
+    "appearance": "•",
+    "color": "blue",
+    "value": 100,
+    "rarity": "Rare"
+  },
+  {
+    "name": "All Mach Orb",
+    "edible": false,
+    "usable": true,
+    "description": "Increases the Movement Speed of all team members.",
+    "appearance": "•",
+    "color": "blue",
+    "value": 200,
+    "rarity": "Rare"
+  },
+  {
+    "name": "Freeze Orb",
+    "edible": false,
+    "usable": true,
+    "description": "Freezes a distant Pokémon.",
+    "appearance": "•",
+    "color": "blue",
+    "value": 300,
+    "rarity": "Epic"
+  },
+  {
+    "name": "One Room Orb",
+    "edible": false,
+    "usable": true,
+    "description": "Destroys all wall tiles on the floor, turning it into a single room.",
+    "appearance": "•",
+    "color": "blue",
+    "value": 500,
+    "rarity": "Epic"
+  },
+  {
+    "name": "One-Shot Orb",
+    "edible": false,
+    "usable": true,
+    "description": "Instantly defeats an adjacent enemy, but it won't work on all enemies.",
+    "appearance": "•",
+    "color": "blue",
+    "value": 400,
+    "rarity": "Very Rare"
+  },
+  {
+    "name": "Petrify Orb",
+    "edible": false,
+    "usable": true,
+    "description": "Petrifies all enemies in the room.",
+    "appearance": "•",
+    "color": "blue",
+    "value": 200,
+    "rarity": "Uncommon"
+  },
+  {
+    "name": "Pierce Orb",
+    "edible": false,
+    "usable": true,
+    "description": "Enables the user's thrown items to pierce through Pokémon.",
+    "appearance": "•",
+    "color": "blue",
+    "value": 250,
+    "rarity": "Rare"
+  },
+  {
+    "name": "Possess Orb",
+    "edible": false,
+    "usable": true,
+    "description": "If the leader is defeated, this orb will sacrifice the weakest member of the team to revive the leader.",
+    "appearance": "•",
+    "color": "blue",
+    "value": 4000,
+    "rarity": "Legendary"
+  },
+  {
+    "name": "Pounce Orb",
+    "edible": false,
+    "usable": true,
+    "description": "Makes the user leap to a Pokémon in the distance, or a wall if there is no Pokémon.",
+    "appearance": "•",
+    "color": "blue",
+    "value": 100,
+    "rarity": "Rare"
+  },
+  {
+    "name": "Radar Orb",
+    "edible": false,
+    "usable": true,
+    "description": "Reveals the locations of all enemies on the floor.",
+    "appearance": "•",
+    "color": "blue",
+    "value": 100,
+    "rarity": "Rare"
+  },
+  {
+    "name": "Rebound Orb",
+    "edible": false,
+    "usable": true,
+    "description": "Gives user the Rebound status, causing all adjacent attacks to be reflected back to their attacker.",
+    "appearance": "•",
+    "color": "blue",
+    "value": 300,
+    "rarity": "Very Rare"
+  },
+  {
+    "name": "Slow Orb",
+    "edible": false,
+    "usable": true,
+    "description": "Slows all enemies in the room.",
+    "appearance": "•",
+    "color": "blue",
+    "value": 50,
+    "rarity": "Uncommon"
+  },
+  {
+    "name": "Rollcall Orb",
+    "edible": false,
+    "usable": true,
+    "description": "Warps all other team members near the user.",
+    "appearance": "•",
+    "color": "blue",
+    "value": 100,
+    "rarity": "Uncommon"
+  },
+  {
+    "name": "Slumber Orb",
+    "edible": false,
+    "usable": true,
+    "description": "Puts all enemies in the room to sleep.",
+    "appearance": "•",
+    "color": "blue",
+    "value": 100,
+    "rarity": "Uncommon"
+  },
+  {
+    "name": "Totter Orb",
+    "edible": false,
+    "usable": true,
+    "description": "Confuses all enemies in the room.",
+    "appearance": "•",
+    "color": "blue",
+    "value": 100,
+    "rarity": "Uncommon"
+  },
+  {
+    "name": "Scanner Orb",
+    "edible": false,
+    "usable": true,
+    "description": "Reveals the locations of all items on the floor.",
+    "appearance": "•",
+    "color": "blue",
+    "value": 150,
+    "rarity": "Rare"
+  },
+  {
+    "name": "Shocker Orb",
+    "edible": false,
+    "usable": true,
+    "description": "Makes a nearby enemy cower, preventing effective attacks.",
+    "appearance": "•",
+    "color": "blue",
+    "value": 300,
+    "rarity": "Very Rare"
+  },
+  {
+    "name": "Silence Orb",
+    "edible": false,
+    "usable": true,
+    "description": "Silences an adjacent enemy, preventing them from using sound-based moves.",
+    "appearance": "•",
+    "color": "blue",
+    "value": 200,
+    "rarity": "Uncommon"
+  },
+  {
+    "name": "Snatch Orb",
+    "edible": false,
+    "usable": true,
+    "description": "Gives the user the Snatch status, stealing the effects of status moves from other Pokémon in the room.",
+    "appearance": "•",
+    "color": "blue",
+    "value": 250,
+    "rarity": "Rare"
+  },
+  {
+    "name": "Stairs Orb",
+    "edible": false,
+    "usable": true,
+    "description": "Reveals the location of the stairs.",
+    "appearance": "•",
+    "color": "blue",
+    "value": 150,
+    "rarity": "Uncommon"
+  },
+  {
+    "name": "Stayaway Orb",
+    "edible": false,
+    "usable": true,
+    "description": "Petrifies a distant enemy and warps them near the stairs.",
+    "appearance": "•",
+    "color": "blue",
+    "value": 200,
+    "rarity": "Uncommon"
+  },
+  {
+    "name": "Switcher Orb",
+    "edible": false,
+    "usable": true,
+    "description": "Switches places with a distant Pokémon.",
+    "appearance": "•",
+    "color": "blue",
+    "value": 200,
+    "rarity": "Rare"
+  },
+  {
+    "name": "Transform Orb",
+    "edible": false,
+    "usable": true,
+    "description": "Temporarily ransforms the user into a different species.",
+    "appearance": "•",
+    "color": "blue",
+    "value": 400,
+    "rarity": "Epic"
+  },
+  {
+    "name": "Trawl Orb",
+    "edible": false,
+    "usable": true,
+    "description": "Attracts all items on the floor toward the user.",
+    "appearance": "•",
+    "color": "blue",
+    "value": 300,
+    "rarity": "Rare"
+  },
+  {
+    "name": "Double-Edge Orb",
+    "edible": false,
+    "usable": true,
+    "description": "Reduces HP of all room enemies to 1, but user loses half of their HP for each enemy affected.",
+    "appearance": "•",
+    "color": "blue",
+    "value": 350,
+    "rarity": "Very Rare"
+  },
+  {
+    "name": "Warp Orb",
+    "edible": false,
+    "usable": true,
+    "description": "Warps all enemies in the room randomly.",
+    "appearance": "•",
+    "color": "blue",
+    "value": 200,
+    "rarity": "Uncommon"
+  }
+]

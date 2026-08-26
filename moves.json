@@ -1,0 +1,5955 @@
+[
+  {
+    "name": "Tackle",
+    "type": "Normal",
+    "description": "Damages an enemy.",
+    "category": "Physical",
+    "power": 40,
+    "accuracy": 100,
+    "range": "Adjacent enemy",
+    "pp_cost": 2,
+    "effects": []
+  },
+  {
+    "name": "Growl",
+    "type": "Normal",
+    "description": "Lowers the Attack of all foes in the room by one level.",
+    "category": "Status",
+    "power": null,
+    "accuracy": 100,
+    "range": "All enemies in room",
+    "pp_cost": 1,
+	"sound_based": true,
+    "effects": [
+      {
+        "effect_type": "stat_change",
+        "stat": "Attack",
+        "stages": -1,
+        "chance": 1.0
+      }
+    ]
+  },
+  {
+    "name": "Vine Whip",
+    "type": "Grass",
+    "description": "Damages an enemy up to two tiles away.",
+    "category": "Physical",
+    "power": 45,
+    "accuracy": 100,
+    "range": "Enemy up to 2 tiles away",
+    "pp_cost": 4,
+    "effects": []
+  },
+  {
+    "name": "Growth",
+    "type": "Normal",
+    "description": "Boosts the user's Attack and Special Attack stats by one level each.",
+    "category": "Status",
+    "power": null,
+    "accuracy": null,
+    "range": "User",
+    "pp_cost": 2,
+    "effects": [
+      {
+        "effect_type": "stat_change",
+        "stat": "Attack",
+        "stages": 1,
+        "chance": 1.0
+      },
+      {
+        "effect_type": "stat_change",
+        "stat": "Special_Attack",
+        "stages": 1,
+        "chance": 1.0
+      }
+    ]
+  },
+  {
+    "name": "Seed Bomb",
+    "type": "Grass",
+    "description": "Damages an enemy. Cuts corners.",
+    "category": "Physical",
+    "power": 80,
+    "accuracy": 100,
+    "range": "Adjacent enemy",
+    "pp_cost": 7,
+    "cuts_corners": true,
+    "effects": []
+  },
+  {
+    "name": "Power Whip",
+    "type": "Grass",
+    "description": "Damages an enemy.",
+    "category": "Physical",
+    "power": 120,
+    "accuracy": 85,
+    "range": "Adjacent enemy",
+    "pp_cost": 7,
+    "effects": []
+  },
+  {
+    "name": "Leech Seed",
+    "type": "Grass",
+    "description": "Inflicts the Leech Seed status condition on an adjacent enemy, absorbing HP from the target each turn.",
+    "category": "Status",
+    "power": null,
+    "accuracy": 90,
+    "range": "Adjacent enemy",
+    "pp_cost": 3,
+    "effects": [
+      {
+        "effect_type": "status_apply",
+        "status": "Leech Seed",
+        "chance": 1.0
+      }
+    ]
+  },
+  {
+    "name": "Razor Leaf",
+    "type": "Grass",
+    "description": "Damages an enemy up to 10 tiles away. Has an increased critical hit chance.",
+    "category": "Physical",
+    "power": 55,
+    "accuracy": 90,
+    "range": "Straight line",
+    "pp_cost": 4,
+    "high_crit_ratio": true,
+    "effects": []
+  },
+  {
+    "name": "Poison Powder",
+    "type": "Poison",
+    "description": "Poisons an adjacent enemy.",
+    "category": "Status",
+    "power": null,
+    "accuracy": 75,
+    "range": "Adjacent enemy",
+    "pp_cost": 1,
+    "effects": [
+      {
+        "effect_type": "status_apply",
+        "status": "Poison",
+        "chance": 1.0
+      }
+    ]
+  },
+  {
+    "name": "Sleep Powder",
+    "type": "Grass",
+    "description": "Puts an adjacent enemy to sleep.",
+    "category": "Status",
+    "power": null,
+    "accuracy": 75,
+    "range": "Adjacent enemy",
+    "pp_cost": 3,
+    "effects": [
+      {
+        "effect_type": "status_apply",
+        "status": "Sleep",
+        "chance": 1.0
+      }
+    ]
+  },
+  {
+    "name": "Take Down",
+    "type": "Normal",
+    "description": "Damages an enemy, but inflicts 1/4 recoil.",
+    "category": "Physical",
+    "power": 90,
+    "accuracy": 85,
+    "range": "Adjacent enemy",
+    "pp_cost": 4,
+    "effects": [
+      {
+        "effect_type": "recoil",
+        "recoil_percent": 0.25,
+        "chance": 1.0
+      }
+    ]
+  },
+  {
+    "name": "Sweet Scent",
+    "type": "Normal",
+    "description": "Lowers evasion of all Pokémon in the room by one level.",
+    "category": "Status",
+    "power": null,
+    "accuracy": 100,
+    "range": "All Pokémon in room",
+    "pp_cost": 3,
+    "effects": [
+      {
+        "effect_type": "stat_change",
+        "stat": "Evasion",
+        "stages": -1,
+        "chance": 1.0
+      }
+    ]
+  },
+  {
+    "name": "Synthesis",
+    "type": "Grass",
+    "description": "Restores HP depending on the current weather: 2/3 if Sunny, 1/2 if Clear, 1/4 otherwise.",
+    "category": "Status",
+    "power": null,
+    "accuracy": null,
+    "range": "User",
+    "pp_cost": 8,
+    "effects": [
+      {
+        "effect_type": "healing",
+        "heal_percent": 0.5,
+        "chance": 1.0,
+        "target": "attacker"
+      }
+    ]
+  },
+  {
+    "name": "Worry Seed",
+    "type": "Grass",
+    "description": "Inflicts sleeplessness on a Pokémon up to 4 tiles away.",
+    "category": "Status",
+    "power": null,
+    "accuracy": 100,
+    "range": "Straight line up to 4 tiles",
+    "pp_cost": 2,
+    "effects": [
+      {
+        "effect_type": "status_apply",
+        "status": "Sleepless",
+        "chance": 1.0
+      }
+    ]
+  },
+  {
+    "name": "Solar Beam",
+    "type": "Grass",
+    "description": "Charges on the first turn and unleashes a massive beam on the next, that can hit up to 4 tiles away. Cuts corners.",
+    "category": "Special",
+    "power": 120,
+    "accuracy": 100,
+    "range": "Straight line up to 4 tiles",
+    "cuts_corners": true,
+    "pp_cost": 6,
+    "effects": []
+  },
+  {
+    "name": "Petal Blizzard",
+    "type": "Grass",
+    "description": "Damages all enemies in the room.",
+    "category": "Physical",
+    "power": 90,
+    "accuracy": 90,
+    "range": "All enemies in room",
+    "pp_cost": 8,
+    "effects": []
+  },
+  {
+    "name": "Petal Dance",
+    "type": "Grass",
+    "description": "Damages an enemy 2-3 times, then confuses the user. Cuts corners.",
+    "category": "Special",
+    "power": 50,
+    "accuracy": 100,
+    "range": "Adjacent enemy",
+    "cuts_corners": true,
+    "pp_cost": 5,
+    "effects": [
+      {
+        "effect_type": "multi_hit",
+        "min_hits": 2,
+        "max_hits": 3,
+        "chance": 1.0
+      },
+      {
+        "effect_type": "status_apply",
+        "status": "Confusion",
+        "chance": 1.0,
+        "target": "attacker"
+      }
+    ]
+  },
+  {
+    "name": "Air Slash",
+    "type": "Flying",
+    "description": "Damages an enemy and has a 30% chance of causing them to flinch.",
+    "category": "Special",
+    "power": 75,
+    "accuracy": 100,
+    "range": "Adjacent enemy",
+    "pp_cost": 6,
+    "effects": [
+      {
+        "effect_type": "status_apply",
+        "status": "Flinch",
+        "chance": 0.3
+      }
+    ]
+  },
+  {
+    "name": "Ember",
+    "type": "Fire",
+    "description": "Damages an enemy up to 2 tiles away and has a 10% chance of burning them. Cuts corners.",
+    "category": "Special",
+    "power": 40,
+    "accuracy": 100,
+    "range": "Enemy up to 2 tiles away",
+    "cuts_corners": true,
+    "pp_cost": 4,
+    "effects": [
+      {
+        "effect_type": "status_apply",
+        "status": "Burn",
+        "chance": 0.1
+      }
+    ]
+  },
+  {
+    "name": "Smokescreen",
+    "type": "Fire",
+    "description": "Lowers the accuracy of an enemy by one stage. Cuts corners.",
+    "category": "Status",
+    "power": null,
+    "accuracy": 100,
+    "range": "Adjacent enemy",
+    "pp_cost": 1,
+    "effects": [
+      {
+        "effect_type": "stat_change",
+        "stat": "Accuracy",
+        "stages": -1,
+        "chance": 1.0
+      }
+    ]
+  },
+  {
+    "name": "Dragon Claw",
+    "type": "Dragon",
+    "description": "Damages an enemy.",
+    "category": "Physical",
+    "power": 80,
+    "accuracy": 100,
+    "range": "Adjacent enemy",
+    "pp_cost": 5,
+    "effects": []
+  },
+  {
+    "name": "Heat Wave",
+    "type": "Fire",
+    "description": "Damages all enemies in a room and has a 10% chance of burning each enemy.",
+    "category": "Special",
+    "power": 95,
+    "accuracy": 90,
+    "range": "All enemies in room",
+    "pp_cost": 10,
+    "effects": [
+      {
+        "effect_type": "status_apply",
+        "status": "Burn",
+        "chance": 0.1
+      }
+    ]
+  },
+  {
+    "name": "Dragon Breath",
+    "type": "Dragon",
+    "description": "Damages an enemy up to 4 tiles away and has a 30% chance of paralyzing them. Cuts corners.",
+    "category": "Special",
+    "power": 60,
+    "accuracy": 100,
+    "range": "Straight line up to 4 tiles",
+    "cuts_corners": true,
+    "pp_cost": 6,
+	"sound_based": true,
+    "effects": [
+      {
+        "effect_type": "status_apply",
+        "status": "Paralysis",
+        "chance": 0.3
+      }
+    ]
+  },
+  {
+    "name": "Fire Fang",
+    "type": "Fire",
+    "description": "Damages an enemy and has a 10% chance of burning them, and a 10% chance of causing the target to flinch.",
+    "category": "Physical",
+    "power": 65,
+    "accuracy": 95,
+    "range": "Adjacent enemy",
+    "pp_cost": 6,
+	"sound_based": true,
+    "effects": [
+      {
+        "effect_type": "status_apply",
+        "status": "Burn",
+        "chance": 0.1
+      },
+      {
+        "effect_type": "status_apply",
+        "status": "Flinch",
+        "chance": 0.1
+      }
+    ]
+  },
+  {
+    "name": "Slash",
+    "type": "Normal",
+    "description": "Damages an enemy. Has a high critical hit chance.",
+    "category": "Physical",
+    "power": 70,
+    "accuracy": 100,
+    "range": "Adjacent enemy",
+    "pp_cost": 5,
+    "high_crit_ratio": true,
+    "effects": []
+  },
+  {
+    "name": "Flamethrower",
+    "type": "Fire",
+    "description": "Damages an enemy up to 4 tiles away, and has a 10% chance of burning them.",
+    "category": "Special",
+    "power": 90,
+    "accuracy": 100,
+    "range": "Straight line up to 4 tiles",
+    "pp_cost": 8,
+    "effects": [
+      {
+        "effect_type": "status_apply",
+        "status": "Burn",
+        "chance": 0.1
+      }
+    ]
+  },
+  {
+    "name": "Scary Face",
+    "type": "Normal",
+    "description": "Lowers an enemy's movement speed by one level. Ghost-types are unaffected.",
+    "category": "Status",
+    "power": null,
+    "accuracy": 100,
+    "range": "Adjacent enemy",
+    "pp_cost": 2,
+    "effects": [
+      {
+        "effect_type": "status_apply",
+        "status": "Slow",
+        "chance": 1.0
+      }
+    ]
+  },
+  {
+    "name": "Inferno",
+    "type": "Fire",
+    "description": "Damages an enemy. Highly inaccurate, but always burns if it hits.",
+    "category": "Special",
+    "power": 100,
+    "accuracy": 50,
+    "range": "Adjacent enemy",
+    "pp_cost": 6,
+    "effects": [
+      {
+        "effect_type": "status_apply",
+        "status": "Burn",
+        "chance": 1.0
+      }
+    ]
+  },
+  {
+    "name": "Flare Blitz",
+    "type": "Fire",
+    "description": "Damages an adjacent enemy, but inflicts 1/3 recoil. Has a 10% chance of burning the target.",
+    "category": "Physical",
+    "power": 120,
+    "accuracy": 100,
+    "range": "Adjacent enemy",
+    "pp_cost": 6,
+    "effects": [
+      {
+        "effect_type": "recoil",
+        "recoil_percent": 0.333,
+        "chance": 1.0
+      },
+      {
+        "effect_type": "status_apply",
+        "status": "Burn",
+        "chance": 0.1
+      }
+    ]
+  },
+  {
+    "name": "Fire Spin",
+    "type": "Fire",
+    "description": "Binds the target in a circle of fire for 2-5 turns, preventing movement and dealing damage each turn.",
+    "category": "Special",
+    "power": 35,
+    "accuracy": 85,
+    "range": "Adjacent enemy",
+    "pp_cost": 4,
+    "effects": [
+      {
+        "effect_type": "fire_spin",
+        "chance": 1.0
+      }
+    ]
+  },
+  {
+    "name": "Tail Whip",
+    "type": "Normal",
+    "description": "Lowers the Defense of a foe by one level.",
+    "category": "Status",
+    "power": null,
+    "accuracy": 100,
+    "range": "Adjacent enemy",
+    "pp_cost": 1,
+    "effects": [
+      {
+        "effect_type": "stat_change",
+        "stat": "Defense",
+        "stages": -1,
+        "chance": 1.0
+      }
+    ]
+  },
+  {
+    "name": "Water Gun",
+    "type": "Water",
+    "description": "Damages an enemy up to two tiles away.",
+    "category": "Physical",
+    "power": 40,
+    "accuracy": 100,
+    "range": "Enemy up to 2 tiles away",
+    "pp_cost": 4,
+    "effects": []
+  },
+  {
+    "name": "Harden",
+    "type": "Normal",
+    "description": "Raises user's Defense by one level.",
+    "category": "Status",
+    "power": null,
+    "accuracy": null,
+    "range": "User",
+    "pp_cost": 1,
+    "effects": [
+      {
+        "effect_type": "stat_change",
+        "stat": "Defense",
+        "stages": 1,
+        "chance": 1.0
+      }
+    ]
+  },
+  {
+    "name": "Flash Cannon",
+    "type": "Steel",
+    "description": "Damages an enemy and has a 10% chance of lowering their Special Defense by one level. Cuts corners.",
+    "category": "Special",
+    "power": 80,
+    "accuracy": 100,
+    "range": "Adjacent enemy",
+    "cuts_corners": true,
+    "pp_cost": 7,
+    "effects": [
+      {
+        "effect_type": "stat_change",
+        "stat": "Special_Defense",
+        "stages": -1,
+        "chance": 0.1
+      }
+    ]
+  },
+  {
+    "name": "Bite",
+    "type": "Dark",
+    "description": "Damages an enemy and has a 30% chance of causing them to flinch.",
+    "category": "Physical",
+    "power": 60,
+    "accuracy": 100,
+    "range": "Adjacent enemy",
+    "pp_cost": 6,
+	"sound_based": true,
+    "effects": [
+      {
+        "effect_type": "status_apply",
+        "status": "Flinch",
+        "chance": 0.3
+      }
+    ]
+  },
+  {
+    "name": "Water Pulse",
+    "type": "Water",
+    "description": "Damages an enemy up to 4 tiles away and has a 20% chance of confusing them. Cuts corners.",
+    "category": "Special",
+    "power": 60,
+    "accuracy": 100,
+    "range": "Straight line up to 4 tiles",
+    "cuts_corners": true,
+    "pp_cost": 6,
+    "effects": [
+      {
+        "effect_type": "status_apply",
+        "status": "Confusion",
+        "chance": 0.2
+      }
+    ]
+  },
+  {
+    "name": "Aqua Tail",
+    "type": "Water",
+    "description": "Damages an enemy.",
+    "category": "Physical",
+    "power": 90,
+    "accuracy": 90,
+    "range": "Adjacent enemy",
+    "pp_cost": 6,
+    "effects": []
+  },
+  {
+    "name": "Shell Smash",
+    "type": "Normal",
+    "description": "Raises user's Attack, Special Attack and Speed by two levels and Movement Speed by one level, but lowers Defense and Special Defense by one level.",
+    "category": "Status",
+    "power": null,
+    "accuracy": null,
+    "range": "User",
+    "pp_cost": 6,
+    "effects": [
+      {
+        "effect_type": "stat_change",
+        "stat": "Attack",
+        "stages": 2,
+        "chance": 1.0
+      },
+      {
+        "effect_type": "stat_change",
+        "stat": "Special_Attack",
+        "stages": 2,
+        "chance": 1.0
+      },
+      {
+        "effect_type": "stat_change",
+        "stat": "Speed",
+        "stages": 2,
+        "chance": 1.0
+      },
+      {
+        "effect_type": "status_apply",
+        "status": "2x Speed",
+        "chance": 1.0
+      },
+      {
+        "effect_type": "stat_change",
+        "stat": "Defense",
+        "stages": -1,
+        "chance": 1.0
+      },
+      {
+        "effect_type": "stat_change",
+        "stat": "Special_Defense",
+        "stages": -1,
+        "chance": 1.0
+      }
+    ]
+  },
+  {
+    "name": "Iron Defense",
+    "type": "Steel",
+    "description": "Raises user's Defense by two levels.",
+    "category": "Status",
+    "power": null,
+    "accuracy": null,
+    "range": "User",
+    "pp_cost": 2,
+    "effects": [
+      {
+        "effect_type": "stat_change",
+        "stat": "Defense",
+        "stages": 2,
+        "chance": 1.0
+      }
+    ]
+  },
+  {
+    "name": "Hydro Pump",
+    "type": "Water",
+    "description": "Damages all enemies in a straight line up to 10 tiles away. Cuts corners.",
+    "category": "Special",
+    "power": 110,
+    "accuracy": 80,
+    "range": "Straight line piercing",
+    "cuts_corners": true,
+    "pp_cost": 10,
+    "effects": []
+  },
+  {
+    "name": "Wave Crash",
+    "type": "Water",
+    "description": "Damages an adjacent enemy, but inflicts 1/3 recoil.",
+    "category": "Physical",
+    "power": 120,
+    "accuracy": 100,
+    "range": "Adjacent enemy",
+    "pp_cost": 6,
+    "effects": [
+      {
+        "effect_type": "recoil",
+        "recoil_percent": 0.333,
+        "chance": 1.0
+      }
+    ]
+  },
+  {
+    "name": "Rapid Spin",
+    "type": "Normal",
+    "description": "Damages an adjacent enemy and removes the effects of Leech Seed from the user.",
+    "category": "Physical",
+    "power": 50,
+    "accuracy": 100,
+    "range": "Adjacent enemy",
+    "pp_cost": 3,
+    "effects": [
+      {
+        "effect_type": "rapid_spin_clear",
+        "target": "attacker",
+        "chance": 1.0
+      }
+    ]
+  },
+  {
+    "name": "Protect",
+    "type": "Normal",
+    "description": "The user becomes immune to the effects of all moves for the next turn. Success rate drops on consecutive uses.",
+    "category": "Status",
+    "power": null,
+    "accuracy": null,
+    "range": "User",
+    "pp_cost": 2,
+    "effects": [
+      {
+        "effect_type": "status_apply",
+        "status": "Protect",
+        "target": "attacker",
+        "duration": 1,
+        "chance": 1.0
+      }
+    ]
+  },
+  {
+    "name": "Rain Dance",
+    "type": "Water",
+    "description": "Changes the floor's weather to Rain.",
+    "category": "Status",
+    "power": null,
+    "accuracy": null,
+    "range": "User",
+    "pp_cost": 3,
+    "effects": [
+      {
+        "effect_type": "weather_change",
+        "weather": "Rain",
+        "target": "attacker",
+        "chance": 1.0
+      }
+    ]
+  },
+  {
+    "name": "String Shot",
+    "type": "Bug",
+    "description": "Lowers an enemy's movement speed by one level.",
+    "category": "Status",
+    "power": null,
+    "accuracy": 95,
+    "range": "Adjacent enemy",
+    "pp_cost": 3,
+    "effects": [
+      {
+        "effect_type": "status_apply",
+        "status": "Slow",
+        "chance": 1.0
+      }
+    ]
+  },
+  {
+    "name": "Bug Bite",
+    "type": "Bug",
+    "description": "Damages an enemy.",
+    "category": "Physical",
+    "power": 60,
+    "accuracy": 100,
+    "range": "Adjacent enemy",
+    "pp_cost": 5,
+	"sound_based": true,
+    "effects": []
+  },
+  {
+    "name": "Gust",
+    "type": "Flying",
+    "description": "Damages an enemy. Can hit airborne Pokémon for 2x damage.",
+    "category": "Special",
+    "power": 40,
+    "accuracy": 100,
+    "range": "Adjacent enemy",
+    "pp_cost": 2,
+    "effects": []
+  },
+  {
+    "name": "Supersonic",
+    "type": "Normal",
+    "description": "Confuses an enemy. Cuts corners.",
+    "category": "Status",
+    "power": null,
+    "accuracy": 55,
+    "range": "Adjacent enemy",
+    "cuts_corners": true,
+    "pp_cost": 3,
+    "effects": [
+      {
+        "effect_type": "status_apply",
+        "status": "Confusion",
+        "chance": 1.0
+      }
+    ]
+  },
+  {
+    "name": "Confusion",
+    "type": "Psychic",
+    "description": "Damages an enemy and has a 10% chance of confusing them.",
+    "category": "Special",
+    "power": 50,
+    "accuracy": 100,
+    "range": "Adjacent enemy",
+    "pp_cost": 3,
+    "effects": [
+      {
+        "effect_type": "status_apply",
+        "status": "Confusion",
+        "chance": 0.1
+      }
+    ]
+  },
+  {
+    "name": "Psybeam",
+    "type": "Psychic",
+    "description": "Damages an enemy up to 4 tiles away and has a 10% chance of confusing them.",
+    "category": "Special",
+    "power": 65,
+    "accuracy": 100,
+    "range": "Straight line up to 4 tiles",
+    "pp_cost": 4,
+    "effects": [
+      {
+        "effect_type": "status_apply",
+        "status": "Confusion",
+        "chance": 0.1
+      }
+    ]
+  },
+  {
+    "name": "Bug Buzz",
+    "type": "Bug",
+    "description": "Damages all adjacent enemies and has a 10% chance of lowering each enemy's Special Defense by one level. Cuts corners.",
+    "category": "Special",
+    "power": 90,
+    "accuracy": 100,
+    "range": "All adjacent enemies",
+    "cuts_corners": true,
+    "pp_cost": 7,
+    "effects": [
+      {
+        "effect_type": "stat_change",
+        "stat": "Special_Defense",
+        "stages": -1,
+        "chance": 0.1
+      }
+    ]
+  },
+  {
+    "name": "Tailwind",
+    "type": "Flying",
+    "description": "Raises movement speed of all allies in the room by one level.",
+    "category": "Status",
+    "power": null,
+    "accuracy": null,
+    "range": "All allies in room",
+    "pp_cost": 5,
+    "effects": [
+      {
+        "effect_type": "status_apply",
+        "status": "2x Speed",
+        "chance": 1.0
+      }
+    ]
+  },
+  {
+    "name": "Quiver Dance",
+    "type": "Bug",
+    "description": "Raises user's Special Attack, Special Defense and Speed by one level.",
+    "category": "Status",
+    "power": null,
+    "accuracy": null,
+    "range": "User",
+    "pp_cost": 3,
+    "effects": [
+      {
+        "effect_type": "stat_change",
+        "stat": "Special_Attack",
+        "stages": 1,
+        "chance": 1.0
+      },
+      {
+        "effect_type": "stat_change",
+        "stat": "Special_Defense",
+        "stages": 1,
+        "chance": 1.0
+      },
+      {
+        "effect_type": "stat_change",
+        "stat": "Speed",
+        "stages": 1,
+        "chance": 1.0
+      }
+    ]
+  },
+  {
+    "name": "Poison Sting",
+    "type": "Poison",
+    "description": "Damages an enemy and has a 30% chance of poisoning them. Cuts corners.",
+    "category": "Physical",
+    "power": 35,
+    "accuracy": 100,
+    "range": "Adjacent enemy",
+    "cuts_corners": true,
+    "pp_cost": 2,
+    "effects": [
+      {
+        "effect_type": "status_apply",
+        "status": "Poison",
+        "chance": 0.3
+      }
+    ]
+  },
+  {
+    "name": "Fury Attack",
+    "type": "Normal",
+    "description": "Damages an enemy 2-5 times.",
+    "category": "Physical",
+    "power": 15,
+    "accuracy": 85,
+    "range": "Adjacent enemy",
+    "pp_cost": 3,
+    "effects": [
+      {
+        "effect_type": "multi_hit",
+        "min_hits": 2,
+        "max_hits": 5,
+        "chance": 1.0
+      }
+    ]
+  },
+  {
+    "name": "Pin Missile",
+    "type": "Bug",
+    "description": "Damages an enemy up to 4 tiles away 2-5 times.",
+    "category": "Physical",
+    "power": 20,
+    "accuracy": 95,
+    "range": "Straight line up to 4 tiles",
+    "pp_cost": 5,
+    "effects": [
+      {
+        "effect_type": "multi_hit",
+        "min_hits": 2,
+        "max_hits": 5,
+        "chance": 1.0
+      }
+    ]
+  },
+  {
+    "name": "Poison Jab",
+    "type": "Poison",
+    "description": "Damages an enemy and has a 30% chance of poisoning them.",
+    "category": "Physical",
+    "power": 80,
+    "accuracy": 100,
+    "range": "Adjacent enemy",
+    "pp_cost": 5,
+    "effects": [
+      {
+        "effect_type": "status_apply",
+        "status": "Poison",
+        "chance": 0.3
+      }
+    ]
+  },
+  {
+    "name": "Agility",
+    "type": "Psychic",
+    "description": "Boosts Speed and Movement Speed of all allies in the room by one level.",
+    "category": "Status",
+    "power": null,
+    "accuracy": null,
+    "range": "All allies in room",
+    "pp_cost": 6,
+    "effects": [
+      {
+        "effect_type": "status_apply",
+        "status": "2x Speed",
+        "chance": 1.0
+      },
+      {
+        "effect_type": "stat_change",
+        "stat": "Speed",
+        "stages": 1,
+        "chance": 1.0
+      }
+    ]
+  },
+  {
+    "name": "Hurricane",
+    "type": "Flying",
+    "description": "Damages an enemy and has a 30% chance of confusing them. Deals 2x damage against airborne enemies. Accuracy is affected by weather.",
+    "category": "Special",
+    "power": 110,
+    "accuracy": 70,
+    "range": "Adjacent enemy",
+    "pp_cost": 6,
+    "effects": [
+      {
+        "effect_type": "status_apply",
+        "status": "Confusion",
+        "chance": 0.3
+      }
+    ]
+  },
+  {
+    "name": "Sand Attack",
+    "type": "Ground",
+    "description": "Lowers an enemy's accuracy by one level. Cuts corners.",
+    "category": "Status",
+    "power": null,
+    "accuracy": 100,
+    "range": "Adjacent enemy",
+    "cuts_corners": true,
+    "pp_cost": 1,
+    "effects": [
+      {
+        "effect_type": "stat_change",
+        "stat": "Accuracy",
+        "stages": -1,
+        "chance": 1.0
+      }
+    ]
+  },
+  {
+    "name": "Quick Attack",
+    "type": "Normal",
+    "description": "Damages an enemy up to 2 tiles away. Cuts corners.",
+    "category": "Physical",
+    "power": 40,
+    "accuracy": 100,
+    "range": "Enemy up to 2 tiles away",
+    "cuts_corners": true,
+    "pp_cost": 3,
+    "effects": []
+  },
+  {
+    "name": "Twister",
+    "type": "Dragon",
+    "description": "Damages an enemy and has a 20% chance of causing them to flinch. Deals 2x damage on airborne enemies. Cuts corners.",
+    "category": "Special",
+    "power": 40,
+    "accuracy": 100,
+    "range": "Adjacent enemy",
+    "cuts_corners": true,
+    "pp_cost": 3,
+    "effects": [
+      {
+        "effect_type": "status_apply",
+        "status": "Flinch",
+        "chance": 0.2
+      }
+    ]
+  },
+  {
+    "name": "Feather Dance",
+    "type": "Flying",
+    "description": "Lowers an enemy's Attack by two levels.",
+    "category": "Status",
+    "power": null,
+    "accuracy": 100,
+    "range": "Adjacent enemy",
+    "pp_cost": 2,
+    "effects": [
+      {
+        "effect_type": "stat_change",
+        "stat": "Attack",
+        "stages": -2,
+        "chance": 1.0
+      }
+    ]
+  },
+  {
+    "name": "Wing Attack",
+    "type": "Flying",
+    "description": "Damages an enemy.",
+    "category": "Physical",
+    "power": 60,
+    "accuracy": 100,
+    "range": "Adjacent enemy",
+    "pp_cost": 2,
+    "effects": []
+  },
+  {
+    "name": "Roost",
+    "type": "Flying",
+    "description": "Restores 50% of the user's HP and causes the user to land, losing its Flying type for the next turn.",
+    "category": "Status",
+    "power": null,
+    "accuracy": null,
+    "range": "User",
+    "pp_cost": 8,
+    "effects": [
+      {
+        "effect_type": "healing",
+        "heal_percent": 0.5,
+        "chance": 1.0,
+        "target": "attacker"
+      }
+    ]
+  },
+  {
+    "name": "Aerial Ace",
+    "type": "Flying",
+    "description": "Damages an enemy. Never misses.",
+    "category": "Physical",
+    "power": 60,
+    "accuracy": null,
+    "range": "Adjacent enemy",
+    "pp_cost": 4,
+    "effects": []
+  },
+  {
+    "name": "Air Slash",
+    "type": "Flying",
+    "description": "Damages an enemy and has a 30% chance of causing them to flinch.",
+    "category": "Special",
+    "power": 75,
+    "accuracy": 100,
+    "range": "Adjacent enemy",
+    "pp_cost": 4,
+    "effects": [
+      {
+        "effect_type": "status_apply",
+        "status": "Flinch",
+        "chance": 0.3
+      }
+    ]
+  },
+  {
+    "name": "Swords Dance",
+    "type": "Steel",
+    "description": "Boosts the user's Attack by two levels.",
+    "category": "Status",
+    "power": null,
+    "accuracy": null,
+    "range": "User",
+    "pp_cost": 2,
+    "effects": [
+      {
+        "effect_type": "stat_change",
+        "stat": "Attack",
+        "stages": 2,
+        "chance": 1.0
+      }
+    ]
+  },
+  {
+    "name": "Crunch",
+    "type": "Dark",
+    "description": "Damages an enemy and has a 20% chance of lowering their Defense by one level.",
+    "category": "Physical",
+    "power": 80,
+    "accuracy": 100,
+    "range": "Adjacent enemy",
+    "pp_cost": 6,
+	"sound_based": true,
+    "effects": [
+      {
+        "effect_type": "stat_change",
+        "stat": "Defense",
+        "stages": -1,
+        "chance": 0.2
+      }
+    ]
+  },
+  {
+    "name": "Sucker Punch",
+    "type": "Dark",
+    "description": "Damages an enemy up to 2 tiles away.",
+    "category": "Physical",
+    "power": 70,
+    "accuracy": 100,
+    "range": "Enemy up to 2 tiles away",
+    "pp_cost": 5,
+    "effects": []
+  },
+  {
+    "name": "Double-Edge",
+    "type": "Normal",
+    "description": "Damages an enemy, but inflicts 1/3 recoil.",
+    "category": "Physical",
+    "power": 120,
+    "accuracy": 100,
+    "range": "Adjacent enemy",
+    "pp_cost": 5,
+    "effects": [
+      {
+        "effect_type": "recoil",
+        "recoil_percent": 0.333,
+        "chance": 1.0
+      }
+    ]
+  },
+  {
+    "name": "Pluck",
+    "type": "Flying",
+    "description": "Damages an enemy.",
+    "category": "Physical",
+    "power": 60,
+    "accuracy": 100,
+    "range": "Adjacent enemy",
+    "pp_cost": 5,
+	"sound_based": true,
+    "effects": []
+  },
+  {
+    "name": "Peck",
+    "type": "Flying",
+    "description": "Damages an enemy.",
+    "category": "Physical",
+    "power": 35,
+    "accuracy": 100,
+    "range": "Adjacent enemy",
+    "pp_cost": 2,
+	"sound_based": true,
+    "effects": []
+  },
+  {
+    "name": "Leer",
+    "type": "Normal",
+    "description": "Lowers the Defense of all foes in the room by one level.",
+    "category": "Status",
+    "power": null,
+    "accuracy": 100,
+    "range": "All enemies in room",
+    "pp_cost": 1,
+    "effects": [
+      {
+        "effect_type": "stat_change",
+        "stat": "Defense",
+        "stages": -1,
+        "chance": 1.0
+      }
+    ]
+  },
+  {
+    "name": "Drill Peck",
+    "type": "Flying",
+    "description": "Damages an enemy.",
+    "category": "Physical",
+    "power": 80,
+    "accuracy": 100,
+    "range": "Adjacent enemy",
+    "pp_cost": 5,
+	"sound_based": true,
+    "effects": []
+  },
+  {
+    "name": "Drill Run",
+    "type": "Ground",
+    "description": "Damages an enemy. Has an increased critical hit chance.",
+    "category": "Physical",
+    "power": 80,
+    "accuracy": 95,
+    "high_crit_ratio": true,
+    "range": "Adjacent enemy",
+    "pp_cost": 6,
+    "effects": []
+  },
+  {
+    "name": "Ice Fang",
+    "type": "Ice",
+    "description": "Damages an enemy and has a 10% chance of freezing them, and a 10% chance of causing the target to flinch.",
+    "category": "Physical",
+    "power": 65,
+    "accuracy": 95,
+    "range": "Adjacent enemy",
+    "pp_cost": 6,
+    "effects": [
+      {
+        "effect_type": "status_apply",
+        "status": "Frozen",
+        "chance": 0.1
+      },
+      {
+        "effect_type": "status_apply",
+        "status": "Flinch",
+        "chance": 0.1
+      }
+    ]
+  },
+  {
+    "name": "Thunder Fang",
+    "type": "Electric",
+    "description": "Damages an enemy and has a 10% chance of paralyzing them, and a 10% chance of causing the target to flinch.",
+    "category": "Physical",
+    "power": 65,
+    "accuracy": 95,
+    "range": "Adjacent enemy",
+    "pp_cost": 6,
+    "effects": [
+      {
+        "effect_type": "status_apply",
+        "status": "Paralysis",
+        "chance": 0.1
+      },
+      {
+        "effect_type": "status_apply",
+        "status": "Flinch",
+        "chance": 0.1
+      }
+    ]
+  },
+  {
+    "name": "Glare",
+    "type": "Dark",
+    "description": "Paralyzes an enemy.",
+    "category": "Status",
+    "power": null,
+    "accuracy": 100,
+    "range": "Adjacent enemy",
+    "pp_cost": 4,
+    "effects": [
+      {
+        "effect_type": "status_apply",
+        "status": "Paralysis",
+        "chance": 1.0
+      }
+    ]
+  },
+  {
+    "name": "Screech",
+    "type": "Normal",
+    "description": "Lowers an enemy's Defense by two levels. Cuts corners.",
+    "category": "Status",
+    "power": null,
+    "accuracy": 85,
+    "range": "Adjacent enemy",
+    "cuts_corners": true,
+    "pp_cost": 2,
+	"sound_based": true,
+    "effects": [
+      {
+        "effect_type": "stat_change",
+        "stat": "Defense",
+        "stages": -2,
+        "chance": 1.0
+      }
+    ]
+  },
+  {
+    "name": "Acid",
+    "type": "Poison",
+    "description": "Damages an enemy, and has a 10% chance of lowering their Defense by one level, and a 10% chance of lowering their Special Defense by one level. Cuts corners.",
+    "category": "Special",
+    "power": 40,
+    "accuracy": 100,
+    "range": "Adjacent enemy",
+    "cuts_corners": true,
+    "pp_cost": 4,
+    "effects": [
+      {
+        "effect_type": "stat_change",
+        "stat": "Defense",
+        "stages": -1,
+        "chance": 0.1
+      },
+      {
+        "effect_type": "stat_change",
+        "stat": "Special_Defense",
+        "stages": -1,
+        "chance": 0.1
+      }
+    ]
+  },
+  {
+    "name": "Stockpile",
+    "type": "Normal",
+    "description": "Boosts user's Defense and Special Defense by one level and charges their Stockpile power.",
+    "category": "Status",
+    "power": null,
+    "accuracy": null,
+    "range": "User",
+    "pp_cost": 2,
+    "effects": [
+      {
+        "effect_type": "stat_change",
+        "stat": "Defense",
+        "stages": 1,
+        "chance": 1.0
+      },
+      {
+        "effect_type": "stat_change",
+        "stat": "Special_Defense",
+        "stages": 1,
+        "chance": 1.0
+      },
+      {
+        "effect_type": "stockpile"
+      }
+    ]
+  },
+  {
+    "name": "Acid Spray",
+    "type": "Poison",
+    "description": "Damages an enemy and lowers their Special Defense by two levels. Cuts corners.",
+    "category": "Special",
+    "power": 40,
+    "accuracy": 100,
+    "range": "Adjacent enemy",
+    "cuts_corners": true,
+    "pp_cost": 4,
+    "effects": [
+      {
+        "effect_type": "stat_change",
+        "stat": "Special_Defense",
+        "stages": -2,
+        "chance": 1.0
+      }
+    ]
+  },
+  {
+    "name": "Sludge Bomb",
+    "type": "Poison",
+    "description": "Damages an enemy up to 4 tiles away and has a 30% chance of poisoning them.",
+    "category": "Special",
+    "power": 90,
+    "accuracy": 100,
+    "range": "Straight line up to 4 tiles",
+    "pp_cost": 7,
+    "effects": [
+      {
+        "effect_type": "status_apply",
+        "status": "Poison",
+        "chance": 0.3
+      }
+    ]
+  },
+  {
+    "name": "Coil",
+    "type": "Poison",
+    "description": "Boosts user's Attack, Defense and Accuracy by one level each.",
+    "category": "Status",
+    "power": null,
+    "accuracy": null,
+    "range": "User",
+    "pp_cost": 3,
+    "effects": [
+      {
+        "effect_type": "stat_change",
+        "stat": "Attack",
+        "stages": 1,
+        "chance": 1.0
+      },
+      {
+        "effect_type": "stat_change",
+        "stat": "Defense",
+        "stages": 1,
+        "chance": 1.0
+      },
+      {
+        "effect_type": "stat_change",
+        "stat": "Accuracy",
+        "stages": 1,
+        "chance": 1.0
+      }
+    ]
+  },
+  {
+    "name": "Gunk Shot",
+    "type": "Poison",
+    "description": "Damages an enemy up to 4 tiles away and has a 30% chance of poisoning them.",
+    "category": "Physical",
+    "power": 120,
+    "accuracy": 80,
+    "range": "Straight line up to 4 tiles",
+    "pp_cost": 9,
+    "effects": [
+      {
+        "effect_type": "status_apply",
+        "status": "Poison",
+        "chance": 0.3
+      }
+    ]
+  },
+  {
+    "name": "Play Nice",
+    "type": "Fairy",
+    "description": "Lowers an enemy's attack by one level. Never misses.",
+    "category": "Status",
+    "power": null,
+    "accuracy": null,
+    "range": "Adjacent enemy",
+    "pp_cost": 1,
+    "effects": [
+      {
+        "effect_type": "stat_change",
+        "stat": "Attack",
+        "stages": -1,
+        "chance": 1.0
+      }
+    ]
+  },
+  {
+    "name": "Thunder Punch",
+    "type": "Electric",
+    "description": "Damages an enemy and has a 10% chance of paralyzing them.",
+    "category": "Physical",
+    "power": 75,
+    "accuracy": 100,
+    "range": "Adjacent enemy",
+    "pp_cost": 6,
+    "effects": [
+      {
+        "effect_type": "status_apply",
+        "status": "Paralysis",
+        "chance": 0.1
+      }
+    ]
+  },
+  {
+    "name": "Nuzzle",
+    "type": "Electric",
+    "description": "Damages and always paralyzes an enemy.",
+    "category": "Physical",
+    "power": 20,
+    "accuracy": 100,
+    "range": "Adjacent enemy",
+    "pp_cost": 4,
+    "effects": [
+      {
+        "effect_type": "status_apply",
+        "status": "Paralysis",
+        "chance": 1.0
+      }
+    ]
+  },
+  {
+    "name": "Nasty Plot",
+    "type": "Fairy",
+    "description": "Raises user's Special Attack by two levels.",
+    "category": "Status",
+    "power": null,
+    "accuracy": null,
+    "range": "User",
+    "pp_cost": 2,
+    "effects": [
+      {
+        "effect_type": "stat_change",
+        "stat": "Special_Attack",
+        "stages": 2,
+        "chance": 1.0
+      }
+    ]
+  },
+  {
+    "name": "Charm",
+    "type": "Fairy",
+    "description": "Lowers an enemy's Attack by two levels.",
+    "category": "Status",
+    "power": null,
+    "accuracy": 100,
+    "range": "Adjacent enemy",
+    "pp_cost": 2,
+    "effects": [
+      {
+        "effect_type": "stat_change",
+        "stat": "Attack",
+        "stages": -2,
+        "chance": 1.0
+      }
+    ]
+  },
+  {
+    "name": "Sweet Kiss",
+    "type": "Fairy",
+    "description": "Confuses an enemy.",
+    "category": "Status",
+    "power": null,
+    "accuracy": 75,
+    "range": "Adjacent enemy",
+    "pp_cost": 2,
+	"sound_based": true,
+    "effects": [
+      {
+        "effect_type": "status_apply",
+        "status": "Confusion",
+        "chance": 1.0
+      }
+    ]
+  },
+  {
+    "name": "Thunder Shock",
+    "type": "Electric",
+    "description": "Damages an enemy and has a 10% chance of paralyzing them.",
+    "category": "Special",
+    "power": 40,
+    "accuracy": 100,
+    "range": "Adjacent enemy",
+    "pp_cost": 3,
+    "effects": [
+      {
+        "effect_type": "status_apply",
+        "status": "Paralysis",
+        "chance": 0.1
+      }
+    ]
+  },
+  {
+    "name": "Thunder Wave",
+    "type": "Electric",
+    "description": "Paralyzes an enemy.",
+    "category": "Status",
+    "power": null,
+    "accuracy": 90,
+    "range": "Adjacent enemy",
+    "pp_cost": 2,
+    "effects": [
+      {
+        "effect_type": "status_apply",
+        "status": "Paralysis",
+        "chance": 1.0
+      }
+    ]
+  },
+  {
+    "name": "Thunderbolt",
+    "type": "Electric",
+    "description": "Damages all adjacent enemies and has a 10% chance of paralyzing each of them. Cuts corners.",
+    "category": "Special",
+    "power": 90,
+    "accuracy": 100,
+    "range": "All adjacent enemies",
+    "cuts_corners": true,
+    "pp_cost": 7,
+    "effects": [
+      {
+        "effect_type": "status_apply",
+        "status": "Paralysis",
+        "chance": 0.1
+      }
+    ]
+  },
+  {
+    "name": "Double Team",
+    "type": "Normal",
+    "description": "Boosts user's evasiveness by one level.",
+    "category": "Status",
+    "power": null,
+    "accuracy": null,
+    "range": "User",
+    "pp_cost": 2,
+    "effects": [
+      {
+        "effect_type": "stat_change",
+        "stat": "Evasion",
+        "stages": 1,
+        "chance": 1.0
+      }
+    ]
+  },
+  {
+    "name": "Spark",
+    "type": "Electric",
+    "description": "Damages an enemy and has a 30% chance of paralyzing them.",
+    "category": "Physical",
+    "power": 65,
+    "accuracy": 100,
+    "range": "Adjacent enemy",
+    "pp_cost": 4,
+    "effects": [
+      {
+        "effect_type": "status_apply",
+        "status": "Paralysis",
+        "chance": 0.3
+      }
+    ]
+  },
+  {
+    "name": "Iron Tail",
+    "type": "Steel",
+    "description": "Damages an enemy and has a 30% chance to lower their Defense by one level.",
+    "category": "Physical",
+    "power": 100,
+    "accuracy": 75,
+    "range": "Adjacent enemy",
+    "pp_cost": 6,
+    "effects": [
+      {
+        "effect_type": "stat_change",
+        "stat": "Defense",
+        "stages": -1,
+        "chance": 0.3
+      }
+    ]
+  },
+  {
+    "name": "Discharge",
+    "type": "Electric",
+    "description": "Damages all enemies in the room and has a 30% chance to paralyze each of them.",
+    "category": "Special",
+    "power": 80,
+    "accuracy": 100,
+    "range": "All enemies in room",
+    "pp_cost": 10,
+    "effects": [
+      {
+        "effect_type": "status_apply",
+        "status": "Paralysis",
+        "chance": 0.3
+      }
+    ]
+  },
+  {
+    "name": "Thunder",
+    "type": "Electric",
+    "description": "Damages an enemy and has a 30% chance to paralyze them. Accuracy is affected by weather.",
+    "category": "Special",
+    "power": 110,
+    "accuracy": 70,
+    "range": "Adjacent enemy",
+    "pp_cost": 6,
+    "effects": [
+      {
+        "effect_type": "status_apply",
+        "status": "Paralysis",
+        "chance": 0.3
+      }
+    ]
+  },
+  {
+    "name": "Crush Claw",
+    "type": "Normal",
+    "description": "Damages an enemy and has a 50% chance to lower their Defense by one level.",
+    "category": "Physical",
+    "power": 75,
+    "accuracy": 95,
+    "range": "Adjacent enemy",
+    "pp_cost": 6,
+    "effects": [
+      {
+        "effect_type": "stat_change",
+        "stat": "Defense",
+        "stages": -1,
+        "chance": 0.5
+      }
+    ]
+  },
+  {
+    "name": "Defense Curl",
+    "type": "Normal",
+    "description": "Raises user's Defense by one level. Certain moves will also have increased power.",
+    "category": "Status",
+    "power": null,
+    "accuracy": null,
+    "range": "User",
+    "pp_cost": 1,
+    "effects": [
+      {
+        "effect_type": "stat_change",
+        "stat": "Defense",
+        "stages": 1,
+        "chance": 1.0
+      }
+    ]
+  },
+  {
+    "name": "Bulldoze",
+    "type": "Ground",
+    "description": "Damages all adjacent Pokémon and lowers their movement speed by one level. Does 2x damage on digging Pokemon.",
+    "category": "Physical",
+    "power": 60,
+    "accuracy": 100,
+    "range": "All adjacent enemies and allies",
+    "pp_cost": 6,
+    "effects": [
+      {
+        "effect_type": "status_apply",
+        "status": "Slow",
+        "chance": 1.0
+      }
+    ]
+  },
+  {
+    "name": "Swift",
+    "type": "Normal",
+    "description": "Damages an enemy. Never misses. Cuts corners.",
+    "category": "Special",
+    "power": 60,
+    "accuracy": null,
+    "range": "Adjacent enemy",
+    "cuts_corners": true,
+    "pp_cost": 4,
+    "effects": []
+  },
+  {
+    "name": "Fury Swipes",
+    "type": "Normal",
+    "description": "Damages an enemy 2-5 times.",
+    "category": "Physical",
+    "power": 18,
+    "accuracy": 80,
+    "range": "Adjacent enemy",
+    "pp_cost": 3,
+    "effects": [
+      {
+        "effect_type": "multi_hit",
+        "min_hits": 2,
+        "max_hits": 5,
+        "chance": 1.0
+      }
+    ]
+  },
+  {
+    "name": "Sandstorm",
+    "type": "Ground",
+    "description": "Changes the floor's weather to Sandstorm.",
+    "category": "Status",
+    "power": null,
+    "accuracy": null,
+    "range": "User",
+    "pp_cost": 2,
+    "effects": [
+      {
+        "effect_type": "weather_change",
+        "weather": "Sandstorm",
+        "target": "attacker",
+        "chance": 1.0
+      }
+    ]
+  },
+  {
+    "name": "Earthquake",
+    "type": "Ground",
+    "description": "Damages all Pokémon in the room except the user. Does 2x damage on digging Pokémon.",
+    "category": "Physical",
+    "power": 100,
+    "accuracy": 100,
+    "range": "All enemies and allies in room",
+    "pp_cost": 10,
+    "effects": []
+  },
+  {
+    "name": "Superpower",
+    "type": "Fighting",
+    "description": "Damages an enemy, but then lowers the user's Attack and Defense by one level each.",
+    "category": "Physical",
+    "power": 120,
+    "accuracy": 100,
+    "range": "Adjacent enemy",
+    "pp_cost": 6,
+    "effects": [
+      {
+        "effect_type": "stat_change",
+        "stat": "Attack",
+        "stages": -1,
+        "chance": 1.0,
+        "target": "attacker"
+      },
+      {
+        "effect_type": "stat_change",
+        "stat": "Defense",
+        "stages": -1,
+        "chance": 1.0,
+        "target": "attacker"
+      }
+    ]
+  },
+  {
+    "name": "Double Kick",
+    "type": "Fighting",
+    "description": "Damages an enemy twice.",
+    "category": "Physical",
+    "power": 30,
+    "accuracy": 100,
+    "range": "Adjacent enemy",
+    "pp_cost": 3,
+    "effects": [
+      {
+        "effect_type": "multi_hit",
+        "min_hits": 2,
+        "max_hits": 2,
+        "chance": 1.0
+      }
+    ]
+  },
+  {
+    "name": "Helping Hand",
+    "type": "Normal",
+    "description": "Raises the Attack and Special Attack of every team member in the room by one stage each.",
+    "category": "Status",
+    "power": null,
+    "accuracy": null,
+    "range": "All allies in room",
+    "pp_cost": 5,
+    "effects": [
+      {
+        "effect_type": "stat_change",
+        "stat": "Attack",
+        "stages": 1,
+        "chance": 1.0
+      },
+      {
+        "effect_type": "stat_change",
+        "stat": "Special_Attack",
+        "stages": 1,
+        "chance": 1.0
+      }
+    ]
+  },
+  {
+    "name": "Toxic",
+    "type": "Poison",
+    "description": "Badly poisons an adjacent enemy. Never misses for Poison-types.",
+    "category": "Status",
+    "power": null,
+    "accuracy": 90,
+    "range": "Adjacent enemy",
+    "pp_cost": 2,
+    "effects": [
+      {
+        "effect_type": "status_apply",
+        "status": "Toxic",
+        "chance": 1.0
+      }
+    ]
+  },
+  {
+    "name": "Flatter",
+    "type": "Dark",
+    "description": "Boosts an enemy's Special Attack by one level, then confuses them.",
+    "category": "Status",
+    "power": null,
+    "accuracy": 100,
+    "range": "Adjacent enemy",
+    "pp_cost": 2,
+    "effects": [
+      {
+        "effect_type": "stat_change",
+        "stat": "Special_Attack",
+        "stages": 1,
+        "chance": 1.0
+      },
+      {
+        "effect_type": "status_apply",
+        "status": "Confusion",
+        "chance": 1.0
+      }
+    ]
+  },
+  {
+    "name": "Earth Power",
+    "type": "Ground",
+    "description": "Damages all enemies in the room and has a 10% chance of lowering each of their Special Defense by one level.",
+    "category": "Special",
+    "power": 90,
+    "accuracy": 100,
+    "range": "All enemies in room",
+    "pp_cost": 10,
+    "effects": [
+      {
+        "effect_type": "stat_change",
+        "stat": "Special_Defense",
+        "stages": -1,
+        "chance": 0.1
+      }
+    ]
+  },
+  {
+    "name": "Megahorn",
+    "type": "Bug",
+    "description": "Damages an enemy.",
+    "category": "Physical",
+    "power": 120,
+    "accuracy": 85,
+    "range": "Adjacent enemy",
+    "pp_cost": 8,
+    "effects": []
+  },
+  {
+    "name": "Sludge Wave",
+    "type": "Poison",
+    "description": "Damages all adjacent enemies and allies and has a 10% chance of poisoning each of them.",
+    "category": "Special",
+    "power": 95,
+    "accuracy": 100,
+    "range": "All adjacent enemies and allies",
+    "pp_cost": 8,
+    "effects": [
+      {
+        "effect_type": "status_apply",
+        "status": "Poison",
+        "chance": 0.1
+      }
+    ]
+  },
+  {
+    "name": "Horn Attack",
+    "type": "Normal",
+    "description": "Damages an enemy.",
+    "category": "Physical",
+    "power": 65,
+    "accuracy": 100,
+    "range": "Adjacent enemy",
+    "pp_cost": 3,
+    "effects": []
+  },
+  {
+    "name": "Sing",
+    "type": "Fairy",
+    "description": "Puts an enemy to sleep. Cuts corners.",
+    "category": "Status",
+    "power": null,
+    "accuracy": 55,
+    "range": "Adjacent enemy",
+    "cuts_corners": true,
+    "pp_cost": 3,
+	"sound_based": true,
+    "effects": [
+      {
+        "effect_type": "status_apply",
+        "status": "Sleep",
+        "chance": 1.0
+      }
+    ]
+  },
+  {
+    "name": "Disarming Voice",
+    "type": "Fairy",
+    "description": "Damages all enemies around the user. Never misses. Cuts corners.",
+    "category": "Special",
+    "power": 40,
+    "accuracy": null,
+    "range": "All adjacent enemies",
+    "cuts_corners": true,
+    "pp_cost": 4,
+	"sound_based": true,
+    "effects": []
+  },
+  {
+    "name": "Stored Power",
+    "type": "Psychic",
+    "description": "Damages an enemy. Power increases for each positive stat level the user has.",
+    "category": "Special",
+    "power": 20,
+    "accuracy": 100,
+    "range": "Adjacent enemy",
+    "pp_cost": 2,
+    "effects": []
+  },
+  {
+    "name": "Life Dew",
+    "type": "Water",
+    "description": "Restores 25% of all allies' HP, including the user's.",
+    "category": "Status",
+    "power": null,
+    "accuracy": null,
+    "range": "All allies on floor, including user",
+    "pp_cost": 9,
+    "effects": [
+      {
+        "effect_type": "healing",
+        "heal_percent": 0.25,
+        "chance": 1.0
+      }
+    ]
+  },
+  {
+    "name": "Moonlight",
+    "type": "Fairy",
+    "description": "Restores HP of the user and all allies depending on the current weather: 2/3 if Sunny, 1/2 if Clear, 1/4 otherwise.",
+    "category": "Status",
+    "power": null,
+    "accuracy": null,
+    "range": "All allies on floor, including user",
+    "pp_cost": 12,
+    "effects": [
+      {
+        "effect_type": "healing",
+        "heal_percent": 0.5,
+        "chance": 1.0
+      }
+    ]
+  },
+  {
+    "name": "Meteor Mash",
+    "type": "Steel",
+    "description": "Damages an enemy up to 10 tiles away in a straight line and has a 20% chance of boosting the user's Attack by one level.",
+    "category": "Physical",
+    "power": 90,
+    "accuracy": 85,
+    "range": "Straight line",
+    "pp_cost": 7,
+    "effects": [
+      {
+        "effect_type": "stat_change",
+        "stat": "Attack",
+        "stages": 1,
+        "chance": 0.2,
+        "target": "attacker"
+      }
+    ]
+  },
+  {
+    "name": "Cosmic Power",
+    "type": "Psychic",
+    "description": "Raises user's Defense and Special Defense by one level each.",
+    "category": "Status",
+    "power": null,
+    "accuracy": null,
+    "range": "User",
+    "pp_cost": 2,
+    "effects": [
+      {
+        "effect_type": "stat_change",
+        "stat": "Defense",
+        "stages": 1,
+        "chance": 1.0
+      },
+      {
+        "effect_type": "stat_change",
+        "stat": "Special_Defense",
+        "stages": 1,
+        "chance": 1.0
+      }
+    ]
+  },
+  {
+    "name": "Moonblast",
+    "type": "Fairy",
+    "description": "Damages an enemy and has a 30% chance of lowering their Special Attack by one level. Power depends on the weather.",
+    "category": "Special",
+    "power": 95,
+    "accuracy": 100,
+    "range": "Adjacent enemy",
+    "pp_cost": 6,
+    "effects": [
+      {
+        "effect_type": "stat_change",
+        "stat": "Special_Defense",
+        "stages": -1,
+        "chance": 0.1
+      }
+    ]
+  },
+  {
+    "name": "Incinerate",
+    "type": "Fire",
+    "description": "Damages an enemy and destroys their held item. Cuts corners.",
+    "category": "Special",
+    "power": 60,
+    "accuracy": 100,
+    "range": "Adjacent enemy",
+    "cuts_corners": true,
+    "pp_cost": 5,
+    "effects": []
+  },
+  {
+    "name": "Confuse Ray",
+    "type": "Ghost",
+    "description": "Confuses an enemy.",
+    "category": "Status",
+    "power": null,
+    "accuracy": 100,
+    "range": "Adjacent enemy",
+    "pp_cost": 3,
+    "effects": [
+      {
+        "effect_type": "status_apply",
+        "status": "Confusion",
+        "chance": 1.0
+      }
+    ]
+  },
+  {
+    "name": "Will-O-Wisp",
+    "type": "Ghost",
+    "description": "Burns an enemy. Cuts corners.",
+    "category": "Status",
+    "power": null,
+    "accuracy": 85,
+    "range": "Adjacent enemy",
+    "cuts_corners": true,
+    "pp_cost": 3,
+    "effects": [
+      {
+        "effect_type": "status_apply",
+        "status": "Burn",
+        "chance": 1.0
+      }
+    ]
+  },
+  {
+    "name": "Extrasensory",
+    "type": "Psychic",
+    "description": "Damages an enemy and has a 10% chance of causing them to flinch. Deals 2x damage on minimized enemies.",
+    "category": "Special",
+    "power": 80,
+    "accuracy": 100,
+    "range": "Adjacent enemy",
+    "pp_cost": 5,
+    "effects": [
+      {
+        "effect_type": "status_apply",
+        "status": "Flinch",
+        "chance": 0.1
+      }
+    ]
+  },
+  {
+    "name": "Fire Blast",
+    "type": "Fire",
+    "description": "Damages an enemy and has a 10% chance of burning them. Cuts corners.",
+    "category": "Special",
+    "power": 110,
+    "accuracy": 85,
+    "range": "Adjacent enemy",
+    "cuts_corners": true,
+    "pp_cost": 8,
+    "effects": [
+      {
+        "effect_type": "status_apply",
+        "status": "Burn",
+        "chance": 0.1
+      }
+    ]
+  },
+  {
+    "name": "Echoed Voice",
+    "type": "Normal",
+    "description": "Damages all adjacent enemies. Power increases when this move is used multiple times in a row.",
+    "category": "Special",
+    "power": 40,
+    "accuracy": 100,
+    "range": "All adjacent enemies",
+    "pp_cost": 4,
+    "effects": []
+  },
+  {
+    "name": "Play Rough",
+    "type": "Fairy",
+    "description": "Damages an enemy and has a 10% chance of lowering their Attack by one level.",
+    "category": "Physical",
+    "power": 90,
+    "accuracy": 90,
+    "range": "Adjacent enemy",
+    "pp_cost": 6,
+    "effects": [
+      {
+        "effect_type": "stat_change",
+        "stat": "Attack",
+        "stages": -1,
+        "chance": 0.1
+      }
+    ]
+  },
+  {
+    "name": "Covet",
+    "type": "Normal",
+    "description": "Damages an enemy and attempts to steal their item.",
+    "category": "Physical",
+    "power": 60,
+    "accuracy": 90,
+    "range": "Adjacent enemy",
+    "pp_cost": 4,
+    "effects": []
+  },
+  {
+    "name": "Round",
+    "type": "Normal",
+    "description": "Damages an enemy. Power increases if another Pokémon on the team used Round in the same turn. Cuts corners.",
+    "category": "Special",
+    "power": 50,
+    "accuracy": 100,
+    "range": "Adjacent enemy",
+    "cuts_corners": true,
+    "pp_cost": 4,
+	"sound_based": true,
+    "effects": []
+  },
+  {
+    "name": "Body Slam",
+    "type": "Normal",
+    "description": "Damages an enemy and has a 30% chance of paralyzing them.",
+    "category": "Physical",
+    "power": 85,
+    "accuracy": 100,
+    "range": "Adjacent enemy",
+    "pp_cost": 6,
+    "effects": [
+      {
+        "effect_type": "status_apply",
+        "status": "Paralysis",
+        "chance": 0.3
+      }
+    ]
+  },
+  {
+    "name": "Hyper Voice",
+    "type": "Normal",
+    "description": "Damages all adjacent enemies. Cuts corners.",
+    "category": "Special",
+    "power": 90,
+    "accuracy": 100,
+    "range": "All adjacent enemies",
+    "cuts_corners": true,
+    "pp_cost": 8,
+	"sound_based": true,
+    "effects": []
+  },
+  {
+    "name": "Astonish",
+    "type": "Ghost",
+    "description": "Damages an enemy and has a 30% chance of causing them to flinch. Deals 1.5x damage on minimized enemies.",
+    "category": "Physical",
+    "power": 30,
+    "accuracy": 100,
+    "range": "Adjacent enemy",
+    "pp_cost": 3,
+    "effects": [
+      {
+        "effect_type": "status_apply",
+        "status": "Flinch",
+        "chance": 0.3
+      }
+    ]
+  },
+  {
+    "name": "Poison Fang",
+    "type": "Poison",
+    "description": "Damages an enemy and has a 10% chance of badly poisoning them, and a 10% chance of causing them to flinch.",
+    "category": "Physical",
+    "power": 65,
+    "accuracy": 95,
+    "range": "Adjacent enemy",
+    "pp_cost": 6,
+    "effects": [
+      {
+        "effect_type": "status_apply",
+        "status": "Toxic",
+        "chance": 0.1
+      },
+      {
+        "effect_type": "status_apply",
+        "status": "Flinch",
+        "chance": 0.1
+      }
+    ]
+  },
+  {
+    "name": "Air Cutter",
+    "type": "Flying",
+    "description": "Damages an enemy. Has a high critical hit chance. Cuts corners.",
+    "category": "Special",
+    "power": 60,
+    "accuracy": 95,
+    "range": "Adjacent enemy",
+    "cuts_corners": true,
+    "high_crit_ratio": true,
+    "pp_cost": 4,
+    "effects": []
+  },
+  {
+    "name": "Cross Poison",
+    "type": "Poison",
+    "description": "Damages an enemy and has a 10% chance to poison them. Has a high critical hit chance.",
+    "category": "Physical",
+    "power": 70,
+    "accuracy": 100,
+    "range": "Adjacent enemy",
+    "pp_cost": 5,
+    "high_crit_ratio": true,
+    "effects": [
+      {
+        "effect_type": "status_apply",
+        "status": "Poison",
+        "chance": 0.1
+      }
+    ]
+  },
+  {
+    "name": "Cross Scissor",
+    "type": "Bug",
+    "description": "Damages an enemy. Has a high critical hit chance.",
+    "category": "Physical",
+    "power": 80,
+    "accuracy": 100,
+    "range": "Adjacent enemy",
+    "pp_cost": 5,
+    "high_crit_ratio": true,
+    "effects": []
+  },
+  {
+    "name": "Zen Headbutt",
+    "type": "Psychic",
+    "description": "Damages an enemy and has a 20% chance of causing them to flinch.",
+    "category": "Physical",
+    "power": 80,
+    "accuracy": 90,
+    "range": "Adjacent enemy",
+    "pp_cost": 6,
+    "effects": [
+      {
+        "effect_type": "status_apply",
+        "status": "Flinch",
+        "chance": 0.2
+      }
+    ]
+  },
+  {
+    "name": "Psychic",
+    "type": "Psychic",
+    "description": "Damages an enemy and has a 10% chance of lowering their Special Defense by one level.",
+    "category": "Special",
+    "power": 90,
+    "accuracy": 100,
+    "range": "Adjacent enemy",
+    "pp_cost": 6,
+    "effects": [
+      {
+        "effect_type": "stat_change",
+        "stat": "Special_Defense",
+        "stages": -1,
+        "chance": 0.1
+      }
+    ]
+  },
+  {
+    "name": "Night Slash",
+    "type": "Dark",
+    "description": "Damages an enemy. Has a high critical hit chance.",
+    "category": "Physical",
+    "power": 70,
+    "accuracy": 100,
+    "range": "Adjacent enemy",
+    "pp_cost": 5,
+    "high_crit_ratio": true,
+    "effects": []
+  },
+  {
+    "name": "Mud Slap",
+    "type": "Ground",
+    "description": "Damages an enemy and lowers their accuracy by one level.",
+    "category": "Special",
+    "power": 20,
+    "accuracy": 100,
+    "range": "Adjacent enemy",
+    "pp_cost": 3,
+    "effects": [
+      {
+        "effect_type": "stat_change",
+        "stat": "Accuracy",
+        "stages": -1,
+        "chance": 1.0
+      }
+    ]
+  },
+  {
+    "name": "Power Gem",
+    "type": "Rock",
+    "description": "Damages an enemy. Cuts corners.",
+    "category": "Special",
+    "power": 80,
+    "accuracy": 100,
+    "range": "Adjacent enemy",
+    "cuts_corners": true,
+    "pp_cost": 5,
+    "effects": []
+  },
+  {
+    "name": "Aqua Jet",
+    "type": "Water",
+    "description": "Damages an enemy up to 2 tiles away. Cuts corners.",
+    "category": "Physical",
+    "power": 40,
+    "accuracy": 100,
+    "range": "Enemy up to 2 tiles away",
+    "cuts_corners": true,
+    "pp_cost": 3,
+    "effects": []
+  },
+  {
+    "name": "Amnesia",
+    "type": "Psychic",
+    "description": "Boosts user's Special Defense by two levels.",
+    "category": "Status",
+    "power": null,
+    "accuracy": null,
+    "range": "User",
+    "pp_cost": 2,
+    "effects": [
+      {
+        "effect_type": "stat_change",
+        "stat": "Special_Defense",
+        "stages": 2,
+        "chance": 1.0
+      }
+    ]
+  },
+  {
+    "name": "Swagger",
+    "type": "Dark",
+    "description": "Boosts an enemy's Attack by one level, then confuses them.",
+    "category": "Status",
+    "power": null,
+    "accuracy": 100,
+    "range": "Adjacent enemy",
+    "pp_cost": 2,
+	"sound_based": true,
+    "effects": [
+      {
+        "effect_type": "stat_change",
+        "stat": "Attack",
+        "stages": 1,
+        "chance": 1.0
+      },
+      {
+        "effect_type": "status_apply",
+        "status": "Confusion",
+        "chance": 1.0
+      }
+    ]
+  },
+  {
+    "name": "Cross Chop",
+    "type": "Fighting",
+    "description": "Damages an enemy. Has a high critical hit chance.",
+    "category": "Physical",
+    "power": 100,
+    "accuracy": 80,
+    "range": "Adjacent enemy",
+    "pp_cost": 8,
+    "high_crit_ratio": true,
+    "effects": []
+  },
+  {
+    "name": "Rage Fist",
+    "type": "Ghost",
+    "description": "Damages an enemy. Power increases each time user has been hit.",
+    "category": "Physical",
+    "power": 50,
+    "accuracy": 80,
+    "range": "Adjacent enemy",
+    "pp_cost": 8,
+    "high_crit_ratio": true,
+    "effects": []
+  },
+  {
+    "name": "Close Combat",
+    "type": "Fighting",
+    "description": "Damages an enemy, but then lowers user's Defense and Special Defense by one level each.",
+    "category": "Physical",
+    "power": 120,
+    "accuracy": 100,
+    "range": "Adjacent enemy",
+    "pp_cost": 6,
+    "effects": [
+      {
+        "effect_type": "stat_change",
+        "stat": "Defense",
+        "stages": -1,
+        "chance": 1.0,
+        "target": "attacker"
+      },
+      {
+        "effect_type": "stat_change",
+        "stat": "Special_Defense",
+        "stages": -1,
+        "chance": 1.0,
+        "target": "attacker"
+      }
+    ]
+  },
+  {
+    "name": "Stomping Tantrum",
+    "type": "Ground",
+    "description": "Damages an enemy. 2x power if user's previous move missed or failed.",
+    "category": "Physical",
+    "power": 75,
+    "accuracy": 100,
+    "range": "Adjacent enemy",
+    "pp_cost": 8,
+    "effects": []
+  },
+  {
+    "name": "Outrage",
+    "type": "Dragon",
+    "description": "Damages an enemy 2-5 times, then confuses user.",
+    "category": "Physical",
+    "power": 40,
+    "accuracy": 100,
+    "range": "Adjacent enemy",
+    "pp_cost": 6,
+    "effects": [
+      {
+        "effect_type": "multi_hit",
+        "min_hits": 2,
+        "max_hits": 5,
+        "chance": 1.0
+      },
+      {
+        "effect_type": "status_apply",
+        "status": "Confusion",
+        "chance": 1.0,
+        "target": "attacker"
+      }
+    ]
+  },
+  {
+    "name": "Extreme Speed",
+    "type": "Normal",
+    "description": "Damages an enemy up to 3 tiles away. Cuts corners.",
+    "category": "Physical",
+    "power": 80,
+    "accuracy": 100,
+    "range": "Enemy up to 3 tiles away",
+    "cuts_corners": true,
+    "pp_cost": 7,
+    "effects": []
+  },
+  {
+    "name": "Howl",
+    "type": "Normal",
+    "description": "Raises Attack of all allies in the room by one level.",
+    "category": "Status",
+    "power": null,
+    "accuracy": null,
+    "range": "All allies in room, including user",
+    "pp_cost": 2,
+	"sound_based": true,
+    "effects": [
+      {
+        "effect_type": "stat_change",
+        "stat": "Attack",
+        "stages": 1,
+        "chance": 1.0
+      }
+    ]
+  },
+  {
+    "name": "Flame Wheel",
+    "type": "Fire",
+    "description": "Damages an enemy and has a 10% chance of burning them.",
+    "category": "Physical",
+    "power": 60,
+    "accuracy": 100,
+    "range": "Adjacent enemy",
+    "pp_cost": 4,
+    "effects": [
+      {
+        "effect_type": "status_apply",
+        "status": "Burn",
+        "chance": 0.1
+      }
+    ]
+  },
+  {
+    "name": "Retaliate",
+    "type": "Normal",
+    "description": "Damages an enemy. 2x power if an ally died in the last turn.",
+    "category": "Physical",
+    "power": 70,
+    "accuracy": 100,
+    "range": "Adjacent enemy",
+    "pp_cost": 4,
+    "effects": []
+  },
+  {
+    "name": "Dynamic Punch",
+    "type": "Fighting",
+    "description": "Damages an enemy. Highly inaccurate, but always confuses if it hits.",
+    "category": "Physical",
+    "power": 100,
+    "accuracy": 50,
+    "range": "Adjacent enemy",
+    "pp_cost": 6,
+    "effects": [
+      {
+        "effect_type": "status_apply",
+        "status": "Confusion",
+        "chance": 1.0
+      }
+    ]
+  },
+  {
+    "name": "Hypnosis",
+    "type": "Psychic",
+    "description": "Puts an adjacent enemy to sleep. If used on an enemy already asleep, wakes them up and makes them Terrified. Cuts corners.",
+    "category": "Status",
+    "power": null,
+    "accuracy": 60,
+    "range": "Adjacent enemy",
+    "cuts_corners": true,
+    "pp_cost": 3,
+    "effects": [
+      {
+        "effect_type": "status_apply",
+        "status": "Sleep",
+        "chance": 1.0
+      }
+    ]
+  },
+  {
+    "name": "Mud Shot",
+    "type": "Ground",
+    "description": "Damages an enemy and lowers their Speed and Movement Speed by one level each. Cuts corners.",
+    "category": "Physical",
+    "power": 55,
+    "accuracy": 95,
+    "range": "Adjacent enemy",
+    "pp_cost": 6,
+    "effects": [
+      {
+        "effect_type": "status_apply",
+        "status": "Slow",
+        "chance": 1.0
+      },
+      {
+        "effect_type": "stat_change",
+        "stat": "Speed",
+        "stages": -1,
+        "chance": 1.0
+      }
+    ]
+  },
+  {
+    "name": "Bubble Beam",
+    "type": "Water",
+    "description": "Damages an enemy up to 4 tiles away and has a 10% chance of lowering their Movement Speed by one level. Cuts corners.",
+    "category": "Special",
+    "power": 65,
+    "accuracy": 100,
+    "range": "Straight line up to 4 tiles",
+    "cuts_corners": true,
+    "pp_cost": 5,
+    "effects": [
+      {
+        "effect_type": "status_apply",
+        "status": "Slow",
+        "chance": 0.1
+      }
+    ]
+  },
+  {
+    "name": "Stun Spore",
+    "type": "Grass",
+    "description": "Paralyzes the target. Does not affect Grass-types.",
+    "category": "Status",
+    "power": null,
+    "accuracy": 75,
+    "range": "Adjacent enemy",
+    "pp_cost": 3,
+    "effects": [
+      {
+        "effect_type": "status_apply",
+        "status": "Paralysis",
+        "chance": 1.0,
+        "duration": 5
+      }
+    ]
+  },
+  {
+    "name": "Whirlwind",
+    "type": "Normal",
+    "description": "Blows an adjacent enemy away up to 10 tiles.",
+    "category": "Status",
+    "power": null,
+    "accuracy": 100,
+    "range": "Adjacent enemy",
+    "pp_cost": 3,
+    "effects": [
+      {
+        "effect_type": "whirlwind",
+        "chance": 1.0
+      }
+    ]
+  },
+  {
+    "name": "Safeguard",
+    "type": "Normal",
+    "description": "Gives user and allies Safeguard status, protecting them from negative status conditions.",
+    "category": "Status",
+    "power": null,
+    "accuracy": null,
+    "range": "All allies in room, including user",
+    "pp_cost": 3,
+    "effects": [
+      {
+        "effect_type": "status_apply",
+        "status": "Safeguard",
+        "chance": 1.0
+      }
+    ]
+  },
+  {
+    "name": "Fury Cutter",
+    "type": "Bug",
+    "description": "Damages an enemy up to 5 times, doubling in power with each hit, but ends on a miss.",
+    "category": "Physical",
+    "power": 15,
+    "accuracy": 90,
+    "range": "Adjacent enemy",
+    "pp_cost": 6,
+    "effects": []
+  },
+  {
+    "name": "Laser Focus",
+    "type": "Normal",
+    "description": "Grants user Laser Focus status effect, guaranteeing a critical hit for the next attack.",
+    "category": "Status",
+    "power": null,
+    "accuracy": null,
+    "range": "User",
+    "pp_cost": 2,
+    "effects": [
+      {
+        "effect_type": "status_apply",
+        "status": "Laser Focus",
+        "chance": 1.0,
+        "duration": 1
+      }
+    ]
+  },
+  {
+    "name": "Focus Energy",
+    "type": "Normal",
+    "description": "Grants user Focus Energy status effect for 3 turns, quadrupling critical hit rate.",
+    "category": "Status",
+    "power": null,
+    "accuracy": null,
+    "range": "User",
+    "pp_cost": 2,
+    "effects": [
+      {
+        "effect_type": "status_apply",
+        "status": "Focus Energy",
+        "chance": 1.0,
+        "duration": 3
+      }
+    ]
+  },
+  {
+    "name": "Venoshock",
+    "type": "Poison",
+    "description": "Damages an enemy. 2x power if target is poisoned.",
+    "category": "Special",
+    "power": 65,
+    "accuracy": 100,
+    "range": "Adjacent enemy",
+    "pp_cost": 3,
+    "effects": []
+  },
+  {
+    "name": "Assurance",
+    "type": "Dark",
+    "description": "Damages an enemy. 2x power if target is at 50% HP or less.",
+    "category": "Physical",
+    "power": 60,
+    "accuracy": 100,
+    "range": "Adjacent enemy",
+    "pp_cost": 3,
+    "effects": []
+  },
+  {
+    "name": "Endeavor",
+    "type": "Normal",
+    "description": "Damages an enemy, lowering their HP to that of the user. Fails if user has equal or more HP.",
+    "category": "Physical",
+    "power": 1,
+    "accuracy": 100,
+    "range": "Adjacent enemy",
+    "pp_cost": 3,
+    "effects": []
+  },
+  {
+    "name": "Fell Stinger",
+    "type": "Bug",
+    "description": "Damages an enemy. If this defeats the target, user's Attack rises by two levels.",
+    "category": "Physical",
+    "power": 50,
+    "accuracy": 100,
+    "range": "Adjacent enemy",
+    "pp_cost": 3,
+    "effects": []
+  },
+  {
+    "name": "Super Fang",
+    "type": "Normal",
+    "description": "Damages an enemy equal to half their remaining HP.",
+    "category": "Physical",
+    "power": 1,
+    "accuracy": 90,
+    "range": "Adjacent enemy",
+    "pp_cost": 3,
+	"sound_based": true,
+    "effects": []
+  },
+  {
+    "name": "Wrap",
+    "type": "Normal",
+    "description": "Wraps the target, preventing movement/attacks and dealing damage over 2-5 turns.",
+    "category": "Physical",
+    "power": 15,
+    "accuracy": 90,
+    "range": "Adjacent enemy",
+    "pp_cost": 3,
+    "effects": [
+      {
+        "effect_type": "wrap"
+      }
+    ]
+  },
+  {
+    "name": "Swallow",
+    "type": "Normal",
+    "description": "Restores HP depending on Stockpile charges, then resets charges and drops defenses.",
+    "category": "Status",
+    "power": null,
+    "accuracy": null,
+    "range": "User",
+    "pp_cost": 2,
+	"sound_based": true,
+    "effects": []
+  },
+  {
+    "name": "Spit Up",
+    "type": "Normal",
+    "description": "Damages target using Stockpile charges, then resets charges and drops defenses. Cuts corners.",
+    "category": "Special",
+    "power": 1,
+    "accuracy": 100,
+    "range": "Adjacent enemy",
+    "pp_cost": 2,
+    "cuts_corners": true,
+	"sound_based": true,
+    "effects": []
+  },
+  {
+    "name": "Belch",
+    "type": "Poison",
+    "description": "Damages an enemy. Consumes 10% Belly. Cuts corners.",
+    "category": "Special",
+    "power": 120,
+    "accuracy": 90,
+    "range": "Adjacent enemy",
+    "pp_cost": 10,
+    "cuts_corners": true,
+	"sound_based": true,
+    "effects": []
+  },
+  {
+    "name": "Haze",
+    "type": "Ice",
+    "description": "Resets the stat levels of all Pokémon in the room to normal.",
+    "category": "Status",
+    "power": null,
+    "accuracy": null,
+    "range": "All pokemon in room, including user",
+    "pp_cost": 2,
+    "effects": [
+      {
+        "effect_type": "haze",
+        "target": "defender"
+      }
+    ]
+  },
+  {
+    "name": "Electro Ball",
+    "type": "Electric",
+    "description": "Damages an enemy. Power increases the faster user is compared to the target. Cuts corners.",
+    "category": "Special",
+    "power": 1,
+    "accuracy": 100,
+    "range": "Adjacent enemy",
+    "pp_cost": 3,
+    "cuts_corners": true,
+    "effects": []
+  },
+  {
+    "name": "Feint",
+    "type": "Normal",
+    "description": "Damages an enemy up to 3 tiles away. Bypasses protection.",
+    "category": "Physical",
+    "power": 30,
+    "accuracy": 100,
+    "range": "Enemy up to 3 tiles away",
+    "pp_cost": 3,
+    "effects": []
+  },
+  {
+    "name": "Light Screen",
+    "type": "Psychic",
+    "description": "Gives Light Screen to the user and all allies, halving damage from Special moves.",
+    "category": "Status",
+    "power": null,
+    "accuracy": null,
+    "range": "All allies in room, including user",
+    "pp_cost": 2,
+    "effects": [
+      {
+        "effect_type": "status_apply",
+        "status": "Light Screen",
+        "duration": 10,
+        "chance": 1.0,
+        "target": "defender"
+      }
+    ]
+  },
+  {
+    "name": "Rollout",
+    "type": "Rock",
+    "description": "Damages an enemy up to 5 times, doubling in power with each hit, but ends on a miss. 2x power is user previously used Defense Curl.",
+    "category": "Physical",
+    "power": 10,
+    "accuracy": 90,
+    "range": "Adjacent enemy",
+    "pp_cost": 5,
+    "effects": []
+  },
+  {
+    "name": "Sand Tomb",
+    "type": "Ground",
+    "description": "Traps target, preventing movement and dealing damage over 2-5 turns.",
+    "category": "Physical",
+    "power": 35,
+    "accuracy": 85,
+    "range": "Adjacent enemy",
+    "pp_cost": 3,
+    "effects": [
+      {
+        "effect_type": "sand_tomb"
+      }
+    ]
+  },
+  {
+    "name": "Dig",
+    "type": "Ground",
+    "description": "Damages an enemy. User digs underground on first turn, becoming immune to most moves, then attacks on the next.",
+    "category": "Physical",
+    "power": 80,
+    "accuracy": 100,
+    "range": "Adjacent enemy",
+    "pp_cost": 2,
+    "effects": []
+  },
+  {
+    "name": "Gyro Ball",
+    "type": "Steel",
+    "description": "Damages an enemy. Power increases the slower the user is compared to the target.",
+    "category": "Physical",
+    "power": 1,
+    "accuracy": 100,
+    "range": "Adjacent enemy",
+    "pp_cost": 3,
+    "effects": []
+  },
+  {
+    "name": "Splash",
+    "type": "Water",
+    "description": "Moves user to a random adjacent tile. Damages user if they collide with something.",
+    "category": "Status",
+    "power": null,
+    "accuracy": null,
+    "range": "User",
+    "pp_cost": 1,
+    "effects": [
+      {
+        "effect_type": "splash"
+      }
+    ]
+  },
+  {
+    "name": "Encore",
+    "type": "Normal",
+    "description": "Forces target to repeat its last move for a while.",
+    "category": "Status",
+    "power": null,
+    "accuracy": 100,
+    "range": "Adjacent enemy",
+    "pp_cost": 5,
+	"sound_based": true,
+    "effects": [
+      {
+        "effect_type": "encore"
+      }
+    ]
+  },
+  {
+    "name": "After You",
+    "type": "Normal",
+    "description": "Switches places with a random teammate on the floor.",
+    "category": "Status",
+    "power": null,
+    "accuracy": null,
+    "range": "User",
+    "pp_cost": 3,
+	"sound_based": true,
+    "effects": [
+      {
+        "effect_type": "after_you"
+      }
+    ]
+  },
+  {
+    "name": "Gravity",
+    "type": "Normal",
+    "description": "Intensifies gravity on the floor, disabling aerial moves and boosting accuracy.",
+    "category": "Status",
+    "power": null,
+    "accuracy": null,
+    "range": "User",
+    "pp_cost": 5,
+    "effects": [
+      {
+        "effect_type": "gravity"
+      }
+    ]
+  },
+  {
+    "name": "Follow Me",
+    "type": "Normal",
+    "description": "Teleports all Pokémon in the room adjacent to the user.",
+    "category": "Status",
+    "power": null,
+    "accuracy": null,
+    "range": "User",
+    "pp_cost": 3,
+	"sound_based": true,
+    "effects": [
+      {
+        "effect_type": "follow_me"
+      }
+    ]
+  },
+  {
+    "name": "Healing Wish",
+    "type": "Fairy",
+    "description": "User sacrifices itself to fully restore HP, PP and Belly of all teammates and cure all negative status effects.",
+    "category": "Status",
+    "power": null,
+    "accuracy": null,
+    "range": "User",
+    "pp_cost": 15,
+	"sound_based": true,
+    "effects": [
+      {
+        "effect_type": "healing_wish"
+      }
+    ]
+  },
+  {
+    "name": "Copycat",
+    "type": "typeless",
+    "description": "Causes the user to use the last move that any other Pokemon on the floor used successfully.",
+    "category": "Status",
+    "power": null,
+    "accuracy": null,
+    "range": "User",
+    "pp_cost": 5,
+    "effects": [
+      {
+        "effect_type": "copycat"
+      }
+    ]
+  },
+  {
+    "name": "Metronome",
+    "type": "typeless",
+    "description": "User chooses a move at random at uses. Almost any move can be chosen from.",
+    "category": "Status",
+    "power": null,
+    "accuracy": null,
+    "range": "User",
+    "pp_cost": 4,
+    "effects": [
+      {
+        "effect_type": "metronome"
+      }
+    ]
+  },
+  {
+    "name": "Roar",
+    "type": "Normal",
+    "description": "Blows an adjacent enemy away up to 10 tiles.",
+    "category": "Status",
+    "power": null,
+    "accuracy": 100,
+    "range": "Adjacent enemy",
+    "pp_cost": 3,
+	"sound_based": true,
+    "effects": [
+      {
+        "effect_type": "whirlwind",
+        "chance": 1.0
+      }
+    ]
+  },
+  {
+    "name": "Kinesis",
+    "type": "Psychic",
+    "description": "Lowers an enemy's accuracy by one level.",
+    "category": "Status",
+    "power": null,
+    "accuracy": 80,
+    "range": "Adjacent enemy",
+    "pp_cost": 1,
+    "effects": [
+      {
+        "effect_type": "stat_change",
+        "stat": "Accuracy",
+        "stages": -1,
+        "chance": 1.0
+      }
+    ]
+  },
+  {
+    "name": "Psycho Cut",
+    "type": "Psychic",
+    "description": "Damages an enemy. Has an increased critical hit chance. Cuts corners.",
+    "category": "Physical",
+    "power": 70,
+    "accuracy": 100,
+    "high_crit_ratio": true,
+	"cuts_corners": true,
+    "range": "Adjacent enemy",
+    "pp_cost": 6,
+    "effects": []
+  },
+  {
+    "name": "Recover",
+    "type": "Normal",
+    "description": "Restores 50% of the user's HP.",
+    "category": "Status",
+    "power": null,
+    "accuracy": null,
+    "range": "User",
+    "pp_cost": 8,
+    "effects": [
+      {
+        "effect_type": "healing",
+        "heal_percent": 0.5,
+        "chance": 1.0,
+        "target": "attacker"
+      }
+    ]
+  },
+  {
+    "name": "Calm Mind",
+    "type": "Psychic",
+    "description": "Boosts user's Special Attack and Special Defense by one level each.",
+    "category": "Status",
+    "power": null,
+    "accuracy": null,
+    "range": "User",
+    "pp_cost": 2,
+    "effects": [
+      {
+        "effect_type": "stat_change",
+        "stat": "Special_Attack",
+        "stages": 1,
+        "chance": 1.0
+      },
+      {
+        "effect_type": "stat_change",
+        "stat": "Special_Defense",
+        "stages": 1,
+        "chance": 1.0
+      }
+    ]
+  },
+  {
+    "name": "Revenge",
+    "type": "Fighting",
+    "description": "Damages an enemy. 2x power if target damaged the user last turn.",
+    "category": "Physical",
+    "power": 60,
+    "accuracy": 100,
+    "range": "Adjacent enemy",
+    "pp_cost": 5,
+    "effects": []
+  },
+  {
+    "name": "Low Sweep",
+    "type": "Fighting",
+    "description": "Damages an enemy and lowers their Speed by one level.",
+    "category": "Physical",
+    "power": 65,
+    "accuracy": 100,
+    "range": "Adjacent enemy",
+    "pp_cost": 5,
+    "effects": [
+      {
+        "effect_type": "stat_change",
+        "stat": "Speed",
+        "stages": -1,
+        "chance": 1.0
+      }
+    ]
+  },
+  {
+    "name": "Knock Off",
+    "type": "Dark",
+    "description": "Damages an enemy. If they are holding an item, does 1.5x damage and knocks their held item to the ground.",
+    "category": "Physical",
+    "power": 65,
+    "accuracy": 100,
+    "range": "Adjacent enemy",
+    "pp_cost": 5,
+    "effects": []
+  },
+  {
+    "name": "Strength",
+    "type": "Fighting",
+    "description": "Damages an enemy.",
+    "category": "Physical",
+    "power": 80,
+    "accuracy": 100,
+    "range": "Adjacent enemy",
+    "pp_cost": 5,
+    "effects": []
+  },
+  {
+    "name": "Dual Chop",
+    "type": "Dragon",
+    "description": "Damages an enemy twice.",
+    "category": "Physical",
+    "power": 40,
+    "accuracy": 100,
+    "range": "Adjacent enemy",
+    "pp_cost": 4,
+    "effects": [
+      {
+        "effect_type": "multi_hit",
+        "min_hits": 2,
+        "max_hits": 2,
+        "chance": 1.0
+      }
+    ]
+  },
+  {
+    "name": "Bulk Up",
+    "type": "Fighting",
+    "description": "Boosts user's Attack and Defense by one level each.",
+    "category": "Status",
+    "power": null,
+    "accuracy": null,
+    "range": "User",
+    "pp_cost": 2,
+    "effects": [
+      {
+        "effect_type": "stat_change",
+        "stat": "Special_Attack",
+        "stages": 1,
+        "chance": 1.0
+      },
+      {
+        "effect_type": "stat_change",
+        "stat": "Special_Defense",
+        "stages": 1,
+        "chance": 1.0
+      }
+    ]
+  },
+  {
+    "name": "Cross Chop",
+    "type": "Fighting",
+    "description": "Damages an enemy. Has an increased critical hit chance.",
+    "category": "Physical",
+    "power": 100,
+    "accuracy": 80,
+    "high_crit_ratio": true,
+    "range": "Adjacent enemy",
+    "pp_cost": 8,
+    "effects": []
+  },
+  {
+    "name": "Leaf Storm",
+    "type": "Grass",
+    "description": "Greatly damages an enemy in a straight line up to 4 tiles away, but then lowers user's Special Attack by two levels. Cuts corners.",
+    "category": "Special",
+    "power": 130,
+    "accuracy": 90,
+    "range": "Straight line up to 4 tiles",
+    "pp_cost": 10,
+    "effects": [
+      {
+        "effect_type": "stat_change",
+        "stat": "Special_Attack",
+        "stages": -2,
+        "chance": 1.0,
+		"target": "attacker"
+      }
+    ]
+  },
+  {
+    "name": "Leaf Blade",
+    "type": "Grass",
+    "description": "Damages an enemy. Has an increased critical hit chance.",
+    "category": "Physical",
+    "power": 90,
+    "accuracy": 100,
+    "range": "Adjacent enemy",
+    "pp_cost": 6,
+    "high_crit_ratio": true,
+    "effects": []
+  },
+  {
+    "name": "Slam",
+    "type": "Normal",
+    "description": "Damages an enemy.",
+    "category": "Physical",
+    "power": 80,
+    "accuracy": 75,
+    "range": "Adjacent enemy",
+    "pp_cost": 3,
+    "effects": []
+  },
+  {
+    "name": "Hex",
+    "type": "Ghost",
+    "description": "Damages an enemy. 2x power if target is poisoned, burned, paralyzed, asleep or confused.",
+    "category": "Special",
+    "power": 50,
+    "accuracy": 100,
+    "range": "Adjacent enemy",
+    "pp_cost": 5,
+    "effects": []
+  },
+  {
+    "name": "Acid Armor",
+    "type": "Poison",
+    "description": "Raises user's Defense by two levels.",
+    "category": "Status",
+    "power": null,
+    "accuracy": null,
+    "range": "User",
+    "pp_cost": 2,
+    "effects": [
+      {
+        "effect_type": "stat_change",
+        "stat": "Defense",
+        "stages": 2,
+        "chance": 1.0
+      }
+    ]
+  },
+  {
+    "name": "Surf",
+    "type": "Water",
+    "description": "Damages all Pokémon in the room except the user. 2x damage on diving Pokémon.",
+    "category": "Special",
+    "power": 90,
+    "accuracy": 100,
+    "range": "All enemies and allies in room",
+    "pp_cost": 9,
+    "effects": []
+  },
+  {
+    "name": "Rock Polish",
+    "type": "Rock",
+    "description": "Boosts user's Speed by two levels and Movement Speed by one level.",
+    "category": "Status",
+    "power": null,
+    "accuracy": null,
+    "range": "User",
+    "pp_cost": 4,
+    "effects": [
+      {
+        "effect_type": "status_apply",
+        "status": "2x Speed",
+        "chance": 1.0
+      },
+      {
+        "effect_type": "stat_change",
+        "stat": "Speed",
+        "stages": 2,
+        "chance": 1.0
+      }
+    ]
+  },
+  {
+    "name": "Rock Throw",
+    "type": "Rock",
+    "description": "Damages an enemy. Cuts corners.",
+    "category": "Physical",
+    "power": 50,
+    "accuracy": 90,
+    "range": "Adjacent enemy",
+	"cuts_corners": true,
+    "pp_cost": 3,
+    "effects": []
+  },
+  {
+    "name": "Smack Down",
+    "type": "Rock",
+    "description": "Damages an enemy and forces them to the ground. 1.5x power on airborne enemies.",
+    "category": "Physical",
+    "power": 50,
+    "accuracy": 100,
+    "range": "Adjacent enemy",
+    "pp_cost": 4,
+    "effects": []
+  },
+  {
+    "name": "Rock Blast",
+    "type": "Rock",
+    "description": "Damages an enemy 2-5 times. Cuts corners.",
+    "category": "Physical",
+    "power": 25,
+    "accuracy": 90,
+    "range": "Adjacent enemy",
+	"cuts_corners": true,
+    "pp_cost": 5,
+    "effects": [
+      {
+        "effect_type": "multi_hit",
+        "min_hits": 2,
+        "max_hits": 5,
+        "chance": 1.0
+      }
+    ]
+  },
+  {
+    "name": "Stone Edge",
+    "type": "Rock",
+    "description": "Damages an enemy. Has an increased critical hit chance.",
+    "category": "Physical",
+    "power": 100,
+    "accuracy": 80,
+    "range": "Adjacent enemy",
+    "pp_cost": 8,
+    "high_crit_ratio": true,
+    "effects": []
+  },
+  {
+    "name": "Smart Strike",
+    "type": "Steel",
+    "description": "Damages an enemy. Never misses.",
+    "category": "Physical",
+    "power": 70,
+    "accuracy": null,
+    "range": "Adjacent enemy",
+    "pp_cost": 6,
+    "effects": []
+  },
+  {
+    "name": "Flame Charge",
+    "type": "Fire",
+    "description": "Damages an enemy, then raise's user's Speed by one level.",
+    "category": "Physical",
+    "power": 50,
+    "accuracy": 100,
+    "range": "Adjacent enemy",
+    "pp_cost": 4,
+    "effects": [
+      {
+        "effect_type": "stat_change",
+        "stat": "Speed",
+        "stages": 1,
+        "chance": 1.0,
+		"target": "attacker"
+      }
+    ]
+  },
+  {
+    "name": "Stomp",
+    "type": "Normal",
+    "description": "Damages an enemy and has a 30% chance of making them flinch. 2x power and never misses if target is minimized.",
+    "category": "Physical",
+    "power": 65,
+    "accuracy": 100,
+    "range": "Adjacent enemy",
+    "pp_cost": 6,
+    "effects": [
+      {
+        "effect_type": "status_apply",
+        "status": "Flinch",
+        "chance": 0.3
+      }
+    ]
+  },
+  {
+    "name": "Struggle",
+    "type": "typeless",
+    "description": "This message should never appear. Either you're a dirty hacker, or you found a bug ;)",
+    "category": "Physical",
+    "power": 50,
+    "accuracy": null,
+    "range": "Adjacent enemy",
+    "pp_cost": 1,
+    "effects": [
+      {
+        "effect_type": "recoil",
+        "recoil_percent": 1.0,
+        "chance": 1.0
+      }
+    ]
+  },
+  {
+    "name": "Disable",
+    "type": "Normal",
+    "description": "Disables the last move that the targeted enemy used.",
+    "category": "Status",
+    "power": null,
+    "accuracy": 100,
+    "range": "Adjacent enemy",
+    "pp_cost": 3,
+    "effects": [
+      {
+        "effect_type": "disable"
+      }
+    ]
+  },
+  {
+    "name": "Spite",
+    "type": "Ghost",
+    "description": "Damages an enemy's PP instead of their HP.",
+    "category": "Special",
+    "power": 15,
+    "accuracy": 95,
+    "range": "Adjacent enemy",
+    "pp_cost": 2,
+    "effects": []
+  },
+  {
+    "name": "Imprison",
+    "type": "Psychic",
+    "description": "Disables any moves of enemies on the floor that the user shares with them.",
+    "category": "Status",
+    "power": null,
+    "accuracy": null,
+    "range": "All enemies on floor",
+    "pp_cost": 3,
+    "effects": [
+      {
+        "effect_type": "imprison"
+      }
+    ]
+  },
+  {
+    "name": "Rest",
+    "type": "Normal",
+    "description": "User falls asleep for 3 turns. Afterwards, all HP is restored and negative status effects are cured. If user is woken up early, only 50% HP is restored.",
+    "category": "Status",
+    "power": null,
+    "accuracy": null,
+    "range": "User",
+    "pp_cost": 5,
+    "effects": [
+      {
+        "effect_type": "rest"
+      }
+    ]
+  },
+  {
+    "name": "Mimic",
+    "type": "Normal",
+    "description": "Copies a move from an adjacent target. Cuts corners.",
+    "category": "Status",
+    "power": null,
+    "accuracy": null,
+    "range": "Adjacent enemy",
+    "cuts_corners": true,
+    "pp_cost": 5,
+    "effects": [
+      {
+        "effect_type": "mimic"
+      }
+    ]
+  },
+  {
+    "name": "Absorb",
+    "type": "Grass",
+    "description": "Damages an adjacent enemy and heals the user for half the damage dealt.",
+    "category": "Special",
+    "power": 25,
+    "accuracy": 100,
+    "range": "Adjacent enemy",
+    "pp_cost": 3,
+    "effects": [
+      {
+        "effect_type": "drain"
+      }
+    ]
+  },
+  {
+    "name": "Mega Drain",
+    "type": "Grass",
+    "description": "Damages an adjacent enemy and heals the user for half the damage dealt.",
+    "category": "Special",
+    "power": 50,
+    "accuracy": 100,
+    "range": "Adjacent enemy",
+    "pp_cost": 5,
+    "effects": [
+      {
+        "effect_type": "drain"
+      }
+    ]
+  },
+  {
+    "name": "Giga Drain",
+    "type": "Grass",
+    "description": "Damages an adjacent enemy and heals the user for half the damage dealt.",
+    "category": "Special",
+    "power": 75,
+    "accuracy": 100,
+    "range": "Adjacent enemy",
+    "pp_cost": 6,
+    "effects": [
+      {
+        "effect_type": "drain"
+      }
+    ]
+  },
+  {
+    "name": "Leech Life",
+    "type": "Bug",
+    "description": "Damages an adjacent enemy and heals the user for half the damage dealt.",
+    "category": "Physical",
+    "power": 80,
+    "accuracy": 100,
+    "range": "Adjacent enemy",
+    "pp_cost": 7,
+    "effects": [
+      {
+        "effect_type": "drain"
+      }
+    ]
+  },
+  {
+    "name": "Mean Look",
+    "type": "Dark",
+    "description": "Causes an enemy to become Stuck. Does not affect Ghost-type Pokémon.",
+    "category": "Status",
+    "power": null,
+    "accuracy": null,
+    "range": "Adjacent enemy",
+    "pp_cost": 5,
+    "effects": [
+      {
+        "effect_type": "status_apply",
+        "status": "Stuck",
+        "chance": 1.0
+      }
+    ]
+  },
+  {
+    "name": "Quick Guard",
+    "type": "Normal",
+    "description": "Gives all allies in the room Quick Guard status, blocking non-adjacent moves for one turn.",
+    "category": "Status",
+    "power": null,
+    "accuracy": null,
+    "range": "All allies in room, including user",
+    "pp_cost": 3,
+    "effects": [
+      {
+        "effect_type": "status_apply",
+        "status": "Quick Guard",
+        "chance": 1.0
+      }
+    ]
+  },
+  {
+    "name": "Grassy Terrain",
+    "type": "Grass",
+    "description": "Changes the dungeon weather to Grassy Terrain, boosting HP recovery and the power of Grass-type moves.",
+    "category": "Status",
+    "power": null,
+    "accuracy": null,
+    "range": "User",
+    "pp_cost": 5,
+    "effects": [
+      {
+        "effect_type": "weather_change",
+        "weather": "Grassy Terrain",
+        "chance": 1.0
+      }
+    ]
+  },
+  {
+    "name": "Spore",
+    "type": "Grass",
+    "description": "Puts all enemies in the room to sleep. Does not affect Grass-type Pokémon.",
+    "category": "Status",
+    "power": null,
+    "accuracy": 90,
+    "range": "All enemies in room",
+    "pp_cost": 5,
+    "effects": [
+      {
+        "effect_type": "status_apply",
+        "status": "Sleep",
+        "chance": 1.0
+      }
+    ]
+  },
+  {
+    "name": "Aromatherapy",
+    "type": "Grass",
+    "description": "Cures the user and all allies in the room of all negative status conditions. Never misses.",
+    "category": "Status",
+    "power": null,
+    "accuracy": null,
+    "range": "All allies in room, including user",
+    "pp_cost": 5,
+    "effects": [
+      {
+        "effect_type": "cure_all_statuses"
+      }
+    ]
+  },
+  {
+    "name": "Headbutt",
+    "type": "Normal",
+    "description": "Damages an enemy and has a 30% chance of causing them to flinch.",
+    "category": "Physical",
+    "power": 70,
+    "accuracy": 100,
+    "range": "Adjacent enemy",
+    "pp_cost": 5,
+    "effects": [
+      {
+        "effect_type": "status_apply",
+        "status": "Flinch",
+        "chance": 0.3
+      }
+    ]
+  },
+  {
+    "name": "Heal Pulse",
+    "type": "Psychic",
+    "description": "Restores 50% of the HP of all adjacent Pokémon.",
+    "category": "Status",
+    "power": null,
+    "accuracy": null,
+    "range": "All adjacent enemies and allies",
+    "pp_cost": 10,
+    "effects": [
+      {
+        "effect_type": "healing",
+        "heal_percent": 0.5,
+        "chance": 1.0
+      }
+    ]
+  },
+  {
+    "name": "Withdraw",
+    "type": "Water",
+    "description": "Raises user's Defense by one level.",
+    "category": "Status",
+    "power": null,
+    "accuracy": null,
+    "range": "User",
+    "pp_cost": 1,
+    "effects": [
+      {
+        "effect_type": "stat_change",
+        "stat": "Defense",
+        "stages": 1,
+        "chance": 1.0
+      }
+    ]
+  },
+  {
+    "name": "Metal Sound",
+    "type": "Steel",
+    "description": "Lower's an enemy's Special Defense by two levels. Cuts corners.",
+    "category": "Status",
+    "power": null,
+    "accuracy": 100,
+    "range": "Adjacent enemy",
+    "cuts_corners": true,
+    "pp_cost": 2,
+	"sound_based": true,
+    "effects": [
+      {
+        "effect_type": "stat_change",
+        "stat": "Special_Defense",
+        "stages": -2,
+        "chance": 1.0
+      }
+    ]
+  },
+  {
+    "name": "Zap Cannon",
+    "type": "Electric",
+    "description": "Damages an enemy up to 4 tiles away. Highly inaccurate, but always paralyzes if it hits.",
+    "category": "Special",
+    "power": 120,
+    "accuracy": 50,
+    "range": "Straight line up to 4 tiles",
+    "pp_cost": 8,
+    "effects": [
+      {
+        "effect_type": "status_apply",
+        "status": "Paralysis",
+        "chance": 1.0
+      }
+    ]
+  },
+  {
+    "name": "Cut",
+    "type": "Normal",
+    "description": "Damages all adjacent enemies. Cuts corners.",
+    "category": "Physical",
+    "power": 50,
+    "accuracy": 100,
+    "range": "All adjacent enemies",
+	"cuts_corners": true,
+    "pp_cost": 4,
+    "effects": []
+  },
+  {
+    "name": "False Swipe",
+    "type": "Normal",
+    "description": "Damages an enemy and always leaves them with at least 1 HP.",
+    "category": "Physical",
+    "power": 40,
+    "accuracy": 100,
+    "range": "Adjacent enemy",
+    "pp_cost": 1,
+    "effects": []
+  },
+  {
+    "name": "Brave Bird",
+    "type": "Flying",
+    "description": "Damages an adjacent enemy, but inflicts 1/3 recoil. Cuts corners.",
+    "category": "Physical",
+    "power": 120,
+    "accuracy": 100,
+    "range": "Adjacent enemy",
+    "pp_cost": 6,
+	"cuts_corners": true,
+    "effects": [
+      {
+        "effect_type": "recoil",
+        "recoil_percent": 0.333,
+        "chance": 1.0
+      }
+    ]
+  },
+  {
+    "name": "Double Hit",
+    "type": "Normal",
+    "description": "Damages an enemy twice.",
+    "category": "Physical",
+    "power": 35,
+    "accuracy": 100,
+    "range": "Adjacent enemy",
+    "pp_cost": 4,
+    "effects": [
+      {
+        "effect_type": "multi_hit",
+        "min_hits": 2,
+        "max_hits": 2,
+        "chance": 1.0
+      }
+    ]
+  },
+  {
+    "name": "Icy Wind",
+    "type": "Ice",
+    "description": "Damages an enemy up to 4 tiles away and lowers their Speed by one level.",
+    "category": "Special",
+    "power": 55,
+    "accuracy": 95,
+    "range": "Straight line up to 4 tiles",
+    "pp_cost": 5,
+    "effects": [
+      {
+        "effect_type": "stat_change",
+        "stat": "Speed",
+        "stages": -1,
+        "chance": 1.0
+      }
+    ]
+  },
+  {
+    "name": "Ice Shard",
+    "type": "Ice",
+    "description": "Damages an enemy up to 2 tiles away. Cuts corners.",
+    "category": "Physical",
+    "power": 40,
+    "accuracy": 100,
+    "range": "Enemy up to 2 tiles away",
+    "cuts_corners": true,
+    "pp_cost": 3,
+    "effects": []
+  },
+  {
+    "name": "Aurora Beam",
+    "type": "Ice",
+    "description": "Damages an enemy up to 4 tiles away and has a 10% chance of lowering their Attack by one level. Cuts corners.",
+    "category": "Special",
+    "power": 65,
+    "accuracy": 100,
+    "range": "Straight line up to 4 tiles",
+	"cuts_corners": true,
+    "pp_cost": 5,
+    "effects": [
+      {
+        "effect_type": "stat_change",
+        "stat": "Attack",
+        "stages": -1,
+        "chance": 0.1
+      }
+    ]
+  },
+  {
+    "name": "Tri Attack",
+    "type": "Unique",
+    "description": "Damages an enemy. Considered to be Fire, Ice and Electric types all at once. Has a 20% chance to paralyze, freeze, or burn. Cuts corners.",
+    "category": "Special",
+    "power": 80,
+    "accuracy": 100,
+    "range": "Adjacent enemy",
+    "cuts_corners": true,
+    "pp_cost": 5,
+    "effects": [
+      {
+        "effect_type": "tri_attack_effects"
+      }
+    ]
+  },
+  {
+    "name": "Fissure",
+    "type": "Ground",
+    "description": "Defeats an enemy instantly. Very inaccurate. Can only be used if user's Speed is greater than the target, and accuracy depends on how much greater the user's Speed is. Always fails on Flying-types.",
+    "category": "Physical",
+    "power": null,
+    "accuracy": null,
+    "range": "Adjacent enemy",
+    "pp_cost": 7,
+    "effects": []
+  },
+  {
+    "name": "Taunt",
+    "type": "Dark",
+    "description": "Taunts an enemy, preventing them from using status moves or using items.",
+    "category": "Status",
+    "power": null,
+    "accuracy": 100,
+    "range": "Adjacent enemy",
+    "pp_cost": 3,
+	"sound_based": true,
+    "effects": [
+      {
+        "effect_type": "status_apply",
+        "status": "Taunted",
+        "chance": 1.0
+      }
+    ]
+  },
+  {
+    "name": "Fake Out",
+    "type": "Normal",
+    "description": "Damages an adjacent enemy and always causes flinching. Never misses. Can only be used once per floor.",
+    "category": "Physical",
+    "power": 60,
+    "accuracy": null,
+    "range": "Adjacent enemy",
+    "pp_cost": 1,
+    "effects": [
+      {
+        "effect_type": "status_apply",
+        "status": "Flinch",
+        "chance": 1.0
+      }
+    ]
+  },
+  {
+    "name": "Soak",
+    "type": "Water",
+    "description": "Changes the type of an enemy or ally to Water.",
+    "category": "Status",
+    "power": null,
+    "accuracy": 100,
+    "range": "Adjacent enemy or ally",
+    "pp_cost": 3,
+    "effects": [
+      {
+        "effect_type": "soak"
+      }
+    ]
+  },
+  {
+    "name": "Psych Up",
+    "type": "Psychic",
+    "description": "Copies an enemy's or ally's stat changes.",
+    "category": "Status",
+    "power": null,
+    "accuracy": 100,
+    "range": "Adjacent enemy or ally",
+    "pp_cost": 4,
+    "effects": [
+      {
+        "effect_type": "psych_up"
+      }
+    ]
+  },
+  {
+    "name": "Wonder Room",
+    "type": "Psychic",
+    "description": "Twists the dimensions of the floor, swapping Defense and Sp. Def stats of all Pokémon. Re-use removes the status.",
+    "category": "Status",
+    "power": null,
+    "accuracy": null,
+    "range": "User",
+    "pp_cost": 5,
+    "effects": [
+      {
+        "effect_type": "wonder_room"
+      }
+    ]
+  },
+  {
+    "name": "Reversal",
+    "type": "Fighting",
+    "description": "Damages an enemy. Power increases the lower the user's HP is.",
+    "category": "Physical",
+    "power": 5,
+    "accuracy": 100,
+    "range": "Adjacent enemy",
+    "pp_cost": 5,
+    "effects": []
+  },
+  {
+    "name": "Brine",
+    "type": "Water",
+    "description": "Damages an enemy. 2x power if target is below 50% HP.",
+    "category": "Special",
+    "power": 65,
+    "accuracy": 100,
+    "range": "Adjacent enemy",
+    "pp_cost": 5,
+    "effects": []
+  },
+  {
+    "name": "Ice Beam",
+    "type": "Water",
+    "description": "Damages an enemy up to 4 tiles away and has a 10% chance of freezing them. Cuts corners.",
+    "category": "Special",
+    "power": 90,
+    "accuracy": 100,
+    "range": "Straight line up to 4 tiles",
+    "cuts_corners": true,
+    "pp_cost": 8,
+    "effects": [
+      {
+        "effect_type": "status_apply",
+        "status": "Frozen",
+        "chance": 0.1
+      }
+    ]
+  },
+  {
+    "name": "Snowscape",
+    "type": "Ice",
+    "description": "Changes the floor's weather to Hail.",
+    "category": "Status",
+    "power": null,
+    "accuracy": null,
+    "range": "User",
+    "pp_cost": 3,
+    "effects": [
+      {
+        "effect_type": "weather_change",
+        "weather": "Hail",
+        "target": "attacker",
+        "chance": 1.0
+      }
+    ]
+  },
+  {
+    "name": "Poison Gas",
+    "type": "Poison",
+    "description": "Poisons all adjacent enemies.",
+    "category": "Status",
+    "power": null,
+    "accuracy": 90,
+    "range": "All adjacent enemies",
+    "pp_cost": 2,
+    "effects": [
+      {
+        "effect_type": "status_apply",
+        "status": "Poison",
+        "chance": 1.0
+      }
+    ]
+  },
+  {
+    "name": "Sludge Wave",
+    "type": "Poison",
+    "description": "Damages all adjacent enemies and allies and has a 10% chance of poisoning each of them.",
+    "category": "Special",
+    "power": 95,
+    "accuracy": 100,
+    "range": "All adjacent enemies and allies",
+    "pp_cost": 8,
+    "effects": [
+      {
+        "effect_type": "status_apply",
+        "status": "Poison",
+        "chance": 0.1
+      }
+    ]
+  },
+  {
+    "name": "Sludge",
+    "type": "Poison",
+    "description": "Damages an enemy and has a 30% chance of poisoning them. Cuts corners.",
+    "category": "Special",
+    "power": 65,
+    "accuracy": 100,
+    "range": "Adjacent enemy",
+    "pp_cost": 4,
+	"cuts_corners": true,
+    "effects": [
+      {
+        "effect_type": "status_apply",
+        "status": "Poison",
+        "chance": 0.3
+      }
+    ]
+  },
+  {
+    "name": "Icicle Spear",
+    "type": "Ice",
+    "description": "Damages an enemy 2-5 times. Cuts corners.",
+    "category": "Physical",
+    "power": 25,
+    "accuracy": 100,
+    "range": "Adjacent enemy",
+	"cuts_corners": true,
+    "pp_cost": 5,
+    "effects": [
+      {
+        "effect_type": "multi_hit",
+        "min_hits": 2,
+        "max_hits": 5,
+        "chance": 1.0
+      }
+    ]
+  },
+  {
+    "name": "Icicle Crash",
+    "type": "Ice",
+    "description": "Damages an enemy and has a 30% chance of causing them to flinch.",
+    "category": "Special",
+    "power": 85,
+    "accuracy": 90,
+    "range": "Adjacent enemy",
+    "pp_cost": 6,
+    "effects": [
+      {
+        "effect_type": "status_apply",
+        "status": "Flinch",
+        "chance": 0.3
+      }
+    ]
+  },
+  {
+    "name": "Razor Shell",
+    "type": "Water",
+    "description": "Damages an enemy and has a 50% chance of lowering their Defense by one level.",
+    "category": "Physical",
+    "power": 75,
+    "accuracy": 95,
+    "range": "Adjacent enemy",
+    "pp_cost": 6,
+    "effects": [
+      {
+        "effect_type": "stat_change",
+        "stat": "Defense",
+        "stages": -1,
+        "chance": 0.5
+      }
+    ]
+  },
+  {
+    "name": "Lick",
+    "type": "Ghost",
+    "description": "Damages an enemy and has a 10% chance of paralyzing them.",
+    "category": "Physical",
+    "power": 30,
+    "accuracy": 100,
+    "range": "Adjacent enemy",
+    "pp_cost": 3,
+	"sound_based": true,
+    "effects": [
+      {
+        "effect_type": "status_apply",
+        "status": "Paralysis",
+        "chance": 0.3
+      }
+    ]
+  },
+  {
+    "name": "Hex",
+    "type": "Ghost",
+    "description": "Damages an enemy. 2x power if target is poisoned, paralyzed, burned or asleep.",
+    "category": "Special",
+    "power": 65,
+    "accuracy": 100,
+    "range": "Adjacent enemy",
+    "pp_cost": 6,
+	"sound_based": true,
+    "effects": []
+  },
+  {
+    "name": "Dark Pulse",
+    "type": "Dark",
+    "description": "Damages all adjacent enemies and has a 20% chance of causing each to flinch.",
+    "category": "Special",
+    "power": 80,
+    "accuracy": 100,
+    "range": "All adjacent enemies",
+    "pp_cost": 7,
+    "effects": [
+      {
+        "effect_type": "status_apply",
+        "status": "Flinch",
+        "chance": 0.2
+      }
+    ]
+  },
+  {
+    "name": "Shadow Punch",
+    "type": "Ghost",
+    "description": "Damages an enemy. Never misses.",
+    "category": "Physical",
+    "power": 60,
+    "accuracy": null,
+    "range": "Adjacent enemy",
+    "pp_cost": 4,
+    "effects": []
+  },
+  {
+    "name": "Shadow Ball",
+    "type": "Ghost",
+    "description": "Damages an enemy up to 4 tiles away and has a 20% chance of lowering their Special Defense by one level. Cuts corners.",
+    "category": "Special",
+    "power": 80,
+    "accuracy": 100,
+    "range": "Straight line up to 4 tiles",
+    "cuts_corners": true,
+    "pp_cost": 7,
+    "effects": [
+      {
+        "effect_type": "stat_change",
+        "stat": "Special_Defense",
+        "stages": -1,
+        "chance": 0.2
+      }
+    ]
+  },
+  {
+    "name": "Hammer Arm",
+    "type": "Fighting",
+    "description": "Damages an enemy, but then lowers user's Movement Speed by one level.",
+    "category": "Physical",
+    "power": 100,
+    "accuracy": 90,
+    "range": "Adjacent enemy",
+    "pp_cost": 5,
+    "effects": [
+      {
+        "effect_type": "status_apply",
+        "status": "Slow",
+        "chance": 1.0,
+		"target": "attacker"
+      }
+    ]
+  },
+  {
+    "name": "Metal Claw",
+    "type": "Steel",
+    "description": "Damages an enemy and has a 10% chance of boosting the user's Attack by one level.",
+    "category": "Physical",
+    "power": 50,
+    "accuracy": 95,
+    "range": "Adjacent enemy",
+    "pp_cost": 3,
+    "effects": [
+      {
+        "effect_type": "stat_change",
+        "stat": "Attack",
+        "stages": 1,
+        "chance": 0.1,
+        "target": "attacker"
+      }
+    ]
+  },
+  {
+    "name": "Crab Hammer",
+    "type": "Water",
+    "description": "Damages an enemy. Has an increased critical hit chance.",
+    "category": "Physical",
+    "power": 100,
+    "accuracy": 95,
+    "high_crit_ratio": true,
+    "range": "Adjacent enemy",
+    "pp_cost": 8,
+    "effects": []
+  },
+  {
+    "name": "Charge",
+    "type": "Electric",
+    "description": "Boosts user's Special Defense by one level, and Electric-type attacks made next turn will do 2x damage.",
+    "category": "Status",
+    "power": null,
+    "accuracy": null,
+    "range": "User",
+    "pp_cost": 2,
+    "effects": [
+      {
+        "effect_type": "stat_change",
+        "stat": "Special_Defense",
+        "stages": 1,
+        "chance": 1.0
+      }
+    ]
+  },
+  {
+    "name": "Eerie Impulse",
+    "type": "Electric",
+    "description": "Lowers an enemy's Special Attack by two levels. Cuts corners.",
+    "category": "Status",
+    "power": null,
+    "accuracy": 100,
+    "range": "Adjacent enemy",
+	"cuts_corners": true,
+    "pp_cost": 2,
+    "effects": [
+      {
+        "effect_type": "stat_change",
+        "stat": "Special_Attack",
+        "stages": -2,
+        "chance": 1.0
+      }
+    ]
+  },
+  {
+    "name": "Charge Beam",
+    "type": "Electric",
+    "description": "Damages an enemy, then has a 70% chance of raising user's Special Attack by one level. Cuts corners.",
+    "category": "Physical",
+    "power": 50,
+    "accuracy": 100,
+    "range": "Adjacent enemy",
+	"cuts_corners": true,
+    "pp_cost": 4,
+    "effects": [
+      {
+        "effect_type": "stat_change",
+        "stat": "Special_Attack",
+        "stages": 1,
+        "chance": 0.7,
+		"target": "attacker"
+      }
+    ]
+  },
+  {
+    "name": "Wood Hammer",
+    "type": "Grass",
+    "description": "Damages an enemy, but inflicts 1/3 recoil.",
+    "category": "Physical",
+    "power": 120,
+    "accuracy": 100,
+    "range": "Adjacent enemy",
+    "pp_cost": 6,
+    "effects": [
+      {
+        "effect_type": "recoil",
+        "recoil_percent": 0.333,
+        "chance": 1.0
+      }
+    ]
+  },
+  {
+    "name": "Bone Rush",
+    "type": "Ground",
+    "description": "Damages an enemy 2-5 times. Cuts corners.",
+    "category": "Physical",
+    "power": 25,
+    "accuracy": 90,
+    "range": "Adjacent enemy",
+	"cuts_corners": true,
+    "pp_cost": 5,
+    "effects": [
+      {
+        "effect_type": "multi_hit",
+        "min_hits": 2,
+        "max_hits": 5,
+        "chance": 1.0
+      }
+    ]
+  },
+  {
+    "name": "Bonemerang",
+    "type": "Ground",
+    "description": "Damages all enemies in a line up to 10 tiles away twice. Cuts corners.",
+    "category": "Physical",
+    "power": 50,
+    "accuracy": 90,
+    "range": "Straight line piercing",
+    "cuts_corners": true,
+    "pp_cost": 7,
+    "effects": [
+      {
+        "effect_type": "multi_hit",
+        "min_hits": 2,
+        "max_hits": 2,
+        "chance": 1.0
+      }
+    ]
+  },
+  {
+    "name": "Brick Break",
+    "type": "Fighting",
+    "description": "Damages an enemy and destroys their Reflect and Light Screen.",
+    "category": "Physical",
+    "power": 75,
+    "accuracy": 100,
+    "range": "Adjacent enemy",
+    "pp_cost": 5,
+    "effects": []
+  },
+  {
+    "name": "Bullet Punch",
+    "type": "Steel",
+    "description": "Damages an enemy up to 2 tiles away. Cuts corners.",
+    "category": "Physical",
+    "power": 40,
+    "accuracy": 100,
+    "range": "Enemy up to 2 tiles away",
+    "cuts_corners": true,
+    "pp_cost": 4,
+    "effects": []
+  },
+  {
+    "name": "Blaze Kick",
+    "type": "Fire",
+    "description": "Damages an enemy and has a 10% chance of burning them. Has an increased critical hit chance.",
+    "category": "Physical",
+    "power": 85,
+    "accuracy": 90,
+    "range": "Adjacent enemy",
+    "high_crit_ratio": true,
+    "pp_cost": 7,
+    "effects": [
+      {
+        "effect_type": "status_apply",
+        "status": "Burn",
+        "chance": 0.1
+      }
+    ]
+  },
+  {
+    "name": "Mega Kick",
+    "type": "Fighting",
+    "description": "Damages an enemy.",
+    "category": "Physical",
+    "power": 120,
+    "accuracy": 75,
+    "range": "Adjacent enemy",
+    "pp_cost": 8,
+    "effects": []
+  },
+  {
+    "name": "Drain Punch",
+    "type": "Fighting",
+    "description": "Damages an adjacent enemy and heals the user for half the damage dealt.",
+    "category": "Physical",
+    "power": 75,
+    "accuracy": 100,
+    "range": "Adjacent enemy",
+    "pp_cost": 6,
+    "effects": [
+      {
+        "effect_type": "drain"
+      }
+    ]
+  },
+  {
+    "name": "Mach Punch",
+    "type": "Fighting",
+    "description": "Damages an enemy up to 2 tiles away. Cuts corners.",
+    "category": "Physical",
+    "power": 40,
+    "accuracy": 100,
+    "range": "Enemy up to 2 tiles away",
+    "cuts_corners": true,
+    "pp_cost": 4,
+    "effects": []
+  },
+  {
+    "name": "Vacuum Wave",
+    "type": "Fighting",
+    "description": "Damages an enemy up to 2 tiles away. Cuts corners.",
+    "category": "Special",
+    "power": 40,
+    "accuracy": 100,
+    "range": "Enemy up to 2 tiles away",
+    "cuts_corners": true,
+    "pp_cost": 4,
+    "effects": []
+  },
+  {
+    "name": "Fire Punch",
+    "type": "Fire",
+    "description": "Damages an enemy and has a 10% chance of burning them.",
+    "category": "Physical",
+    "power": 75,
+    "accuracy": 100,
+    "range": "Adjacent enemy",
+    "pp_cost": 6,
+    "effects": [
+      {
+        "effect_type": "status_apply",
+        "status": "Burn",
+        "chance": 0.1
+      }
+    ]
+  },
+  {
+    "name": "Ice Punch",
+    "type": "Fire",
+    "description": "Damages an enemy and has a 10% chance of freezing them.",
+    "category": "Physical",
+    "power": 75,
+    "accuracy": 100,
+    "range": "Adjacent enemy",
+    "pp_cost": 6,
+    "effects": [
+      {
+        "effect_type": "status_apply",
+        "status": "Frozen",
+        "chance": 0.1
+      }
+    ]
+  },
+  {
+    "name": "Mega Punch",
+    "type": "Fighting",
+    "description": "Damages an enemy.",
+    "category": "Physical",
+    "power": 80,
+    "accuracy": 85,
+    "range": "Adjacent enemy",
+    "pp_cost": 5,
+    "effects": []
+  },
+  {
+    "name": "Smog",
+    "type": "Poison",
+    "description": "Damages an enemy and has a 40% chance of poisoning them.",
+    "category": "Physical",
+    "power": 30,
+    "accuracy": 70,
+    "range": "Adjacent enemy",
+    "cuts_corners": true,
+    "pp_cost": 2,
+    "effects": [
+      {
+        "effect_type": "status_apply",
+        "status": "Poison",
+        "chance": 0.4
+      }
+    ]
+  },
+  {
+    "name": "Clear Smog",
+    "type": "Poison",
+    "description": "Damages an enemy and resets all of their stats. Never misses.",
+    "category": "Special",
+    "power": 50,
+    "accuracy": null,
+    "range": "Adjacent enemy",
+    "pp_cost": 5,
+    "effects": [
+      {
+        "effect_type": "haze",
+        "target": "defender"
+      }
+    ]
+  },
+  {
+    "name": "Ancient Power",
+    "type": "Rock",
+    "description": "Damages an enemy and has a 10% chance of raising each of the user's stats by one level. Cuts corners.",
+    "category": "Special",
+    "power": 60,
+    "accuracy": 100,
+    "range": "Adjacent enemy",
+	"cuts_corners": true,
+    "pp_cost": 5,
+    "effects": [
+      {
+        "effect_type": "stat_change",
+        "stat": "Attack",
+        "stages": 1,
+        "chance": 0.1,
+		"target": "attacker"
+      },
+      {
+        "effect_type": "stat_change",
+        "stat": "Defense",
+        "stages": 1,
+        "chance": 0.1,
+		"target": "attacker"
+      },
+      {
+        "effect_type": "stat_change",
+        "stat": "Special_Attack",
+        "stages": 1,
+        "chance": 0.1
+      },
+      {
+        "effect_type": "stat_change",
+        "stat": "Special_Defense",
+		"stages": 1,
+        "chance": 0.1,
+		"target": "attacker"
+      },
+      {
+        "effect_type": "stat_change",
+        "stat": "Speed",
+        "stages": 1,
+        "chance": 0.1,
+		"target": "attacker"
+      },
+      {
+        "effect_type": "stat_change",
+        "stat": "Accuracy",
+        "stages": 1,
+        "chance": 0.1,
+		"target": "attacker"
+      },
+      {
+        "effect_type": "stat_change",
+        "stat": "Evasion",
+        "stages": 1,
+        "chance": 0.1,
+		"target": "attacker"
+      },
+      {
+        "effect_type": "status_apply",
+        "status": "2x Speed",
+        "chance": 0.1,
+		"target": "attacker"
+      }
+    ]
+  },
+  {
+    "name": "Tickle",
+    "type": "Normal",
+    "description": "Lowers an enemy's Attack and Defense by one level each.",
+    "category": "Status",
+    "power": null,
+    "accuracy": 100,
+    "range": "Adjacent enemy",
+    "pp_cost": 2,
+    "effects": [
+      {
+        "effect_type": "stat_change",
+        "stat": "Attack",
+        "stages": -1,
+        "chance": 1.0
+      },
+      {
+        "effect_type": "stat_change",
+        "stat": "Defense",
+        "stages": -1,
+        "chance": 1.0
+      }
+    ]
+  },
+  {
+    "name": "Fling",
+    "type": "Dark",
+    "description": "Flings an adjacent Pokémon backwards up to 10 tiles. Pokémon that collide with a wall or another Pokémon take damage.",
+    "category": "Physical",
+    "power": 1,
+    "accuracy": 100,
+    "range": "Adjacent enemy or ally",
+    "pp_cost": 5,
+    "effects": []
+  },
+  {
+    "name": "Low Kick",
+    "type": "Fighting",
+    "description": "Damages an adjacent enemy. Power increases the heavier the target is.",
+    "category": "Physical",
+    "power": 20,
+    "accuracy": 100,
+    "range": "Adjacent enemy",
+    "pp_cost": 4,
+    "effects": []
+  },
+  {
+    "name": "Seismic Toss",
+    "type": "Fighting",
+    "description": "Throws an adjacent Pokémon toward the nearest enemy. If they hit a wall or another Pokémon, they take damage equal to the user's level.",
+    "category": "Physical",
+    "power": 1,
+    "accuracy": 100,
+    "range": "Adjacent enemy or ally",
+    "pp_cost": 5,
+    "effects": []
+  },
+  {
+    "name": "Thrash",
+    "type": "Normal",
+    "description": "Attacks 3 adjacent tiles at random, then confuses user.",
+    "category": "Physical",
+    "power": 120,
+    "accuracy": 100,
+    "range": "User",
+    "pp_cost": 8,
+    "effects": []
+  },
+  {
+    "name": "Final Gambit",
+    "type": "Fighting",
+    "description": "Deals damage equal to user's current HP minus 1, then reduces user's HP to 1.",
+    "category": "Special",
+    "power": 1,
+    "accuracy": 100,
+    "range": "Adjacent enemy",
+    "pp_cost": 10,
+    "effects": []
+  },
+  {
+    "name": "Circle Throw",
+    "type": "Fighting",
+    "description": "Damages an adjacent enemy, then throws them backward up to 5 tiles. If the thrown Pokémon collides with something, they take damage again.",
+    "category": "Physical",
+    "power": 30,
+    "accuracy": 90,
+    "range": "Adjacent enemy",
+    "pp_cost": 5,
+    "effects": []
+  },
+  {
+    "name": "Belly Drum",
+    "type": "Normal",
+    "description": "Consumes 50% Belly to maximize the user's Attack stat.",
+    "category": "Status",
+    "power": null,
+    "accuracy": null,
+    "range": "User",
+    "pp_cost": 0,
+    "effects": []
+  },
+  {
+    "name": "Ally Switch",
+    "type": "Psychic",
+    "description": "Switches places with a random teammate on the floor.",
+    "category": "Status",
+    "power": null,
+    "accuracy": null,
+    "range": "User",
+    "pp_cost": 5,
+    "effects": [
+      {
+        "effect_type": "after_you"
+      }
+    ]
+  },
+  {
+    "name": "Teleport",
+    "type": "Psychic",
+    "description": "Warps user somewhere else on the floor.",
+    "category": "Status",
+    "power": null,
+    "accuracy": null,
+    "range": "User",
+    "pp_cost": 2,
+    "effects": []
+  },
+  {
+    "name": "Reflect",
+    "type": "Psychic",
+    "description": "Gives Light Screen to the user and all allies, halving damage from Special moves.",
+    "category": "Status",
+    "power": null,
+    "accuracy": null,
+    "range": "All allies in room, including user",
+    "pp_cost": 2,
+    "effects": [
+      {
+        "effect_type": "status_apply",
+        "status": "Reflect",
+        "duration": 10,
+        "chance": 1.0,
+        "target": "ally"
+      }
+    ]
+  },
+  {
+    "name": "Psyshock",
+    "type": "Psychic",
+    "description": "Damages an enemy using their Physical Defense for damage.",
+    "category": "Special",
+    "power": 80,
+    "accuracy": 100,
+    "range": "Adjacent enemy",
+    "pp_cost": 5,
+    "effects": []
+  },
+  {
+    "name": "Future Sight",
+    "type": "Psychic",
+    "description": "Targets an adjacent tile. On the next turn, the Pokémon standing on this tile is damaged.",
+    "category": "Special",
+    "power": 120,
+    "accuracy": 100,
+    "range": "Adjacent tile",
+    "pp_cost": 8,
+    "effects": []
+  },
+  {
+    "name": "Wide Guard",
+    "type": "Normal",
+    "description": "Gives all allies in the room Wide Guard status, blocking multi-target moves for one turn.",
+    "category": "Status",
+    "power": null,
+    "accuracy": null,
+    "range": "All allies in room, including user",
+    "pp_cost": 5,
+    "effects": [
+      {
+        "effect_type": "status_apply",
+        "status": "Wide Guard",
+        "duration": 1,
+        "chance": 1.0,
+        "target": "ally"
+      }
+    ]
+  },
+  {
+    "name": "Vital Throw",
+    "type": "Fighting",
+    "description": "User receives the Vital Throw status, causing adjacent attackers to be thrown backward if they damage the user.",
+    "category": "Status",
+    "power": null,
+    "accuracy": null,
+    "range": "User",
+    "pp_cost": 5,
+    "effects": [
+      {
+        "effect_type": "status_apply",
+        "status": "Vital Throw",
+        "duration": null,
+        "chance": 1.0,
+        "target": "self"
+      }
+    ]
+  },
+  {
+    "name": "Reflect Type",
+    "type": "typeless",
+    "description": "Changes the user's types to match those of an adjacent target.",
+    "category": "Status",
+    "power": null,
+    "accuracy": null,
+    "range": "Adjacent enemy or ally",
+    "pp_cost": 5,
+    "effects": [
+      {
+        "effect_type": "reflect_type"
+      }
+    ]
+  },
+  {
+    "name": "Heavy Slam",
+    "type": "Steel",
+    "description": "Damages an enemy. Power increases the heavier the user is compared to the target.",
+    "category": "Physical",
+    "power": 80,
+    "accuracy": 100,
+    "range": "Adjacent enemy",
+    "pp_cost": 5,
+    "effects": []
+  },
+  {
+    "name": "Dragon Pulse",
+    "type": "Rock",
+    "description": "Damages an enemy. Cuts corners.",
+    "category": "Special",
+    "power": 85,
+    "accuracy": 100,
+    "range": "Adjacent enemy",
+    "cuts_corners": true,
+    "pp_cost": 6,
+    "effects": []
+  },
+  {
+    "name": "Dragon Dance",
+    "type": "Dragon",
+    "description": "Boosts user's Attack and Speed by one level each.",
+    "category": "Status",
+    "power": null,
+    "accuracy": null,
+    "range": "User",
+    "pp_cost": 2,
+    "effects": [
+      {
+        "effect_type": "stat_change",
+        "stat": "Attack",
+        "stages": 1,
+        "chance": 1.0
+      },
+      {
+        "effect_type": "stat_change",
+        "stat": "Speed",
+        "stages": 1,
+        "chance": 1.0
+      }
+    ]
+  },
+  {
+    "name": "Waterfall",
+    "type": "Water",
+    "description": "Damages an enemy and has a 20% chance of causing them to flinch.",
+    "category": "Physical",
+    "power": 80,
+    "accuracy": 100,
+    "range": "Adjacent enemy",
+    "pp_cost": 6,
+    "effects": [
+      {
+        "effect_type": "status_apply",
+        "status": "Flinch",
+        "chance": 0.2
+      }
+    ]
+  },
+  {
+    "name": "Dazzling Gleam",
+    "type": "Fairy",
+    "description": "Damages all adjacent enemies. Cuts corners.",
+    "category": "Special",
+    "power": 80,
+    "accuracy": 100,
+    "range": "All adjacent enemies",
+	"cuts_corners": true,
+    "pp_cost": 7,
+    "effects": []
+  },
+  {
+    "name": "Teeter Dance",
+    "type": "Normal",
+    "description": "Confuses all enemies and allies in the room.",
+    "category": "Status",
+    "power": null,
+    "accuracy": 100,
+    "range": "All enemies and allies in room",
+    "cuts_corners": true,
+    "pp_cost": 6,
+    "effects": [
+      {
+        "effect_type": "status_apply",
+        "status": "Confusion",
+        "chance": 1.0
+      }
+    ]
+  },
+  {
+    "name": "Powder Snow",
+    "type": "Ice",
+    "description": "Damages all enemies in the room.",
+    "category": "Special",
+    "power": 40,
+    "accuracy": 100,
+    "range": "All enemies in room",
+    "pp_cost": 4,
+    "effects": []
+  },
+  {
+    "name": "Fake Tears",
+    "type": "Dark",
+    "description": "Lowers an enemy's Special Defense by two levels.",
+    "category": "Status",
+    "power": null,
+    "accuracy": 100,
+    "range": "Adjacent enemy",
+    "pp_cost": 2,
+	"sound_based": true,
+    "effects": [
+      {
+        "effect_type": "stat_change",
+        "stat": "Special_Defense",
+        "stages": -2,
+        "chance": 1.0
+      }
+    ]
+  },
+  {
+    "name": "Lovely Kiss",
+    "type": "Dark",
+    "description": "Puts all adjacent enemies to sleep.",
+    "category": "Status",
+    "power": null,
+    "accuracy": 75,
+    "range": "All adjacent enemies",
+    "pp_cost": 4,
+	"sound_based": true,
+    "effects": [
+      {
+        "effect_type": "status_apply",
+        "status": "Sleep",
+        "chance": 1.0
+      }
+    ]
+  },
+  {
+    "name": "Shock Wave",
+    "type": "Electric",
+    "description": "Damages all adjacent enemies. Never misses.",
+    "category": "Special",
+    "power": 60,
+    "accuracy": null,
+    "range": "All adjacent enemies",
+    "pp_cost": 6,
+    "effects": []
+  },
+  {
+    "name": "Lava Plume",
+    "type": "Fire",
+    "description": "Damages all adjacent enemies and has a 30% chance of burning each of them.",
+    "category": "Special",
+    "power": 80,
+    "accuracy": 100,
+    "range": "All adjacent enemies",
+    "pp_cost": 6,
+    "effects": [
+      {
+        "effect_type": "status_apply",
+        "status": "Burn",
+        "chance": 0.3
+      }
+    ]
+  },
+  {
+    "name": "Sunny Day",
+    "type": "Fire",
+    "description": "Changes the floor's weather to Sunny.",
+    "category": "Status",
+    "power": null,
+    "accuracy": null,
+    "range": "User",
+    "pp_cost": 3,
+    "effects": [
+      {
+        "effect_type": "weather_change",
+        "weather": "Sunny",
+        "target": "attacker",
+        "chance": 1.0
+      }
+    ]
+  },
+  {
+    "name": "Vise Grip",
+    "type": "Normal",
+    "description": "Damages an enemy.",
+    "category": "Physical",
+    "power": 55,
+    "accuracy": 100,
+    "range": "Adjacent enemy",
+    "pp_cost": 3,
+    "effects": []
+  },
+  {
+    "name": "Submission",
+    "type": "Fighting",
+    "description": "Damages an enemy, but inflicts 1/4 recoil.",
+    "category": "Physical",
+    "power": 80,
+    "accuracy": 80,
+    "range": "Adjacent enemy",
+    "pp_cost": 4,
+    "effects": [
+      {
+        "effect_type": "recoil",
+        "recoil_percent": 0.25,
+        "chance": 1.0
+      }
+    ]
+  },
+  {
+    "name": "Work Up",
+    "type": "Normal",
+    "description": "Boosts the user's Attack and Special Attack stats by one level each.",
+    "category": "Status",
+    "power": null,
+    "accuracy": null,
+    "range": "User",
+    "pp_cost": 2,
+    "effects": [
+      {
+        "effect_type": "stat_change",
+        "stat": "Attack",
+        "stages": 1,
+        "chance": 1.0
+      },
+      {
+        "effect_type": "stat_change",
+        "stat": "Special_Attack",
+        "stages": 1,
+        "chance": 1.0
+      }
+    ]
+  },
+  {
+    "name": "Baby-Doll Eyes",
+    "type": "Fairy",
+    "description": "Lowers an enemy's Attack by one level.",
+    "category": "Status",
+    "power": null,
+    "accuracy": 100,
+    "range": "Adjacent enemy",
+    "pp_cost": 1,
+    "effects": [
+      {
+        "effect_type": "stat_change",
+        "stat": "Attack",
+        "stages": -1,
+        "chance": 1.0
+      }
+    ]
+  },
+  {
+    "name": "Liquidation",
+    "type": "Water",
+    "description": "Damages an enemy and has a 20% chance of lowering their Defense by one level.",
+    "category": "Physical",
+    "power": 85,
+    "accuracy": 100,
+    "range": "Adjacent enemy",
+    "pp_cost": 7,
+    "effects": [
+      {
+        "effect_type": "stat_change",
+        "stat": "Defense",
+        "stages": -1,
+        "chance": 0.2
+      }
+    ]
+  },
+  {
+    "name": "Rock Slide",
+    "type": "Rock",
+    "description": "Damages an enemy and has a 30% chance of causing them to flinch.",
+    "category": "Physical",
+    "power": 75,
+    "accuracy": 100,
+    "range": "Adjacent enemy",
+    "pp_cost": 6,
+    "effects": [
+      {
+        "effect_type": "status_apply",
+        "status": "Flinch",
+        "chance": 0.3
+      }
+    ]
+  },
+  {
+    "name": "Block",
+    "type": "Normal",
+    "description": "Causes an enemy to become Stuck. Does not affect Ghost-type Pokemon.",
+    "category": "Status",
+    "power": null,
+    "accuracy": null,
+    "range": "Adjacent enemy",
+    "pp_cost": 5,
+    "effects": [
+      {
+        "effect_type": "status_apply",
+        "status": "Stuck",
+        "chance": 1.0
+      }
+    ]
+  },
+  {
+    "name": "High Horsepower",
+    "type": "Ground",
+    "description": "Damages an enemy.",
+    "category": "Physical",
+    "power": 95,
+    "accuracy": 95,
+    "range": "Adjacent enemy",
+    "pp_cost": 6,
+    "effects": []
+  },
+  {
+    "name": "Overheat",
+    "type": "Fire",
+    "description": "Greatly damages all adjacent enemies, but then lowers user's Special Attack by two levels. Cuts corners.",
+    "category": "Special",
+    "power": 130,
+    "accuracy": 90,
+    "range": "All adjacent enemies",
+    "pp_cost": 8,
+    "effects": [
+      {
+        "effect_type": "stat_change",
+        "stat": "Special_Attack",
+        "stages": -2,
+        "chance": 1.0,
+		"target": "attacker"
+      }
+    ]
+  },
+  {
+    "name": "Psystrike",
+    "type": "Psychic",
+    "description": "Damages an enemy using their physical Defense for damage calculation.",
+    "category": "Special",
+    "power": 100,
+    "accuracy": 100,
+    "range": "Adjacent enemy",
+    "pp_cost": 7,
+    "effects": []
+  },
+  {
+    "name": "Dragon Tail",
+    "type": "Dragon",
+    "description": "Damages an adjacent enemy, then throws them backward up to 5 tiles. If the thrown Pokémon collides with something, they take damage again.",
+    "category": "Physical",
+    "power": 30,
+    "accuracy": 90,
+    "range": "Adjacent enemy",
+    "pp_cost": 5,
+    "effects": []
+  },
+  {
+    "name": "Dragon Rush",
+    "type": "Dragon",
+    "description": "Damages an enemy and has a 20% chance of causing them to flinch. Deals 2x damage on minimized enemies and always hits.",
+    "category": "Special",
+    "power": 100,
+    "accuracy": 75,
+    "range": "Adjacent enemy",
+    "pp_cost": 8,
+    "effects": [
+      {
+        "effect_type": "status_apply",
+        "status": "Flinch",
+        "chance": 0.2
+      }
+    ]
+  },
+  {
+    "name": "Curse",
+    "type": "Ghost",
+    "description": "If user is Ghost-type, user loses half of their HP to place a curse on an enemy, causing all attacks made against them to be critical hits. Otherwise lowers user's Speed by one level and raises Attack and Defense by one level.",
+    "category": "Status",
+    "power": null,
+    "accuracy": null,
+    "range": "Adjacent enemy",
+    "pp_cost": 3,
+    "effects": []
+  },
+  {
+    "name": "Yawn",
+    "type": "Normal",
+    "description": "Makes an enemy Drowsy, making them fall asleep after 3 turns. Never misses.",
+    "category": "Status",
+    "power": null,
+    "accuracy": null,
+    "range": "Adjacent enemy",
+    "pp_cost": 2,
+	"sound_based": true,
+    "effects": []
+  },
+  {
+    "name": "Electric Terrain",
+    "type": "Electric",
+    "description": "Starts Electric Terrain in the dungeon for 10-20 turns, boosting Electric moves by 30% for grounded Pokémon and preventing them from falling asleep.",
+    "category": "Status",
+    "power": null,
+    "accuracy": null,
+    "range": "User",
+    "pp_cost": 2,
+    "effects": []
+  },
+  {
+    "name": "Magnet Rise",
+    "type": "Electric",
+    "description": "Levitates the user for 5 turns, granting immunity to Ground-type attacks.",
+    "category": "Status",
+    "power": null,
+    "accuracy": null,
+    "range": "User",
+    "pp_cost": 2,
+    "effects": []
+  },
+  {
+    "name": "Lock-On",
+    "type": "Normal",
+    "description": "Guarantees that the user's next attack against the target will not miss no matter what.",
+    "category": "Status",
+    "power": null,
+    "accuracy": null,
+    "range": "Adjacent enemy",
+    "pp_cost": 2,
+    "effects": []
+  },
+  {
+    "name": "Uproar",
+    "type": "Normal",
+    "description": "Damages all enemies in the room and inflicts Sleepless status on all Pokémon in the room.",
+    "category": "Special",
+    "power": 90,
+    "accuracy": 100,
+    "range": "All enemies in room",
+    "pp_cost": 6,
+	"sound_based": true,
+    "effects": []
+  },
+  {
+    "name": "Acupressure",
+    "type": "Normal",
+    "description": "Targets all allies in the room, randomly raising one of their stats by one or two levels.",
+    "category": "Status",
+    "power": null,
+    "accuracy": null,
+    "range": "All allies in room, including user",
+    "pp_cost": 4,
+    "effects": []
+  },
+  {
+    "name": "Sheer Cold",
+    "type": "Ice",
+    "description": "Defeats an enemy instantly. Very inaccurate. Can only be used if user's Speed is greater than the target, and accuracy depends on how much greater the user's Speed is.",
+    "category": "Special",
+    "power": null,
+    "accuracy": null,
+    "range": "Adjacent enemy",
+    "pp_cost": 7,
+    "effects": []
+  },
+  {
+    "name": "Aqua Ring",
+    "type": "Water",
+    "description": "Doubles user's HP regeneration for the floor.",
+    "category": "Status",
+    "power": null,
+    "accuracy": null,
+    "range": "User",
+    "pp_cost": 5,
+    "effects": []
+  },
+  {
+    "name": "Dive",
+    "type": "Water",
+    "description": "Dives underwater, becoming invulnerable to most moves, then attacks on the next turn.",
+    "category": "Physical",
+    "power": 80,
+    "accuracy": 100,
+    "range": "Adjacent enemy",
+    "pp_cost": 5,
+    "effects": []
+  },
+  {
+    "name": "Minimize",
+    "type": "Normal",
+    "description": "Raises user's Evasion by two levels, but gives them Minimized status, which causes them to take more damage from certain moves.",
+    "category": "Status",
+    "power": null,
+    "accuracy": null,
+    "range": "User",
+    "pp_cost": 2,
+    "effects": []
+  },
+  {
+    "name": "Memento",
+    "type": "Dark",
+    "description": "The user faints instantly. Drops all stats of every enemy in the room their minimum.",
+    "category": "Status",
+    "power": null,
+    "accuracy": 100,
+    "range": "Room",
+    "pp_cost": 20,
+    "effects": []
+  },
+  {
+    "name": "Whirlpool",
+    "type": "Water",
+    "description": "Traps target for 2-5 turns, dealing damage each turn. Deals double damage against Diving targets and forces them out of the dive.",
+    "category": "Special",
+    "power": 35,
+    "accuracy": 85,
+    "range": "Adjacent enemy",
+    "pp_cost": 3,
+    "effects": [
+      {
+        "effect_type": "whirlpool"
+      }
+    ]
+  },
+  {
+    "name": "Perish Song",
+    "type": "Ghost",
+    "description": "Attempts to inflict Perishing status on all Pokémon on the floor, causing them to faint in 5 turns.",
+    "category": "Status",
+    "power": null,
+    "accuracy": 20,
+    "range": "Floor",
+    "pp_cost": 10,
+	"sound_based": true,
+    "effects": []
+  },
+  {
+    "name": "Counter",
+    "type": "Dark",
+    "description": "Allows user to counter Physical attacks made against them for a short time, reflecting half of the damage back to the attacker.",
+    "category": "Status",
+    "power": null,
+    "accuracy": null,
+    "range": "User",
+    "pp_cost": 4,
+    "effects": []
+  },
+  {
+    "name": "Night Shade",
+    "type": "Ghost",
+    "description": "Deals damage to all adjacent enemies equal to user's level.",
+    "category": "Special",
+    "power": null,
+    "accuracy": 100,
+    "range": "All adjacent enemies",
+    "pp_cost": 5,
+    "cuts_corners": true,
+    "effects": []
+  },
+  {
+    "name": "Destiny Bond",
+    "type": "Ghost",
+    "description": "Grants user Destiny Bond status. If user is defeated by an attack within a few turns, the attacker faints too.",
+    "category": "Status",
+    "power": null,
+    "accuracy": null,
+    "range": "User",
+    "pp_cost": 2,
+    "effects": [
+      {
+        "effect_type": "status_apply",
+        "status": "Destiny Bond",
+        "chance": 1.0,
+		"target": "attacker"
+      }
+    ]
+  },
+  {
+    "name": "Dream Eater",
+    "type": "Psychic",
+    "description": "Damages an enemy, but only if they are sleeping. Heals user for half the damage inflicted.",
+    "category": "Special",
+    "power": 100,
+    "accuracy": 100,
+    "range": "Adjacent enemy",
+    "pp_cost": 6,
+    "cuts_corners": true,
+    "effects": [
+      {
+        "effect_type": "drain"
+      }
+    ]
+  },
+  {
+    "name": "Focus Punch",
+    "type": "Fighting",
+    "description": "User begins focusing, then massively damages an enemy on the next turn. Fails if hit by a damaging move while focusing.",
+    "category": "Physical",
+    "power": 150,
+    "accuracy": 100,
+    "range": "Adjacent enemy",
+    "pp_cost": 8,
+    "cuts_corners": true,
+    "effects": []
+  },
+  {
+    "name": "Flail",
+    "type": "Normal",
+    "description": "Damages an enemy. Power increases the lower the user's HP is.",
+    "category": "Physical",
+    "power": 5,
+    "accuracy": 100,
+    "range": "Adjacent enemy",
+    "pp_cost": 4,
+    "effects": []
+  },
+  {
+    "name": "Guillotine",
+    "type": "Normal",
+    "description": "Defeats an enemy instantly. Very inaccurate. Can only be used if user's Speed is greater than the target, and accuracy depends on how much greater the user's Speed is. Always fails on Ghost-types.",
+    "category": "Physical",
+    "power": null,
+    "accuracy": null,
+    "range": "Adjacent enemy",
+    "pp_cost": 6,
+    "effects": []
+  },
+  {
+    "name": "Magnetic Flux",
+    "type": "Electric",
+    "description": "Raises Defense and Special Defense of all Electric-type Pokémon in the room by one level each.",
+    "category": "Status",
+    "power": null,
+    "accuracy": null,
+    "range": "Room",
+    "pp_cost": 3,
+    "effects": []
+  },
+  {
+    "name": "Mirror Coat",
+    "type": "Psychic",
+    "description": "Allows user to counter Special attacks made against them for a short time, reflecting half of the damage back to the attacker.",
+    "category": "Status",
+    "power": null,
+    "accuracy": null,
+    "range": "User",
+    "pp_cost": 4,
+    "effects": []
+  },
+  {
+    "name": "Endure",
+    "type": "Normal",
+    "description": "Grants user Endure status, where they will endure otherwise fatal attacks with 1 HP. Failure rate increases the more this move is used.",
+    "category": "Status",
+    "power": null,
+    "accuracy": null,
+    "range": "User",
+    "pp_cost": 3,
+    "effects": []
+  },
+  {
+    "name": "High Jump Kick",
+    "type": "Fighting",
+    "description": "Damages an enemy. User loses half of their max HP as crash damage if it misses or is blocked.",
+    "category": "Physical",
+    "power": 130,
+    "accuracy": 90,
+    "range": "Adjacent enemy",
+    "pp_cost": 8,
+    "effects": []
+  },
+  {
+    "name": "Axe Kick",
+    "type": "Fighting",
+    "description": "Damages an enemy and has a 30% chance of confusing them. User loses half of their max HP as crash damage if it misses or is blocked.",
+    "category": "Physical",
+    "power": 120,
+    "accuracy": 90,
+    "range": "Adjacent enemy",
+    "pp_cost": 9,
+    "effects": [
+      {
+        "effect_type": "status",
+        "status": "Confusion",
+        "chance": 0.3
+      }
+    ]
+  },
+  {
+    "name": "Power Swap",
+    "type": "Psychic",
+    "description": "Swaps user's and target's Attack and Special Attack stat stages.",
+    "category": "Status",
+    "power": null,
+    "accuracy": null,
+    "range": "Adjacent enemy or ally",
+    "pp_cost": 2,
+    "cuts_corners": true,
+    "effects": []
+  },
+  {
+    "name": "Guard Swap",
+    "type": "Psychic",
+    "description": "Swaps user's and target's Defense and Special Defense stat stages.",
+    "category": "Status",
+    "power": null,
+    "accuracy": null,
+    "range": "Adjacent enemy or ally",
+    "pp_cost": 2,
+    "cuts_corners": true,
+    "effects": []
+  },
+  {
+    "name": "Baton Pass",
+    "type": "Normal",
+    "description": "Copies user's stat changes and most status effects to all other allies in the room.",
+    "category": "Status",
+    "power": null,
+    "accuracy": null,
+    "range": "Room",
+    "pp_cost": 3,
+    "effects": []
+  },
+  {
+    "name": "Giga Impact",
+    "type": "Normal",
+    "description": "Greatly damages an enemy. User must rest for one turn after use.",
+    "category": "Physical",
+    "power": 150,
+    "accuracy": 90,
+    "range": "Adjacent enemy",
+    "pp_cost": 8,
+    "effects": []
+  },
+  {
+    "name": "Hyper Beam",
+    "type": "Normal",
+    "description": "Greatly damages an enemy. User must rest for one turn after use.",
+    "category": "Special",
+    "power": 150,
+    "accuracy": 90,
+    "range": "Straight line up to 4 tiles",
+    "pp_cost": 9,
+    "cuts_corners": true,
+    "effects": []
+  },
+  {
+    "name": "Snore",
+    "type": "Normal",
+    "description": "Damages all adjacent enemies. Used automatically while user is asleep if enemies are nearby.",
+    "category": "Special",
+    "power": 50,
+    "accuracy": 100,
+    "range": "All adjacent enemies",
+    "pp_cost": 0,
+    "cuts_corners": true,
+	"sound_based": true,
+    "effects": []
+  },
+  {
+    "name": "Sleep Talk",
+    "type": "Normal",
+    "description": "Calls a random move that the user knows. Used automatically while user is asleep.",
+    "category": "Status",
+    "power": null,
+    "accuracy": null,
+    "range": "User",
+    "pp_cost": 0,
+	"sound_based": true,
+    "effects": []
+  },
+  {
+    "name": "Ingrain",
+    "type": "Grass",
+    "description": "Ingrains user for 10-15 turns, preventing movement but quadrupling HP recovery.",
+    "category": "Status",
+    "power": null,
+    "accuracy": null,
+    "range": "User",
+    "pp_cost": 3,
+    "effects": [
+      {
+        "effect_type": "status_apply",
+        "status": "Ingrain",
+        "chance": 1.0,
+		"target": "attacker"
+      }
+    ]
+  },
+  {
+    "name": "Storm Throw",
+    "type": "Fighting",
+    "description": "Damages an enemy. Always results in a critical hit.",
+    "category": "Physical",
+    "power": 60,
+    "accuracy": 100,
+    "range": "Adjacent enemy",
+    "pp_cost": 6,
+    "always_crit": true,
+    "effects": []
+  },
+  {
+    "name": "Raging Bull",
+    "type": "Normal",
+    "description": "Damages an enemy and bypasses Counter, Reflect, Mirror Coat and Light Screen, ending their effects. Cuts corners.",
+    "category": "Physical",
+    "power": 90,
+    "accuracy": 100,
+    "range": "Adjacent enemy",
+    "pp_cost": 10,
+    "cuts_corners": true,
+    "effects": []
+  },
+  {
+    "name": "Mist",
+    "type": "Ice",
+    "description": "Changes the floor's weather to Mist for 15-20 turns, preventing all stat drops.",
+    "category": "Status",
+    "power": null,
+    "accuracy": null,
+    "range": "User",
+    "pp_cost": 3,
+    "effects": []
+  },
+  {
+    "name": "Muddy Water",
+    "type": "Unique",
+    "description": "Damages all Pokémon in the room except the user. Considered to be both Water and Ground types. Has a 30% chance of lowering Accuracy by one level.",
+    "category": "Special",
+    "power": 90,
+    "accuracy": 85,
+    "range": "Room except user",
+    "pp_cost": 7,
+    "cuts_corners": true,
+    "effects": [
+      {
+        "effect_type": "stat_change",
+        "stat": "Accuracy",
+        "stages": -1,
+        "chance": 0.3
+      }
+    ]
+  },
+  {
+    "name": "Freeze-Dry",
+    "type": "Ice",
+    "description": "Damages an enemy. Super effective against Water types and always freezes them. Otherwise, it has a 10% chance to freeze the target.",
+    "category": "Special",
+    "power": 70,
+    "accuracy": 100,
+    "range": "Adjacent enemy",
+    "pp_cost": 7,
+    "effects": [
+      {
+        "effect_type": "status_condition",
+        "status": "Frozen",
+        "chance": 0.1
+      }
+    ]
+  },
+  {
+    "name": "Sky Attack",
+    "type": "Flying",
+    "description": "Charges, then damages all enemies in a straight line up to 10 tiles away on next turn. Has a 30% chance of causing enemies to flinch. Has an increased critical hit chance.",
+    "category": "Physical",
+    "power": 150,
+    "accuracy": 90,
+    "range": "Straight line piercing",
+    "pp_cost": 12,
+    "high_crit_ratio": true,
+    "charge_turns": 1,
+    "effects": [
+      {
+        "effect_type": "status_condition",
+        "status": "Flinch",
+        "chance": 0.3
+      }
+    ]
+  },
+  {
+    "name": "Transform",
+    "type": "typeless",
+    "description": "Transforms the user into a copy of the target, copying their moves and stats. Wears off when changing floors.",
+    "category": "Status",
+    "power": null,
+    "accuracy": null,
+    "range": "Adjacent enemy or ally",
+    "pp_cost": 0,
+    "effects": []
+  },
+  {
+    "name": "Conversion",
+    "type": "typeless",
+    "description": "Changes user's type to a type combination that resists the last damaging move it was hit by.",
+    "category": "Status",
+    "power": null,
+    "accuracy": null,
+    "range": "User",
+    "pp_cost": 8,
+    "effects": []
+  },
+  {
+    "name": "Explosion",
+    "type": "Fire",
+    "description": "User faints and causes a huge explosion which damages all Pokémon and destroys items and terrain caught in the blast.",
+    "category": "Physical",
+    "power": 250,
+    "accuracy": null,
+    "range": "User",
+    "pp_cost": 30,
+    "effects": []
+  },
+  {
+    "name": "Self-Destruct",
+    "type": "Fire",
+    "description": "User faints and causes a explosion which damages all Pokémon and destroys items and terrain caught in the blast.",
+    "category": "Physical",
+    "power": 200,
+    "accuracy": null,
+    "range": "User",
+    "pp_cost": 25,
+    "effects": []
+  },
+  {
+    "name": "Rage Powder",
+    "type": "Bug",
+    "description": "Turns user into a Decoy. Enemies prioritize attacking decoys over other Pokémon.",
+    "category": "Status",
+    "power": null,
+    "accuracy": null,
+    "range": "User",
+    "pp_cost": 3,
+    "effects": [
+      {
+        "effect_type": "status_apply",
+        "status": "Decoy",
+        "chance": 1.0
+      }
+    ]
+  },
+  {
+    "name": "Pay Day",
+    "type": "Normal",
+    "description": "Damages an enemy. Cuts corners. If this defeats an enemy, they will drop Poké.",
+    "category": "Physical",
+    "power": 40,
+    "accuracy": 100,
+    "range": "Adjacent enemy",
+    "pp_cost": 4,
+    "cuts_corners": true,
+    "effects": []
+  },
+  {
+    "name": "Recycle",
+    "type": "Normal",
+    "description": "Recycles a Plain Seed in the inventory into a random seed or berry.",
+    "category": "Status",
+    "power": null,
+    "accuracy": null,
+    "range": "User",
+    "pp_cost": 10,
+    "effects": []
+  }
+]
