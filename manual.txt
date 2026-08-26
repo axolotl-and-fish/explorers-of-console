@@ -94,7 +94,8 @@ contains a lot of bugs, many of which may potentially crash your game.
 If you encounter bugs or crashes, PLEASE PLEASE report them to me via one of
 the following:
 
-1. Open an issue in the GitHub repo: [LINK TO GITHUB REPO HERE WHEN IT'S UP]
+1. Open an issue in the GitHub repo: 
+   https://github.com/axolotl-and-fish/explorers-of-console
 
 2. Post a message on the Pokecommunity thread:
    https://www.pokecommunity.com/threads/pok%C3%A9mon-misery-dungeon-explorers-of-the-console.543129/
