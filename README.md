@@ -95,6 +95,16 @@ Head to the Releases tab and download the Source Code (zip), extract the file, a
 
 ````--width````: Specify a width between 32 and 56 for the generated floor. Can only be used with ````--generate````.
 
+# Features
+- 146 currently encounterable and recruitable Pokémon (plus 5 legendaries, currently unused)
+- Over 350 individually implemented moves
+- PMD Rescue Team style dungeon generation
+- Over 150 different items to use or throw
+- Enemy and ally AI that acts independently of the player
+- 50 dungeon floors; clear them all to win!
+- High scores: Challenge yourself and compete with your friends!
+- And more...
+
 # Contributing
 
 Human-written issues and PRs are welcome, though I will mainly be accepting PRs for bug fixes and additions to the JSON files in the data folder. Apologies in advance if I determine your feature request is out of scope, as I do have a specific roadmap for this project in mind. Maybe this will change in future once I finally get to 1.0.
@@ -118,18 +128,23 @@ All trademarks belong to their respective authors.
 Feel free to ask more questions and I will answer them here if there's enough demand.
 
 **Why is it called Pokémon Misery Dungeon?**
+
 I dunno, I just thought it was funny. The game is also supposed to be much harder than any PMD game would be, so that's something too!
 
 **Will there be a mobile version? Can I play this on my phone?**
+
 Sadly, not yet. This game is only really a hobby project for me, and I know nothing about mobile development. Pretty sure literally the entire game's code would have to be completely rewritten from scratch to make it work on mobile. I'd definitely be open to someone making a fork of this for mobile though, if they felt up to it ;) But I mainly want to focus on making a good game.
 
 **Will the game always be text-based? Will there be a graphical version someday?**
+
 tbh the fact that the game is entirely text-based is what separates this game from other PMD fan-games, so I don't really want to add proper graphics to it. If you really want a graphical PMD fan-game, I would highly recommend Pokémon Mystery Dungeon Origins: https://www.pokecommunity.com/threads/pokémon-mystery-dungeon-origins-updated-v0-8-11-2025-09-03.447489/ . The devs behind Origins are super talented and it has been in development for many years, and it served as a lot of the inspiration for my game. Of course, someone could always add SDL/pygame to the game to give it graphics in a fork :>
 
 **The game won't start and gives a TypeError: unsupported operand type(s) for | exception.**
+
 This means that your version of Python is too old and doesn't support the | operand that the code uses. Please update to Python 3.10 or higher.
 
 **Help, the game has broken graphics!**
+
 This could be the result of a few issues:
 
 - You're using a font that doesn't support all of the CP437 character set. Try using a different font.
@@ -138,6 +153,7 @@ This could be the result of a few issues:
 - If everything else is correct, it could be some kind of weirdness specific to whatever terminal emulator you're using, in which case try using a different terminal? idk. Or you may have found an actual bug with the rendering engine, in which case you should file a bug report :)
 
 **This game is very difficult, any advice for a new player?**
+
 **USE. YOUR. ITEMS.** I can't stress this enough. Items will be your lifeline while you're in the dungeon. The more items you have, the more options you have, and the more options you have, the better your chances of survival. Also, don't just charge forward; you can take all the time you want when deciding your next action, so think very carefully and strategize. Eevee is also the strongest and most versatile out of all the starter choices, so I would recommend choosing them for beginners.
 
 Sadly given the random nature of this game, there will be situations where there is nothing you can really do, but that's the way the cookie crumbles for this genre. Don't worry; with every failed run, you'll learn something new!
