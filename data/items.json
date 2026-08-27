@@ -424,7 +424,7 @@
   {
     "name": "Sitrus Berry",
     "edible": true,
-    "description": "Fully restores HP and raises max HP a little. Belly +5%.",
+    "description": "Fully restores HP. +5 HP EVs. Belly +5%.",
     "appearance": "%",
     "color": "yellow",
     "value": 250,
@@ -701,7 +701,7 @@
   {
     "name": "Pomeg Berry",
     "edible": true,
-    "description": "+5 HP EVs. Belly +5%.",
+    "description": "+10 HP EVs. Belly +5%.",
     "appearance": "%",
     "color": "red",
     "value": 500,
@@ -710,7 +710,7 @@
   {
     "name": "Kelpsy Berry",
     "edible": true,
-    "description": "+5 Attack EVs. Belly +5%.",
+    "description": "+10 Attack EVs. Belly +5%.",
     "appearance": "%",
     "color": "blue",
     "value": 500,
@@ -719,7 +719,7 @@
   {
     "name": "Qualot Berry",
     "edible": true,
-    "description": "+5 Defense EVs. Belly +5%.",
+    "description": "+10 Defense EVs. Belly +5%.",
     "appearance": "%",
     "color": "brown",
     "value": 500,
@@ -728,7 +728,7 @@
   {
     "name": "Hondew Berry",
     "edible": true,
-    "description": "+5 Special Attack EVs. Belly +5%.",
+    "description": "+10 Special Attack EVs. Belly +5%.",
     "appearance": "%",
     "color": "green",
     "value": 500,
@@ -737,7 +737,7 @@
   {
     "name": "Grepa Berry",
     "edible": true,
-    "description": "+5 Special Defense EVs. Belly +5%.",
+    "description": "+10 Special Defense EVs. Belly +5%.",
     "appearance": "%",
     "color": "yellow",
     "value": 500,
@@ -746,7 +746,7 @@
   {
     "name": "Tamato Berry",
     "edible": true,
-    "description": "+5 Speed EVs. Belly +5%.",
+    "description": "+10 Speed EVs. Belly +5%.",
     "appearance": "%",
     "color": "red",
     "value": 400,
@@ -872,7 +872,7 @@
   {
     "name": "HP Up",
     "edible": true,
-    "description": "+10 HP EVs. Belly +10%.",
+    "description": "+20 HP EVs. Belly +10%.",
     "appearance": "!",
     "color": "green",
     "value": 1000,
@@ -881,7 +881,7 @@
   {
     "name": "Protein",
     "edible": true,
-    "description": "+10 Attack EVs. Belly +10%.",
+    "description": "+20 Attack EVs. Belly +10%.",
     "appearance": "!",
     "color": "bright_red",
     "value": 1000,
@@ -890,7 +890,7 @@
   {
     "name": "Iron",
     "edible": true,
-    "description": "+10 Defense EVs. Belly +10%.",
+    "description": "+20 Defense EVs. Belly +10%.",
     "appearance": "!",
     "color": "yellow",
     "value": 1000,
@@ -899,7 +899,7 @@
   {
     "name": "Calcium",
     "edible": true,
-    "description": "+10 Special Attack EVs. Belly +10%.",
+    "description": "+20 Special Attack EVs. Belly +10%.",
     "appearance": "!",
     "color": "red",
     "value": 1000,
@@ -908,7 +908,7 @@
   {
     "name": "Zinc",
     "edible": true,
-    "description": "+10 Special Defense EVs. Belly +10%.",
+    "description": "+20 Special Defense EVs. Belly +10%.",
     "appearance": "!",
     "color": "brown",
     "value": 1000,
@@ -917,7 +917,7 @@
   {
     "name": "Carbos",
     "edible": true,
-    "description": "+10 Attack EVs. Belly +10%.",
+    "description": "+20 Speed EVs. Belly +10%.",
     "appearance": "!",
     "color": "blue",
     "value": 800,
