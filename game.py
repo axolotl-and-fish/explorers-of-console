@@ -306,11 +306,18 @@ class Game:
         """Records a Pokémon that became a member of the player's team (for use in the summary)"""
         sp_name = getattr(pokemon, "species_name", "") or (pokemon.species_data.get("name", pokemon.name) if getattr(pokemon, "species_data", None) else pokemon.name)
         nickname = getattr(pokemon, "nickname", None) or pokemon.name
+        poke_id = getattr(pokemon, "id", None)
+        if not poke_id:
+            import uuid
+            poke_id = str(uuid.uuid4())
+            pokemon.id = poke_id
+
         for entry in self.all_team_members:
-            if entry.get("pokemon") is pokemon:
+            if entry.get("pokemon") is pokemon or (entry.get("pokemon_id") and entry.get("pokemon_id") == poke_id):
                 return
         self.all_team_members.append({
             "pokemon": pokemon,
+            "pokemon_id": poke_id,
             "name": nickname,
             "species_name": sp_name,
             "is_starter": is_starter,
@@ -322,10 +329,28 @@ class Game:
             "final_stats": None
         })
 
+    def record_team_member_departure(self, pokemon):
+        """Records the fate and final stats of a team member when they leave the team (e.g. replaced by recruit)"""
+        poke_id = getattr(pokemon, "id", None)
+        for entry in self.all_team_members:
+            if entry.get("pokemon") is pokemon or (poke_id and entry.get("pokemon_id") == poke_id):
+                if entry.get("fate") is not None:
+                    return
+                floor_num = getattr(self, "floor_number", 1)
+                turns = getattr(self, "turn_number", 0) or getattr(self, "turn_count", 0)
+                entry["fate"] = f"Departed the team on {floor_num}F on turn {turns}"
+                entry["final_hp"] = int(getattr(pokemon, "current_hp", 0))
+                entry["final_max_hp"] = int(pokemon.stats.get("HP", 1)) if getattr(pokemon, "stats", None) else 1
+                entry["final_level"] = getattr(pokemon, "level", 1)
+                entry["final_moves"] = [m["name"] for m in pokemon.moves if isinstance(m, dict) and "name" in m] if getattr(pokemon, "moves", None) else []
+                entry["final_stats"] = dict(pokemon.stats) if getattr(pokemon, "stats", None) else {}
+                break
+
     def record_team_member_defeat(self, pokemon, damage_source: str | None = None):
         """Records the fate and final stats of a team member when they are defeated (also see record_team_member_defeat above)"""
+        poke_id = getattr(pokemon, "id", None)
         for entry in self.all_team_members:
-            if entry.get("pokemon") is pokemon:
+            if entry.get("pokemon") is pokemon or (poke_id and entry.get("pokemon_id") == poke_id):
                 if entry.get("fate") is not None:
                     return
                 src = damage_source or getattr(pokemon, "last_damage_source", None)
@@ -397,8 +422,9 @@ class Game:
             return False
         if hasattr(self, "party") and any(p is pokemon for p in self.party):
             return True
+        poke_id = getattr(pokemon, "id", None)
         if hasattr(self, "all_team_members"):
-            return any(entry.get("pokemon") is pokemon for entry in self.all_team_members)
+            return any(entry.get("pokemon") is pokemon or (poke_id and entry.get("pokemon_id") == poke_id) for entry in self.all_team_members)
         return False
 
     def get_elapsed_play_time(self) -> float:
@@ -8370,6 +8396,12 @@ class Game:
             if chosen_slot == 6:
                 #Reject recruit
                 self.log_message(f"{recruit.species_name} went away...")
+                #Recruit never joined the party, remove from all_team_members
+                recruit_id = getattr(recruit, "id", None)
+                self.all_team_members = [
+                    entry for entry in self.all_team_members
+                    if entry.get("pokemon") is not recruit and (not recruit_id or entry.get("pokemon_id") != recruit_id)
+                ]
                 self.replace_recruit_state = None
                 self.render()
             elif 0 <= chosen_slot < len(self.party):
@@ -8378,6 +8410,8 @@ class Game:
 
                 is_replacing_leader = (replaced_mon == self.player_pokemon or getattr(replaced_mon, "is_leader", False) or chosen_slot == 0)
                 replaced_mon.is_leader = False
+
+                self.record_team_member_departure(replaced_mon)
 
                 #Swap in party list
                 self.party[chosen_slot] = recruit

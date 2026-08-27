@@ -322,9 +322,16 @@ def serialize_game_state(game) -> dict:
     history_data = []
     for rec in getattr(game, "all_team_members", []):
         entry = dict(rec)
-        if "pokemon" in entry and entry["pokemon"] is not None:
-            poke_obj = entry["pokemon"]
-            entry["pokemon_id"] = getattr(poke_obj, "id", None) or serialize_pokemon(poke_obj)["id"]
+        poke_obj = entry.get("pokemon")
+        if poke_obj is not None:
+            p_id = getattr(poke_obj, "id", None)
+            if not p_id:
+                p_id = str(uuid.uuid4())
+                poke_obj.id = p_id
+            entry["pokemon_id"] = p_id
+            entry["serialized_pokemon"] = serialize_pokemon(poke_obj)
+            del entry["pokemon"]
+        elif "pokemon" in entry:
             del entry["pokemon"]
         history_data.append(entry)
 
@@ -511,8 +518,16 @@ def apply_game_state(game, state_dict: dict):
     history_list = []
     for h_data in state_dict.get("all_team_members", []):
         entry = dict(h_data)
-        p_id = entry.pop("pokemon_id", None)
-        entry["pokemon"] = poke_map.get(p_id)
+        p_id = entry.get("pokemon_id")
+        serialized_poke = entry.pop("serialized_pokemon", None)
+        if p_id and p_id in poke_map:
+            entry["pokemon"] = poke_map[p_id]
+        elif serialized_poke:
+            restored_poke = deserialize_pokemon(serialized_poke)
+            entry["pokemon"] = restored_poke
+            poke_map[restored_poke.id] = restored_poke
+        else:
+            entry["pokemon"] = None
         history_list.append(entry)
     game.all_team_members = history_list
 
