@@ -1238,12 +1238,12 @@
   {
     "name": "Leer",
     "type": "Normal",
-    "description": "Lowers the Defense of an adjacent foe by one level.",
+    "description": "Lowers the Defense of all foes in the room by one level.",
     "category": "Status",
     "power": null,
     "accuracy": 100,
-    "range": "Adjacent enemy",
-    "pp_cost": 1,
+    "range": "All enemies in room",
+    "pp_cost": 2,
     "effects": [
       {
         "effect_type": "stat_change",
