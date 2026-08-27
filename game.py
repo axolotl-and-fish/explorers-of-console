@@ -4656,6 +4656,7 @@ class Game:
                     return
             else:
                 if move["name"] == "Dig":
+                    self.log_message(f"{attacker.name} dug a hole!")
                     attacker.apply_status("Digging", self)
                 elif move["name"] == "Dive":
                     attacker.apply_status("Diving", self)
@@ -7734,7 +7735,13 @@ class Game:
                                 
                             target = self.player_pokemon
                             if selected_item.get("edible", False) and getattr(target, "current_belly", 0) > getattr(target, "max_belly", 100):
-                                self.log_message(f"{target.name}'s belly is full!")
+                                self.log_message(f"{target.name}'s can't eat anymore!")
+                                self.inventory_state = None
+                                self.render()
+                                return
+
+                            if items.is_evolution_item(selected_item) and not items.can_use_evolution_item(selected_item, target):
+                                self.log_message(f"This item can't be used on {target.name}.")
                                 self.inventory_state = None
                                 self.render()
                                 return
@@ -7870,6 +7877,12 @@ class Game:
                     selected_item = self.inventory[state["selected_index"]]
                     if selected_item.get("edible", False) and getattr(target_member, "current_belly", 0) > getattr(target_member, "max_belly", 100):
                         self.log_message(f"{target_member.name}'s belly is full!")
+                        self.inventory_state = None
+                        self.render()
+                        return
+
+                    if items.is_evolution_item(selected_item) and not items.can_use_evolution_item(selected_item, target_member):
+                        self.log_message(f"This item can't be used on {target_member.name}.")
                         self.inventory_state = None
                         self.render()
                         return

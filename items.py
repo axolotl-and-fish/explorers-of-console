@@ -54,6 +54,29 @@ def get_item_display_name(item: dict) -> str:
         return f"{name} ({cnt})"
     return name
 
+
+def is_evolution_item(item: dict) -> bool:
+    """Returns True if the item is an evolution item"""
+    return item.get("evolution_item", False) or item.get("name") in (
+        "Fire Stone", "Water Stone", "Thunder Stone", "Leaf Stone", "Moon Stone", "Sun Stone", "Link Cable"
+    )
+
+
+def can_use_evolution_item(item: dict, target) -> bool:
+    """Returns True if an evolution item is compatible with target"""
+    item_name = item.get("name")
+    if not is_evolution_item(item):
+        return False
+    species_data = getattr(target, "species_data", {})
+    for evo in species_data.get("evolutions", []):
+        req_item = evo.get("item", evo.get("evolution_item"))
+        if req_item == item_name:
+            min_lvl = evo.get("min_level", evo.get("level"))
+            if min_lvl is None or getattr(target, "level", 1) >= min_lvl:
+                return True
+    return False
+
+
 def apply_item_effect(item: dict, target, game, is_thrown: bool = False):
     """Applies the use or throw effect of an item to a target Pokémon"""
     if hasattr(game, "party") and target not in game.party:
@@ -415,7 +438,7 @@ def apply_item_effect(item: dict, target, game, is_thrown: bool = False):
         else:
             game.log_message("But nothing happened.")
 
-    elif item.get("evolution_item", False) or name in ("Fire Stone", "Water Stone", "Thunder Stone", "Leaf Stone", "Moon Stone", "Sun Stone", "Link Cable"):
+    elif is_evolution_item(item):
         #Evolution items
         matching_evo = None
         for evo in target.species_data.get("evolutions", []):
