@@ -4690,7 +4690,6 @@ class Game:
                     return
             else:
                 if move["name"] == "Dig":
-                    self.log_message(f"{attacker.name} dug a hole!")
                     attacker.apply_status("Digging", self)
                 elif move["name"] == "Dive":
                     attacker.apply_status("Diving", self)
