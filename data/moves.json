@@ -514,7 +514,7 @@
     "name": "Water Gun",
     "type": "Water",
     "description": "Damages an enemy up to two tiles away.",
-    "category": "Physical",
+    "category": "Special",
     "power": 40,
     "accuracy": 100,
     "range": "Enemy up to 2 tiles away",
