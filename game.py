@@ -6844,7 +6844,7 @@ class Game:
             return False
 
         if self.player_pokemon.status_effects.get("Wrap", 0) > 0:
-            self.log_message(f"{self.player_pokemon.name} is wrapped!")
+            self.log_message(f"{self.player_pokemon.name} is wrapped and can't move!")
             return False
 
         if self.player_pokemon.status_effects.get("Sand Tomb", 0) > 0:
