@@ -146,7 +146,7 @@ def generate_end_screen_report(game, game_won: bool) -> list[str]:
     # ---------------------------------------------------------
     # SECTION 1: FINAL SCORE CALCULATION
     # ---------------------------------------------------------
-    lines.append("─────────────────YOUR SCORE───────────────────")
+    lines.append("─────────────────YOUR─SCORE───────────────────")
     lines.append(f"TOTAL EXP GAINED:                {fmt(total_exp):>11}")
     lines.append("──────────────────────+───────────────────────")
     lines.append(f"Total inventory value:           {fmt(item_value):>11}")
@@ -199,7 +199,7 @@ def generate_end_screen_report(game, game_won: bool) -> list[str]:
     #---------------------------------------------------------
     #SECTION 3: ENCOUNTERED POKÉMON SPECIES
     #---------------------------------------------------------
-    lines.append("──────────────ENCOUNTERED POKÉMON─────────────")
+    lines.append("──────────────ENCOUNTERED─POKÉMON─────────────")
     enc = getattr(game, "encountered_species", {})
     lines.append("┌" + "─" * 45 + "┐")
     lines.append(f"│{'Species':<24}│{'Defeated':>10}│{'Recruited':>9}│")
@@ -222,7 +222,7 @@ def generate_end_screen_report(game, game_won: bool) -> list[str]:
     #---------------------------------------------------------
     #SECTION 4: TEAM MEMBERS HISTORY
     #---------------------------------------------------------
-    lines.append("────────────────YOUR TEAMMATES────────────────")
+    lines.append("────────────────YOUR─TEAMMATES────────────────")
     history = getattr(game, "all_team_members", [])
     for rec in history:
         poke = rec.get("pokemon")
@@ -366,7 +366,7 @@ def generate_end_screen_report(game, game_won: bool) -> list[str]:
     #---------------------------------------------------------
     #SECTION 6: MESSAGE HISTORY
     #---------------------------------------------------------
-    lines.append("─────MESSAGE HISTORY─────")
+    lines.append("────────────────MESSAGE─HISTORY───────────────")
     raw_msgs = getattr(game.message_log, "raw_messages", [])
     if not raw_msgs:
         lines.append("(no messages)")
