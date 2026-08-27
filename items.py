@@ -89,19 +89,20 @@ def apply_item_effect(item: dict, target, game, is_thrown: bool = False):
     name = item["name"]
     edible = item.get("edible", False)
     
-    if not is_thrown and edible and getattr(target, "current_belly", 0) > getattr(target, "max_belly", 100):
+    FOOD_ITEMS = ("Apple", "Big Apple", "Huge Apple", "Banana")
+    if not is_thrown and name in FOOD_ITEMS and getattr(target, "current_belly", 0) > getattr(target, "max_belly", 100):
         game.log_message(f"{target.name} is too full to eat any more.")
         return
 
     #Edible items eaten by a team Pokemon restore 5% of max Belly (except food-type and apricorn items)
     if not is_thrown and edible and target in game.party:
-        if hasattr(target, "current_belly") and name not in ("Apple", "Big Apple", "Huge Apple", "Banana", "Chestnut", "Grimy Food", "HP Up", "Protein", "Iron", "Calcium", "Zinc", "Carbos", "PP Up", "PP Max", "Hunger Seed", "Reviver Seed", "Tiny Reviver Seed", "Possess Orb") and not item.get("apricorn", False):
+        if hasattr(target, "current_belly") and getattr(target, "current_belly", 0) <= getattr(target, "max_belly", 100) and name not in ("Apple", "Big Apple", "Huge Apple", "Banana", "Chestnut", "Grimy Food", "HP Up", "Protein", "Iron", "Calcium", "Zinc", "Carbos", "PP Up", "PP Max", "Hunger Seed", "Reviver Seed", "Tiny Reviver Seed", "Possess Orb") and not item.get("apricorn", False):
             restore_amount = 0.05 * target.max_belly
             target.current_belly = min(target.max_belly, target.current_belly + restore_amount)
             game.log_message(f"{target.name}'s belly was filled slightly!")
 
     if item.get("apricorn", False):
-        if not is_thrown and hasattr(target, "current_belly"):
+        if not is_thrown and hasattr(target, "current_belly") and getattr(target, "current_belly", 0) <= getattr(target, "max_belly", 100):
             ap_type = item.get("type", "Normal")
             target_types = getattr(target, "types", [])
             if ap_type == "Rainbow" or ap_type in target_types:
@@ -133,34 +134,46 @@ def apply_item_effect(item: dict, target, game, is_thrown: bool = False):
         
     elif name == "Apple":
         if hasattr(target, "current_belly"):
-            target.current_belly = min(target.max_belly, target.current_belly + 50.0)
-            game.log_message(f"{target.name}'s belly was filled!")
+            if getattr(target, "current_belly", 0) <= getattr(target, "max_belly", 100):
+                target.current_belly = min(target.max_belly, target.current_belly + 50.0)
+                game.log_message(f"{target.name}'s belly was filled!")
+            else:
+                game.log_message("But nothing happened.")
         else:
             game.log_message("But nothing happened.")
             
     elif name == "Big Apple":
         if hasattr(target, "current_belly"):
-            target.current_belly = target.max_belly
-            game.log_message(f"{target.name}'s belly was fully filled!")
+            if getattr(target, "current_belly", 0) <= getattr(target, "max_belly", 100):
+                target.current_belly = target.max_belly
+                game.log_message(f"{target.name}'s belly was fully filled!")
+            else:
+                game.log_message("But nothing happened.")
         else:
             game.log_message("But nothing happened.")
 
     elif name == "Huge Apple":
         if hasattr(target, "current_belly"):
-            target.current_belly = target.max_belly * 1.20
-            game.log_message(f"Whoa! {target.name}'s belly is unbelievably full!")
+            if getattr(target, "current_belly", 0) <= getattr(target, "max_belly", 100):
+                target.current_belly = target.max_belly * 1.20
+                game.log_message(f"Whoa! {target.name}'s belly is unbelievably full!")
+            else:
+                game.log_message("But nothing happened.")
         else:
             game.log_message("But nothing happened.")
 
     elif name == "Banana":
         if hasattr(target, "current_belly"):
-            target.current_belly = target.max_belly * 1.50
-            game.log_message(f"Whoa! {target.name}'s belly is unbelievably full!")
+            if getattr(target, "current_belly", 0) <= getattr(target, "max_belly", 100):
+                target.current_belly = target.max_belly * 1.50
+                game.log_message(f"Whoa! {target.name}'s belly is unbelievably full!")
+            else:
+                game.log_message("But nothing happened.")
         else:
             game.log_message("But nothing happened.")
 
     elif name == "Chestnut":
-        if hasattr(target, "current_belly"):
+        if hasattr(target, "current_belly") and getattr(target, "current_belly", 0) <= getattr(target, "max_belly", 100):
             target.current_belly = min(target.max_belly, target.current_belly + 0.10 * target.max_belly)
         target.last_damage_source = "Chestnut"
         target.current_hp -= 1.0
@@ -173,7 +186,7 @@ def apply_item_effect(item: dict, target, game, is_thrown: bool = False):
             game.remove_party_member(target)
 
     elif name == "Grimy Food":
-        if hasattr(target, "current_belly"):
+        if hasattr(target, "current_belly") and getattr(target, "current_belly", 0) <= getattr(target, "max_belly", 100):
             target.current_belly = min(target.max_belly, target.current_belly + 0.30 * target.max_belly)
         import random
         if random.random() < 0.75:
@@ -578,27 +591,27 @@ def apply_item_effect(item: dict, target, game, is_thrown: bool = False):
             game.log_message(f"This message should never appear. If you see it, please contact C4!")
             
     elif name == "Pomeg Berry":
-        target.gain_evs({"HP": 10}, game=game)
+        target.gain_evs({"HP": 5}, game=game)
         game.log_message(f"{target.name}'s HP was trained!")
         
     elif name == "Kelpsy Berry":
-        target.gain_evs({"Attack": 10}, game=game)
+        target.gain_evs({"Attack": 5}, game=game)
         game.log_message(f"{target.name}'s Attack was trained!")
         
     elif name == "Qualot Berry":
-        target.gain_evs({"Defense": 10}, game=game)
+        target.gain_evs({"Defense": 5}, game=game)
         game.log_message(f"{target.name}'s Defense was trained!")
         
     elif name == "Hondew Berry":
-        target.gain_evs({"Special_Attack": 10}, game=game)
+        target.gain_evs({"Special_Attack": 5}, game=game)
         game.log_message(f"{target.name}'s Special Attack was trained!")
         
     elif name == "Grepa Berry":
-        target.gain_evs({"Special_Defense": 10}, game=game)
+        target.gain_evs({"Special_Defense": 5}, game=game)
         game.log_message(f"{target.name}'s Special Defense was trained!")
         
     elif name == "Tamato Berry":
-        target.gain_evs({"Speed": 10}, game=game)
+        target.gain_evs({"Speed": 5}, game=game)
         game.log_message(f"{target.name}'s Speed was trained!")
         
     elif name == "Liechi Berry":
@@ -645,49 +658,49 @@ def apply_item_effect(item: dict, target, game, is_thrown: bool = False):
         target.apply_status("Confused", game)
         
     elif name == "HP Up":
-        if hasattr(target, "current_belly"):
+        if hasattr(target, "current_belly") and getattr(target, "current_belly", 0) <= getattr(target, "max_belly", 100):
             target.current_belly = min(target.max_belly, target.current_belly + 10.0)
             game.log_message(f"{target.name}'s belly was filled slightly!")
         target.gain_evs({"HP": 10}, game=game)
         game.log_message(f"{target.name}'s HP was greatly trained!")
         
     elif name == "Protein":
-        if hasattr(target, "current_belly"):
+        if hasattr(target, "current_belly") and getattr(target, "current_belly", 0) <= getattr(target, "max_belly", 100):
             target.current_belly = min(target.max_belly, target.current_belly + 10.0)
             game.log_message(f"{target.name}'s belly was filled slightly!")
-        target.gain_evs({"Attack": 20}, game=game)
+        target.gain_evs({"Attack": 10}, game=game)
         game.log_message(f"{target.name}'s Attack was greatly trained!")
         
     elif name == "Iron":
-        if hasattr(target, "current_belly"):
+        if hasattr(target, "current_belly") and getattr(target, "current_belly", 0) <= getattr(target, "max_belly", 100):
             target.current_belly = min(target.max_belly, target.current_belly + 10.0)
             game.log_message(f"{target.name}'s belly was filled slightly!")
-        target.gain_evs({"Defense": 20}, game=game)
+        target.gain_evs({"Defense": 10}, game=game)
         game.log_message(f"{target.name}'s Defense was greatly trained!")
         
     elif name == "Calcium":
-        if hasattr(target, "current_belly"):
+        if hasattr(target, "current_belly") and getattr(target, "current_belly", 0) <= getattr(target, "max_belly", 100):
             target.current_belly = min(target.max_belly, target.current_belly + 10.0)
             game.log_message(f"{target.name}'s belly was filled slightly!")
-        target.gain_evs({"Special_Attack": 20}, game=game)
+        target.gain_evs({"Special_Attack": 10}, game=game)
         game.log_message(f"{target.name}'s Special Attack was greatly trained!")
         
     elif name == "Zinc":
-        if hasattr(target, "current_belly"):
+        if hasattr(target, "current_belly") and getattr(target, "current_belly", 0) <= getattr(target, "max_belly", 100):
             target.current_belly = min(target.max_belly, target.current_belly + 10.0)
             game.log_message(f"{target.name}'s belly was filled slightly!")
-        target.gain_evs({"Special_Defense": 20}, game=game)
+        target.gain_evs({"Special_Defense": 10}, game=game)
         game.log_message(f"{target.name}'s Special Defense was greatly trained!")
         
     elif name == "Carbos":
-        if hasattr(target, "current_belly"):
+        if hasattr(target, "current_belly") and getattr(target, "current_belly", 0) <= getattr(target, "max_belly", 100):
             target.current_belly = min(target.max_belly, target.current_belly + 10.0)
             game.log_message(f"{target.name}'s belly was filled slightly!")
-        target.gain_evs({"Speed": 20}, game=game)
+        target.gain_evs({"Speed": 10}, game=game)
         game.log_message(f"{target.name}'s Speed was greatly trained!")
         
     elif name == "PP Up":
-        if hasattr(target, "current_belly"):
+        if hasattr(target, "current_belly") and getattr(target, "current_belly", 0) <= getattr(target, "max_belly", 100):
             target.current_belly = min(target.max_belly, target.current_belly + 10.0)
             game.log_message(f"{target.name}'s belly was filled slightly!")
         if hasattr(target, "max_pp"):
@@ -698,7 +711,7 @@ def apply_item_effect(item: dict, target, game, is_thrown: bool = False):
             game.log_message("But nothing happened.")
             
     elif name == "PP Max":
-        if hasattr(target, "current_belly"):
+        if hasattr(target, "current_belly") and getattr(target, "current_belly", 0) <= getattr(target, "max_belly", 100):
             target.current_belly = min(target.max_belly, target.current_belly + 10.0)
             game.log_message(f"{target.name}'s belly was filled slightly!")
         if hasattr(target, "max_pp"):

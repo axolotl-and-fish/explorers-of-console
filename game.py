@@ -7769,8 +7769,8 @@ class Game:
                                 return
                                 
                             target = self.player_pokemon
-                            if selected_item.get("edible", False) and getattr(target, "current_belly", 0) > getattr(target, "max_belly", 100):
-                                self.log_message(f"{target.name}'s can't eat anymore!")
+                            if selected_item.get("name") in ("Apple", "Big Apple", "Huge Apple", "Banana") and getattr(target, "current_belly", 0) > getattr(target, "max_belly", 100):
+                                self.log_message(f"{target.name} is too full to eat any more.")
                                 self.inventory_state = None
                                 self.render()
                                 return
@@ -7910,8 +7910,8 @@ class Game:
                 elif state["mode"] == "party_select":
                     target_member = self.party[state["context_index"]]
                     selected_item = self.inventory[state["selected_index"]]
-                    if selected_item.get("edible", False) and getattr(target_member, "current_belly", 0) > getattr(target_member, "max_belly", 100):
-                        self.log_message(f"{target_member.name}'s belly is full!")
+                    if selected_item.get("name") in ("Apple", "Big Apple", "Huge Apple", "Banana") and getattr(target_member, "current_belly", 0) > getattr(target_member, "max_belly", 100):
+                        self.log_message(f"{target_member.name} is too full to eat any more.")
                         self.inventory_state = None
                         self.render()
                         return
