@@ -151,7 +151,7 @@ class Game:
         #Spawn player in a random room
         self.player_x, self.player_y = self._get_starting_position()
         self.floor_number = 1
-        self.build_string = "Beta 0.1.0"
+        self.build_string = "Beta 0.1.1"
         self.message = self.build_string
         self.stairs_position = (0, 0)
         self.spawn_stairs()
