@@ -3223,53 +3223,61 @@ class Game:
         
         #Get targets using the stored direction or target
         targets = []
-        if move.get("range", "").startswith("Straight line piercing"):
-            from targeting import get_valid_targets
-            targets = get_valid_targets(self, p, move)
-            if targets:
-                for target in targets:
+        from targeting import get_valid_targets, has_clear_path
+        range_str = move.get("range", "Adjacent enemy")
+
+        if range_str.startswith("Straight line piercing"):
+            dx, dy = p.charging_move.get("direction", (0, 0))
+            line_targets = self.get_line_piercing_targets(p, move, dx, dy)
+            if line_targets:
+                for target in line_targets:
                     if int(target.current_hp) > 0 and int(p.current_hp) > 0:
                         self.execute_single_move(p, target, move, free=True)
             else:
                 self.log_message("The move failed!")
             p.charging_move = None
             return True
+        elif range_str.startswith("Straight line"):
+            ax, ay = get_pokemon_position(self, p)
+            dx, dy = p.charging_move.get("direction", (0, 0))
+            if dx != 0 or dy != 0:
+                cuts_corners = move.get("cuts_corners", False)
+                max_d = 4 if "4" in range_str else 10
+                valid_pokes = get_valid_targets(self, p, move)
+                for i in range(1, max_d + 1):
+                    tx, ty = ax + i * dx, ay + i * dy
+                    if not has_clear_path(self.floor, ax, ay, tx, ty, cuts_corners):
+                        break
+                    found = self.get_poke_at(tx, ty)
+                    if found and found != p and int(found.current_hp) > 0 and found in valid_pokes:
+                        targets = [found]
+                        break
         elif move["name"] == "Focus Punch":
             target_tile = p.charging_move.get("target_tile")
-            if target_tile:
-                tx, ty = target_tile
+            dx, dy = p.charging_move.get("direction", (0, 0))
+            ax, ay = get_pokemon_position(self, p)
+            cuts_corners = move.get("cuts_corners", False)
+            valid_pokes = get_valid_targets(self, p, move)
+            tx, ty = target_tile if target_tile else (ax + dx, ay + dy)
+            dist = max(abs(tx - ax), abs(ty - ay))
+            if dist == 1 and has_clear_path(self.floor, ax, ay, tx, ty, cuts_corners):
                 found = self.get_poke_at(tx, ty)
-                if found and found != p and int(found.current_hp) > 0:
-                    targets = [found]
-            if not targets:
-                dx, dy = p.charging_move.get("direction", (0, 0))
-                ax, ay = get_pokemon_position(self, p)
-                found = self.get_poke_at(ax + dx, ay + dy)
-                if found and found != p and int(found.current_hp) > 0:
+                if found and found != p and int(found.current_hp) > 0 and found in valid_pokes:
                     targets = [found]
         else:
             target_p = p.charging_move.get("target")
+            valid_pokes = get_valid_targets(self, p, move)
             if target_p and int(target_p.current_hp) > 0:
-                targets = [target_p]
+                if target_p in valid_pokes:
+                    targets = [target_p]
             else:
+                target_tile = p.charging_move.get("target_tile")
                 dx, dy = p.charging_move.get("direction", (0, 0))
-                if dx != 0 or dy != 0:
-                    ax, ay = get_pokemon_position(self, p)
-                    cuts_corners = move.get("cuts_corners", False)
-                    from targeting import has_clear_path
-                    for i in range(1, 11):
-                        tx, ty = ax + i * dx, ay + i * dy
-                        if not has_clear_path(self.floor, ax, ay, tx, ty, cuts_corners):
-                            break
-                        found = None
-                        for other in self.party + self.spawned_pokemon:
-                            ox, oy = get_pokemon_position(self, other)
-                            if ox == tx and oy == ty and int(other.current_hp) > 0:
-                                found = other
-                                break
-                        if found:
-                            targets = [found]
-                            break
+                ax, ay = get_pokemon_position(self, p)
+                tx, ty = target_tile if target_tile else (ax + dx, ay + dy)
+                found = self.get_poke_at(tx, ty)
+                if found and found != p and int(found.current_hp) > 0 and found in valid_pokes:
+                    targets = [found]
         
         if targets:
             self.execute_single_move(p, targets[0], move, free=True)
