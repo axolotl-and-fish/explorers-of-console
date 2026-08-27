@@ -7057,6 +7057,8 @@ class Game:
                 return
             if member.current_hp <= 0:
                 self.record_team_member_defeat(member)
+            else:
+                self.record_team_member_departure(member)
             is_leader = (member == self.player_pokemon or getattr(member, "is_leader", False))
             member.is_leader = False
             self.party.remove(member)
@@ -8275,6 +8277,7 @@ class Game:
 
             target.status_effects = {s: (False if isinstance(v, bool) else 0) for s, v in target.status_effects.items()}
             target.stat_modifiers = {s: 0 for s in target.stat_modifiers}
+            target.last_damage_source = None
 
             if target in self.spawned_pokemon:
                 self.spawned_pokemon.remove(target)
