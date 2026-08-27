@@ -117,15 +117,14 @@ will even be able to save, depending on the error.
 ===============================================================================
 					   1. Installing & Running the Game
 ===============================================================================
-For executable versions of the game, simply download the release package from
-the game's GitHub repo for your OS, in the Releases tab, and unzip the file.
-Then run the game's executable from within a Terminal/Command Prompt/Powershell
-window. (Don't just double click the file)
+For x64 Windows, simply download the release package from the game's GitHub repo 
+in the Releases tab, and unzip the file. Then run the game's executable from 
+within a Terminal/Command Prompt/Powershell window. (Don't just double click the 
+file!)
 
-For other operating systems that do not have an executable version of the game,
-you will need to have Python 3.10 or higher installed on your system. If it's
-not already installed, you can get the installer for your operating system from 
-https://www.python.org/ .
+For other operating systems, or Windows on x86 or ARM, you will need to have 
+Python 3.10 or higher installed on your system. If it's not already installed, 
+you can get the installer for your operating system from https://www.python.org/
 
 Select the source code (zip) download from the GitHub releases tab and unzip
 the file. Then to run the game, either run PMD_Explorers_of_the_Console.bat or
@@ -133,19 +132,19 @@ open the game's directory in your terminal and type
 
 python3 visualize.py --play
 
-Note that the executable files are not actually compiled, they're just bundled
-in a PyInstaller wrapper, so performance will be the same. The executable
-versions are simply provided for your convenience.
+Note that the executable file is not actually compiled, it's just bundled in a 
+PyInstaller wrapper, so performance will be the same. The executable version is 
+simply provided for your convenience.
 ===============================================================================
 						1a. System Requirements
 ===============================================================================
 Since the game is text-based, it will run on just about anything. The game 
-consumes less than 32 MB of RAM on my system. It even runs well on my Pentium 
+consumes less than 16 MB of RAM on my system. It even runs well on my Pentium 
 N6000 laptop underclocked to 0.8 GHz!
 
-For the executable versions however, you will need a x64 processor and a
-64-bit version of Windows 10 or higher, or Linux. For other OSes, you will need
-to install and use Python (see 1. Installing & Running the Game)
+For the executable version however, you will need a x64 processor and a 64-bit 
+version of Windows 10 or higher. For other OSes, you will need to install and 
+use Python (see 1. Installing & Running the Game)
 
 The game was tested on Windows 11 and Linux Mint, using Windows Powershell and
 the GNOME Terminal respectively. I have not tested any other operating systems
