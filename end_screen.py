@@ -128,7 +128,7 @@ def generate_end_screen_report(game, game_won: bool) -> list[str]:
         lines.append("▒█   █ █ █ █ █ █ ██  ███  █  █ █ █   ███  █  █ █ █ █ █   ██▒")
         lines.append("▒█ █ █ █ █ █ █ █ █ █ █ █  █  █ █ █   █ █  █  █ █ █ █ █ █ █ ▒")
         lines.append("▒ █   █  █ █  ██ █ █ █ █  █   ██ ███ █ █  █  █  █  █ █  █ █▒")
-        lines.append("▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒ver.▒0.1.0▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒")
+        lines.append("▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒ver.▒0.1.1▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒")
 
         
     else:
@@ -141,7 +141,7 @@ def generate_end_screen_report(game, game_won: bool) -> list[str]:
         lines.append("▒    █   █ █████ █ █ █ █        █   █  █ █  █     ████     ▒")
         lines.append("▒    █   █ █   █ █   █ █        █   █   █   █     █  █     ▒")
         lines.append("▒     ████ █   █ █   █ █████     ███    █   █████ █   █    ▒")
-        lines.append("▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒ver.▒0.1.0▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒")
+        lines.append("▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒ver.▒0.1.1▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒")
 
     # ---------------------------------------------------------
     # SECTION 1: FINAL SCORE CALCULATION
