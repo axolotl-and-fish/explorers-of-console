@@ -20,7 +20,7 @@ from dungeon import DungeonFloor, Room
 from pokemon import Pokemon  # type: ignore
 from message_log import MessageLog, wrap_text  # type: ignore
 
-SALT = "SWAMPERT_IS_THE_GOD_OF_ALL_TIME"
+SALT = "SWAMPERT_IS_THE_GREATEST_OF_ALL_TIME"
 
 
 def get_save_dir() -> str:
