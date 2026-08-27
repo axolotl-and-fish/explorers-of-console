@@ -4201,23 +4201,6 @@
     ]
   },
   {
-    "name": "Sludge Wave",
-    "type": "Poison",
-    "description": "Damages all adjacent enemies and allies and has a 10% chance of poisoning each of them.",
-    "category": "Special",
-    "power": 95,
-    "accuracy": 100,
-    "range": "All adjacent enemies and allies",
-    "pp_cost": 8,
-    "effects": [
-      {
-        "effect_type": "status_apply",
-        "status": "Poison",
-        "chance": 0.1
-      }
-    ]
-  },
-  {
     "name": "Sludge",
     "type": "Poison",
     "description": "Damages an enemy and has a 30% chance of poisoning them. Cuts corners.",
