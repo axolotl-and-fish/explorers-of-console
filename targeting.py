@@ -384,7 +384,7 @@ def get_valid_targets(game, attacker: Pokemon, move: dict) -> list[Pokemon]:
         #Distance & line-of-sight checks
         dist = max(abs(tx - ax), abs(ty - ay))
 
-        if range_str in ("Adjacent enemy", "Adjacent enemy or ally", "All adjacent enemies"):
+        if range_str in ("Adjacent enemy", "Adjacent enemy or ally", "All adjacent enemies", "All adjacent enemies and allies", "Adjacent tile"):
             if dist != 1:
                 continue
             if not has_clear_path(game.floor, ax, ay, tx, ty, cuts_corners):
@@ -458,7 +458,7 @@ def get_confusion_targets(game, attacker: Pokemon, move: dict) -> list[Pokemon]:
                 return p
         return None
 
-    if range_str in ("Adjacent enemy", "Adjacent enemy or ally", "All adjacent enemies"):
+    if range_str in ("Adjacent enemy", "Adjacent enemy or ally", "All adjacent enemies", "All adjacent enemies and allies", "Adjacent tile"):
         rdx, rdy = random.choice(directions)
         tx, ty = ax + rdx, ay + rdy
         p = get_poke_at(tx, ty)
