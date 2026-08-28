@@ -1,6 +1,10 @@
 		Pokémon Misery Dungeon: Explorers of the Console CHANGELOG
 ------------------------------PRIVATE BETA-------------------------------------
 ===============================================================================
+						0.1.1a  - August 28, 2026
+===============================================================================
+This is a hotfix release to fix high scores not actually saving.
+===============================================================================
 						0.1.1  - August 28, 2026
 ===============================================================================
 Save files from previous versions are not compatible, but high scores will
