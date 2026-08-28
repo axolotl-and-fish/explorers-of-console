@@ -1,6 +1,40 @@
 		Pokémon Misery Dungeon: Explorers of the Console CHANGELOG
 ------------------------------PRIVATE BETA-------------------------------------
 ===============================================================================
+						0.1.1  - August 28, 2026
+===============================================================================
+Save files from previous versions are not compatible, but high scores will
+remain.
+
+Special thanks to 135 sacred ruins ruins on the r/MD Discord for reporting most
+of these! (And for being the first player ever to beat Explorers of Console!)
+------------------------------------CHANGES------------------------------------
+- You can now eat items while overfull, except for Food-type items.
+- Buffed EV-raising berries and Vitamins, they now give 10/20 EVs for a stat,
+  up from 5/10.
+- Changed the message for attempting to move while wrapped to actually state
+  that you can't move.
+- Changed Water Gun's category from Physical to Special.
+- Leer's PP cost has been increased from 1 to 2.
+- Update manual
+-------------------------------------FIXES-------------------------------------
+- Fixed evolution items being consumed if used on a Pokémon that cannot make 
+  use of them.
+- Fixed charge moves still being able to hit Pokémon even if they have moved
+  out of range before the move is unleashed.
+- Fixed Carbos description referring to Attack EVs instead of Speed EVs.
+- Fixed Dig causing a double message.
+- Teammate history is now actually properly included in the save file, this
+  fixes previous teammates using fallbacks in the end screen history if they
+  were removed before the game was saved and reloaded
+- Fixed saying Farewell to a team member resulting in their fate being
+  "Defeated by [Leader]'s [1st Move]" (Apparently the leader was quite vengeful
+  with deserters!)
+- Fixed the width of the Message History line in the end screen (this was
+  driving me crazy when I noticed it lol)
+- Fixed moves with the range "All adjacent enemies and allies" affecting the
+  entire floor (e.g., Bulldoze).
+===============================================================================
 			   0.1.0 "The Initial Release" - August 26, 2026
 ===============================================================================
 - First public release!
