@@ -21,8 +21,8 @@
 								 ██                   ██                  
 							   
 						✩ Explorers of the Console ✩                          
-							  beta ver. 0.1.0
-							  August 26, 2026
+							  beta ver. 0.1.1
+							  August 28, 2026
 								  
 						2026 C437RP13 / Axolotl and Fish
 						   
