@@ -93,7 +93,8 @@ def load_high_scores() -> list[dict]:
 
 def save_high_scores(scores: list[dict]):
     """Saves high scores into save_data/HIGHSCORES with encoding and checksum. Up to 50 can be stored."""
-    os.makedirs(HIGHSCORES_DIR, exist_ok=True)
+    filepath = get_high_scores_filepath()
+    os.makedirs(os.path.dirname(filepath), exist_ok=True)
 
     #Sort descending by score
     scores = sorted(scores, key=lambda x: int(x.get("score", 0)), reverse=True)
