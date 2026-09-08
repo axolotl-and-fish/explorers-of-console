@@ -686,9 +686,7 @@ lost, and any items past the new capacity will be dropped to the ground.
 Items can be broadly categorized depending on their function:
 
 - FOOD ITEMS: These items restore a lot of Belly, and some food items can even
-  restore Belly beyond 100%. Be careful though; if your Belly is over 100%, 
-  you won't be able to eat anything else, even non-food items like Seeds or
-  Berries.
+  restore Belly beyond 100%.
 - SEEDS: Edible items with various effects, usually negative. While these 
   restore Belly slightly, it is usually better to just throw them at enemies
   instead, where their effects will activate when they hit a Pokémon.
