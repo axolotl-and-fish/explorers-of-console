@@ -3021,7 +3021,7 @@
     "type": "Rock",
     "description": "Damages an enemy up to 5 times, doubling in power with each hit, but ends on a miss. 2x power is user previously used Defense Curl.",
     "category": "Physical",
-    "power": 10,
+    "power": 5,
     "accuracy": 90,
     "range": "Adjacent enemy",
     "pp_cost": 5,
