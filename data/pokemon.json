@@ -49,12 +49,12 @@
     "id": "2",
     "name": "Ivysaur",
     "base_stats": {
-      "HP": 45,
-      "Attack": 49,
-      "Defense": 49,
-      "Special_Attack": 65,
-      "Special_Defense": 65,
-      "Speed": 45
+      "HP": 60,
+      "Attack": 62,
+      "Defense": 63,
+      "Special_Attack": 80,
+      "Special_Defense": 80,
+      "Speed": 60
     },
     "types": ["Grass", "Poison"],
     "ev_yield": {
