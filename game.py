@@ -3163,6 +3163,8 @@ class Game:
                     self.log_message(f"There are no Plain Seeds to recycle!")
                 elif move["name"] == getattr(self.player_pokemon, "disable_move_effect", None):
                     self.log_message(f"{self.player_pokemon.name}'s {move['name']} is disabled!")
+                elif move["name"] in getattr(self.player_pokemon, "imprisoned_moves", []):
+                    self.log_message(f"{self.player_pokemon.name}'s {move['name']} is sealed!")
                 elif self.player_pokemon.status_effects.get("Taunted") and move.get("category") == "Status":
                     self.log_message(f"{self.player_pokemon.name} can't use status moves while taunted!")
                 elif self.player_pokemon.current_pp < move["pp_cost"]:
@@ -11869,6 +11871,7 @@ class Game:
                         for member in self.party:
                             member.fake_out_used_this_floor = False
                             member.disable_move_effect = None
+                            member.imprisoned_moves.clear()
                             member.temp_types = None
                             member.status_effects = {k: (0 if isinstance(v, int) else False) for k, v in member.status_effects.items()}
                             for stat in member.stat_modifiers:
