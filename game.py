@@ -113,10 +113,12 @@ TIPS_OF_THE_DAY = [
     "Proudly open-source! Check out the repo on GitHub.",
     "Move category matters! You should try to have 1 Physical & 1 Special move.",
     "You can disable allies from using certain moves from their summary screen.",
-    "If your belly is over 100%, you won't be able to eat any more items.",
     "If you make it to the end of the 50th floor, you win!",
     "You can view a Pokémon's remaining HP in 'look around' mode (press [L])",
-    "Moves deal less damage when they hit multiple targets."
+    "Moves deal less damage when they hit multiple targets.",
+    "More content is coming soon, stay tuned!",
+    "Don't worry if you lose an ally, there's plenty more you can recruit.",
+    "Losing is fun. Every failed run is a learning experience for the next run!"
 ]
 
 
