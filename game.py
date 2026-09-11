@@ -2748,6 +2748,81 @@ class Game:
                 return True
         return False
 
+    def spawn_party_members(self):
+        """When starting a floor, spawns other party members, prioritizing unoccupied tiles
+        adjacent to the leader where possible. Other tiles are only chosen if all remaining adjacent tiles
+        are already occupied"""
+        non_leader_members = [
+            m for m in getattr(self, "party", [])
+            if m is not self.player_pokemon and not getattr(m, "is_leader", False)
+        ]
+        if not non_leader_members:
+            return
+
+        #Find which room the leader is in
+        room_cell = None
+        for cell, room in self.floor.rooms.items():
+            if room.x1 <= self.player_x <= room.x2 and room.y1 <= self.player_y <= room.y2:
+                room_cell = cell
+                break
+
+        adjacent_offsets = [
+            (-1, -1), (0, -1), (1, -1),
+            (-1,  0),          (1,  0),
+            (-1,  1), (0,  1), (1,  1)
+        ]
+
+        all_adjacent = []
+        for dx, dy in adjacent_offsets:
+            nx, ny = self.player_x + dx, self.player_y + dy
+            if 0 <= nx < self.floor.width and 0 <= ny < self.floor.height:
+                if self.floor.grid[ny][nx] == FLOOR_CHAR:
+                    all_adjacent.append((nx, ny))
+
+        adjacent_in_room = []
+        adjacent_outside_room = []
+        other_room_tiles = []
+
+        if room_cell is not None:
+            room = self.floor.rooms[room_cell]
+            for ry in range(room.y1, room.y2 + 1):
+                for rx in range(room.x1, room.x2 + 1):
+                    if self.floor.grid[ry][rx] == FLOOR_CHAR and (rx, ry) != (self.player_x, self.player_y):
+                        if (rx, ry) in all_adjacent:
+                            adjacent_in_room.append((rx, ry))
+                        else:
+                            other_room_tiles.append((rx, ry))
+            adjacent_outside_room = [t for t in all_adjacent if t not in adjacent_in_room]
+        else:
+            adjacent_outside_room = list(all_adjacent)
+
+        #Fallback to other rooms if all tiles in current room/adjacent are exhausted
+        fallback_room_tiles = []
+        for r_cell, r in self.floor.rooms.items():
+            if r_cell == room_cell:
+                continue
+            for ry in range(r.y1, r.y2 + 1):
+                for rx in range(r.x1, r.x2 + 1):
+                    if self.floor.grid[ry][rx] == FLOOR_CHAR:
+                        t = (rx, ry)
+                        if t != (self.player_x, self.player_y) and t not in all_adjacent and t not in other_room_tiles:
+                            fallback_room_tiles.append(t)
+
+        random.shuffle(adjacent_in_room)
+        random.shuffle(adjacent_outside_room)
+        random.shuffle(other_room_tiles)
+        random.shuffle(fallback_room_tiles)
+
+        candidate_tiles = adjacent_in_room + adjacent_outside_room + other_room_tiles + fallback_room_tiles
+
+        tile_idx = 0
+        for member in non_leader_members:
+            if tile_idx < len(candidate_tiles):
+                member.x, member.y = candidate_tiles[tile_idx]
+                tile_idx += 1
+            else:
+                member.x, member.y = self.player_x, self.player_y
+
     def spawn_stairs(self):
         """Pick a room tile to spawn the stairs that is not adjacent to a corridor."""
         candidates = []
@@ -9185,6 +9260,7 @@ class Game:
         self.explored_tiles.clear()
         self.player_x, self.player_y = self._get_starting_position()
         self.player_pokemon.x, self.player_pokemon.y = self.player_x, self.player_y
+        self.spawn_party_members()
 
         self.spawn_stairs()
         self.spawn_wonder_tile()
@@ -11764,39 +11840,7 @@ class Game:
                         #Spawn player & party
                         self.player_x, self.player_y = self._get_starting_position()
                         self.player_pokemon.x, self.player_pokemon.y = self.player_x, self.player_y
-                        
-                        #Spawn other party members in the same room
-                        room_cell = None
-                        for cell, room in self.floor.rooms.items():
-                            if room.x1 <= self.player_x <= room.x2 and room.y1 <= self.player_y <= room.y2:
-                                room_cell = cell
-                                break
-                        
-                        room_tiles = []
-                        if room_cell is not None:
-                            room = self.floor.rooms[room_cell]
-                            for ry in range(room.y1, room.y2 + 1):
-                                for rx in range(room.x1, room.x2 + 1):
-                                    if self.floor.grid[ry][rx] == FLOOR_CHAR and (rx, ry) != (self.player_x, self.player_y):
-                                        room_tiles.append((rx, ry))
-                        
-                        if len(room_tiles) < len(self.party) - 1:
-                            for room in self.floor.rooms.values():
-                                for ry in range(room.y1, room.y2 + 1):
-                                    for rx in range(room.x1, room.x2 + 1):
-                                        if self.floor.grid[ry][rx] == FLOOR_CHAR and (rx, ry) != (self.player_x, self.player_y) and (rx, ry) not in room_tiles:
-                                            room_tiles.append((rx, ry))
-                        
-                        random.shuffle(room_tiles)
-                        tile_idx = 0
-                        for member in self.party:
-                            if member is self.player_pokemon:
-                                continue
-                            if tile_idx < len(room_tiles):
-                                member.x, member.y = room_tiles[tile_idx]
-                                tile_idx += 1
-                            else:
-                                member.x, member.y = self.player_x, self.player_y
+                        self.spawn_party_members()
                         
                         #Set up stairs and Wonder Tile on the new floor
                         self.spawn_stairs()
