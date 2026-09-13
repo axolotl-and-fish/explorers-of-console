@@ -1354,7 +1354,6 @@ class Pokemon:
                 self.status_effects["Wrapping"] = 0
                 if self.status_effects.get("Wrapped", 0) == 0:
                     self.status_effects["Wrap"] = 0
-                game.log_message(f"{self.name} stopped wrapping.")
         elif status == "Wrapped":
             if self.status_effects.get("Wrapped", 0) > 0 or self.status_effects.get("Wrap", 0) > 0:
                 self.status_effects["Wrapped"] = 0
@@ -1371,8 +1370,6 @@ class Pokemon:
                 self.status_effects["Wrapped"] = 0
                 freed = True
             self.status_effects["Wrap"] = 0
-            if stopped:
-                game.log_message(f"{self.name} stopped wrapping.")
             if freed:
                 game.log_message(f"{self.name} was freed from Wrap.")
         elif status == "Light Screen":
