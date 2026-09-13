@@ -9595,12 +9595,12 @@ class Game:
 
         #Create a mapping from position to (ally_pokemon, slot_str) for non-leader party members
         ally_map = {}
-        non_leader_allies = [p for p in self.party if p is not self.player_pokemon and not getattr(p, "is_leader", False) and int(getattr(p, "current_hp", 0)) > 0]
-        for idx, ally in enumerate(non_leader_allies):
-            ax, ay = get_pokemon_position(self, ally)
-            slot_num = idx + 1
-            slot_str = str(slot_num + 1) if slot_num < 10 else str(slot_num % 10) #Because indices start at zero!
-            ally_map[(ax, ay)] = (ally, slot_str)
+        for idx, ally in enumerate(self.party):
+            if ally is not self.player_pokemon and not getattr(ally, "is_leader", False) and int(getattr(ally, "current_hp", 0)) > 0:
+                ax, ay = get_pokemon_position(self, ally)
+                slot_num = idx + 1
+                slot_str = str(slot_num) if slot_num < 10 else str(slot_num % 10)
+                ally_map[(ax, ay)] = (ally, slot_str)
 
         output_rows = []
         for y in range(self.floor.height):
