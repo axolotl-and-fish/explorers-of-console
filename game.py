@@ -7242,8 +7242,8 @@ class Game:
             return
             
         item = self.items_on_floor[pos]
-        self.start_player_action()
         if item.get("type") == "Money" or item.get("name") == "Poké":
+            self.start_player_action()
             amount = item.get("amount", 0)
             self.money += amount
             del self.items_on_floor[pos]
@@ -7255,6 +7255,7 @@ class Game:
         
         success = self.add_item_to_inventory(item)
         if success:
+            self.start_player_action()
             if item.get("stackable", False) and item.get("count", 0) > 0:
                 self.log_message(f"Picked up some of the {item['name']}s.")
             else:
@@ -7262,7 +7263,17 @@ class Game:
                 self.log_message(f"Picked up the {item_disp}.")
             self.on_turn_completed()
         else:
-            self.log_message(f"The Toolbox is too full to pick up the {item_disp}!")
+            if not self.inventory:
+                self.log_message("Error! Auto-swap despite no items in inventory. Please send a bug report!")
+                return
+            self.inventory_state = {
+                "selected_index": 0,
+                "context_menu": None,
+                "context_index": 0,
+                "mode": "swap_ground",
+                "ground_item": item,
+                "ground_pos": pos,
+            }
 
     def place_item_on_floor(self, x: int, y: int, item: dict):
         """Places an item on the ground at (x, y). Merges matching stackable items up to 40 max stack."""
@@ -7793,6 +7804,34 @@ class Game:
                 
             selected_item = self.inventory[state["selected_index"]]
             
+            if state.get("mode") == "swap_ground":
+                pos = state.get("ground_pos", (self.player_x, self.player_y))
+                if pos not in self.items_on_floor:
+                    self.log_message("There's nothing on the ground to swap with!")
+                    self.inventory_state = None
+                    self.render()
+                    return
+
+                self.start_player_action()
+                ground_item = self.items_on_floor[pos]
+                selected_item_pop = self.inventory[state["selected_index"]]
+                selected_item_pop["dropped_by_player"] = True
+                ground_item.pop("dropped_by_player", None)
+
+                self.inventory[state["selected_index"]] = ground_item
+                self.items_on_floor[pos] = selected_item_pop
+                self.inventory_state = None
+
+                self.log_message(f"{self.player_pokemon.name} swapped the {items.get_item_display_name(selected_item_pop)} with the {items.get_item_display_name(ground_item)}.")
+                for member in getattr(self, "party", []):
+                    member.check_evolution_notifications(game=self)
+                self.on_turn_completed()
+                if self.message_log.has_pending():
+                    self.process_messages()
+                else:
+                    self.render()
+                return
+
             if state["context_menu"] is None:
                 options = []
                 if selected_item.get("edible", False):
@@ -10432,9 +10471,20 @@ class Game:
         interior = []
         interior.append("                                                                  Capacity")
         capacity_str = f"{len(self.inventory)}/{self.max_inventory_capacity}"
-        left_text = "  Toolbox"
+        state = getattr(self, "inventory_state", None)
+        is_swap = state is not None and state.get("mode") == "swap_ground"
+
+        if is_swap:
+            ground_item = state.get("ground_item")
+            ground_name = items.get_item_display_name(ground_item) if ground_item else "Ground Item"
+            left_text = f"  Swap with {ground_name}"
+            if len(left_text) > 48:
+                left_text = left_text[:45] + "..."
+        else:
+            left_text = "  Toolbox"
+
         right_margin = f"{capacity_str}  "
-        spaces_needed = 74 - len(left_text) - len(right_margin)
+        spaces_needed = max(1, 74 - len(left_text) - len(right_margin))
         toolbox_line = left_text + " " * spaces_needed + right_margin
         interior.append(toolbox_line)
         interior.append("─" * 74)
@@ -10443,7 +10493,6 @@ class Game:
         if not self.inventory:
             interior.append("  \033[90m(no items)\033[0m")
         else:
-            state = self.inventory_state
             assert state is not None
             selected_idx = state["selected_index"]
             for idx, item in enumerate(self.inventory):
@@ -10471,6 +10520,15 @@ class Game:
                                 right_text = f"│ \033[94m> {menu_item:<17}\033[0m │"
                             else:
                                 right_text = f"│   {menu_item:<17} │"
+                elif is_swap:
+                    if idx == 0:
+                        right_text = "┌" + "─" * 21 + "┐"
+                    elif idx == 1:
+                        right_text = "│ \033[92m[Return] Swap\033[0m       │"
+                    elif idx == 2:
+                        right_text = "│ [Esc] Cancel        │"
+                    elif idx == 3:
+                        right_text = "└" + "─" * 21 + "┘"
                 
                 left_part = self.pad_ansi_string(item_line, 45)
                 right_part = self.pad_ansi_string(right_text, 26)
@@ -10495,6 +10553,15 @@ class Game:
                             right_text = f"│ \033[94m> {menu_item:<17}\033[0m │"
                         else:
                             right_text = f"│   {menu_item:<17} │"
+            elif is_swap:
+                if idx == 0:
+                    right_text = "┌" + "─" * 21 + "┐"
+                elif idx == 1:
+                    right_text = "│ \033[92m[Return] Swap\033[0m       │"
+                elif idx == 2:
+                    right_text = "│ [Esc] Cancel        │"
+                elif idx == 3:
+                    right_text = "└" + "─" * 21 + "┘"
             left_part = " " * 45
             right_part = self.pad_ansi_string(right_text, 26)
             interior.append(left_part + "   " + right_part)
@@ -10510,9 +10577,15 @@ class Game:
             wrapped = textwrap.wrap(desc, width=70)
             desc_1 = wrapped[0] if len(wrapped) > 0 else ""
             desc_2 = wrapped[1] if len(wrapped) > 1 else ""
-            interior.append(f"  {r_color}Rarity: {rarity}\033[0m")
-            interior.append(f"  {desc_1}")
-            interior.append(f"  {desc_2}")
+            if is_swap:
+                ground_item = state.get("ground_item")
+                ground_name = items.get_item_display_name(ground_item) if ground_item else "ground item"
+                interior.append(f"  {r_color}Rarity: {rarity}\033[0m")
+                interior.append(f"  {desc_1}")
+            else:
+                interior.append(f"  {r_color}Rarity: {rarity}\033[0m")
+                interior.append(f"  {desc_1}")
+                interior.append(f"  {desc_2}")
         else:
             interior.append("  No item selected.")
             interior.append("")
