@@ -1,6 +1,32 @@
 		Pokémon Misery Dungeon: Explorers of the Console CHANGELOG
 ------------------------------PRIVATE BETA-------------------------------------
 ===============================================================================
+						0.1.2  - September 13, 2026
+===============================================================================
+-----------------------------------ADDITIONS-----------------------------------
+- Attempting to pick up an item when the inventory is full now prompts you to
+  swap an item from your inventory.
+- 3 more title screen tips have been added.
+------------------------------------CHANGES------------------------------------
+- Rollout's base power reduced (10 -> 5)
+- When moving to a new floor, allies will spawn adjacent to the leader when
+  possible.
+- Pokémon wrapping an enemy displays "Wrapping" in the status effect window 
+  instead of "Wrapped".
+- Update manual
+-------------------------------------FIXES-------------------------------------
+- Fixed Ivysaur having the same base stats as Bulbasaur.
+- The numbering of ally Pokémon on the map screen should now properly reflect
+  their placement in the party.
+- Actually implemented 0.1.1's item changes. Turns out that I overwrote
+  items.py like a dolt
+- Fixed Apples/Vitamins only filling 1% belly instead of the intended 50%/10%
+- Fixed Imprison's effects being permanent and not having a proper message when
+  attempting to use a move sealed by Imprison.
+-----------------------------------REMOVALS------------------------------------
+- Removed 1 redundant title screen tip related to the removed overfilling
+  feature
+===============================================================================
 						0.1.1a  - August 28, 2026
 ===============================================================================
 This is a hotfix release to fix high scores not actually saving.
