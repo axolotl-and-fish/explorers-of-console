@@ -137,6 +137,8 @@ class Pokemon:
             "Laser Focus": False,
             "Focus Energy": 0,
             "Wrap": 0,
+            "Wrapped": 0,
+            "Wrapping": 0,
             "Stockpile": 0,
             "Light Screen": 0,
             "Reflect": 0,
@@ -1034,8 +1036,14 @@ class Pokemon:
             self.status_effects["Charging"] = duration if duration is not None else 1
             if game:
                 game.log_message(f"{self.name} began charging power!")
-        elif status == "Wrap":
-            self.status_effects["Wrap"] = duration if duration is not None else random.randint(2, 5)
+        elif status == "Wrapping":
+            dur = duration if duration is not None else random.randint(2, 5)
+            self.status_effects["Wrapping"] = dur
+            self.status_effects["Wrap"] = dur
+        elif status in ("Wrap", "Wrapped"):
+            dur = duration if duration is not None else random.randint(2, 5)
+            self.status_effects["Wrapped"] = dur
+            self.status_effects["Wrap"] = dur
             game.log_message(f"{self.name} was wrapped!")
         elif status == "Light Screen":
             self.status_effects["Light Screen"] = duration if duration is not None else 10
@@ -1341,9 +1349,31 @@ class Pokemon:
             if self.status_effects.get("Focus Energy", 0) > 0:
                 self.status_effects["Focus Energy"] = 0
                 game.log_message(f"{self.name} is no longer getting pumped.")
+        elif status == "Wrapping":
+            if self.status_effects.get("Wrapping", 0) > 0:
+                self.status_effects["Wrapping"] = 0
+                if self.status_effects.get("Wrapped", 0) == 0:
+                    self.status_effects["Wrap"] = 0
+                game.log_message(f"{self.name} stopped wrapping.")
+        elif status == "Wrapped":
+            if self.status_effects.get("Wrapped", 0) > 0 or self.status_effects.get("Wrap", 0) > 0:
+                self.status_effects["Wrapped"] = 0
+                if self.status_effects.get("Wrapping", 0) == 0:
+                    self.status_effects["Wrap"] = 0
+                game.log_message(f"{self.name} was freed from Wrap.")
         elif status == "Wrap":
-            if self.status_effects.get("Wrap", 0) > 0:
-                self.status_effects["Wrap"] = 0
+            freed = False
+            stopped = False
+            if self.status_effects.get("Wrapping", 0) > 0:
+                self.status_effects["Wrapping"] = 0
+                stopped = True
+            if self.status_effects.get("Wrapped", 0) > 0 or (self.status_effects.get("Wrap", 0) > 0 and not stopped):
+                self.status_effects["Wrapped"] = 0
+                freed = True
+            self.status_effects["Wrap"] = 0
+            if stopped:
+                game.log_message(f"{self.name} stopped wrapping.")
+            if freed:
                 game.log_message(f"{self.name} was freed from Wrap.")
         elif status == "Light Screen":
             if self.status_effects.get("Light Screen", 0) > 0:

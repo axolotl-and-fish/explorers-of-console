@@ -641,8 +641,15 @@ class Game:
             items.append(("Leech Seed", "negative"))
         if pokemon.status_effects.get("Stuck", 0) > 0:
             items.append(("Stuck", "negative"))
-        if pokemon.status_effects.get("Wrap", 0) > 0:
+        if pokemon.status_effects.get("Wrapping", 0) > 0:
+            items.append(("Wrapping", "negative"))
+        elif pokemon.status_effects.get("Wrapped", 0) > 0:
             items.append(("Wrapped", "negative"))
+        elif pokemon.status_effects.get("Wrap", 0) > 0:
+            if hasattr(self, "wrap_bindings") and any(pokemon == b.get("attacker") for b in self.wrap_bindings):
+                items.append(("Wrapping", "negative"))
+            else:
+                items.append(("Wrapped", "negative"))
         if pokemon.status_effects.get("Sand Tomb", 0) > 0:
             items.append(("Sand Tomb", "negative"))
         if pokemon.status_effects.get("Fire Spin", 0) > 0:
@@ -1220,7 +1227,7 @@ class Game:
         #Status effects that prevent movement
         if enemy.status_effects.get("Fire Spin", 0) > 0:
             return False
-        if enemy.status_effects.get("Wrap", 0) > 0:
+        if enemy.status_effects.get("Wrap", 0) > 0 or enemy.status_effects.get("Wrapped", 0) > 0 or enemy.status_effects.get("Wrapping", 0) > 0:
             return False
         if enemy.status_effects.get("Sand Tomb", 0) > 0:
             return False
@@ -1809,10 +1816,10 @@ class Game:
                 ally.just_woke_up = False
                 continue
 
-            #Don't move if wrapped
+            #Don't move if wrapped or wrapping
             is_wrapped_target = False
             for binding in self.wrap_bindings:
-                if ally == binding["defender"]:
+                if ally == binding["defender"] or ally == binding["attacker"]:
                     is_wrapped_target = True
                     break
             if is_wrapped_target:
@@ -2100,10 +2107,10 @@ class Game:
                 enemy.just_woke_up = False #Enemies that have just been activated miss a turn, as in PMD
                 continue
 
-            #Check if wrapped (wrapped targets cannot attack or move)
+            #Check if wrapped or wrapping (cannot attack or move)
             is_wrapped_target = False
             for binding in self.wrap_bindings:
-                if enemy == binding["defender"]:
+                if enemy == binding["defender"] or enemy == binding["attacker"]:
                     is_wrapped_target = True
                     break
             if is_wrapped_target:
@@ -3770,8 +3777,8 @@ class Game:
                     "turns_left": duration,
                     "move": move
                 })
-                defender.apply_status("Wrap", self, duration=duration)
-                attacker.apply_status("Wrap", self, duration=duration)
+                defender.apply_status("Wrapped", self, duration=duration)
+                attacker.apply_status("Wrapping", self, duration=duration)
             elif eff_type == "sand_tomb":
                 already_bound = False
                 for binding in self.fire_spin_bindings + self.wrap_bindings + self.sand_tomb_bindings + self.whirlpool_bindings:
@@ -4251,9 +4258,9 @@ class Game:
             #Check if either is defeated
             if int(attacker.current_hp) <= 0 or int(defender.current_hp) <= 0:
                 if int(attacker.current_hp) > 0:
-                    attacker.cure_status("Wrap", self)
+                    attacker.cure_status("Wrapping", self)
                 if int(defender.current_hp) > 0:
-                    defender.cure_status("Wrap", self)
+                    defender.cure_status("Wrapped", self)
                 continue
                 
             #Both are alive, decrement turns_left
@@ -4278,15 +4285,17 @@ class Game:
                     self.remove_party_member(defender)
                 
                 if int(attacker.current_hp) > 0:
-                    attacker.cure_status("Wrap", self)
+                    attacker.cure_status("Wrapping", self)
                 continue
                 
             #Check if expired
             if binding["turns_left"] <= 0:
-                attacker.cure_status("Wrap", self)
-                defender.cure_status("Wrap", self)
+                attacker.cure_status("Wrapping", self)
+                defender.cure_status("Wrapped", self)
             else:
+                attacker.status_effects["Wrapping"] = binding["turns_left"]
                 attacker.status_effects["Wrap"] = binding["turns_left"]
+                defender.status_effects["Wrapped"] = binding["turns_left"]
                 defender.status_effects["Wrap"] = binding["turns_left"]
                 active_bindings.append(binding)
                 
@@ -4438,7 +4447,7 @@ class Game:
             ("Sand Tomb", self.sand_tomb_bindings),
             ("Whirlpool", self.whirlpool_bindings),
         ]
-        binding_statuses = ["Wrap", "Fire Spin", "Sand Tomb", "Whirlpool", "Bind", "Clamp"]
+        binding_statuses = ["Wrap", "Wrapped", "Wrapping", "Fire Spin", "Sand Tomb", "Whirlpool", "Bind", "Clamp"]
 
         for status_name, b_list in binding_lists:
             remaining = []
@@ -5057,7 +5066,7 @@ class Game:
             ax, ay = get_pokemon_position(self, attacker)
             room_tiles = get_room_tiles_at(self.floor, ax, ay)
             allies = self.party if attacker in self.party else self.spawned_pokemon
-            excluded_statuses = {"Poison", "Bad Poison", "Burn", "Sleep", "Paralysis", "Frozen", "Leech Seed", "Minimized", "Fire Spin", "Sand Tomb", "Whirlpool", "Wrap", "Clamp", "Bind"}
+            excluded_statuses = {"Poison", "Bad Poison", "Burn", "Sleep", "Paralysis", "Frozen", "Leech Seed", "Minimized", "Fire Spin", "Sand Tomb", "Whirlpool", "Wrap", "Wrapped", "Wrapping", "Clamp", "Bind"}
 
             self.log_message(f"{attacker.name} used Baton Pass!")
             for ally in list(allies):
@@ -6857,8 +6866,8 @@ class Game:
         if status_effects.get("Sleep", 0) > 0 or status_effects.get("Resting", 0) > 0 or getattr(ally, "napping", False):
             return False
 
-        #Wrapped
-        if status_effects.get("Wrap", 0) > 0 or any(ally == b.get("defender") for b in getattr(self, "wrap_bindings", [])):
+        #Wrapped / Wrapping
+        if status_effects.get("Wrap", 0) > 0 or status_effects.get("Wrapped", 0) > 0 or status_effects.get("Wrapping", 0) > 0 or any(ally == b.get("defender") or ally == b.get("attacker") for b in getattr(self, "wrap_bindings", [])):
             return False
 
         #Frozen
@@ -6955,7 +6964,11 @@ class Game:
             self.log_message(f"{self.player_pokemon.name} is a puppet and can't be controlled!")
             return False
 
-        if self.player_pokemon.status_effects.get("Wrap", 0) > 0:
+        if self.player_pokemon.status_effects.get("Wrapping", 0) > 0 or any(self.player_pokemon == b.get("attacker") for b in getattr(self, "wrap_bindings", [])):
+            self.log_message(f"{self.player_pokemon.name} is wrapping a foe and can't move!")
+            return False
+
+        if self.player_pokemon.status_effects.get("Wrapped", 0) > 0 or self.player_pokemon.status_effects.get("Wrap", 0) > 0 or any(self.player_pokemon == b.get("defender") for b in getattr(self, "wrap_bindings", [])):
             self.log_message(f"{self.player_pokemon.name} is wrapped and can't move!")
             return False
 
@@ -10168,8 +10181,15 @@ class Game:
                     status_items.append(("Leech Seed", "negative"))
                 if pokemon.status_effects.get("Stuck", 0) > 0:
                     status_items.append(("Stuck", "negative"))
-                if pokemon.status_effects.get("Wrap", 0) > 0:
+                if pokemon.status_effects.get("Wrapping", 0) > 0:
+                    status_items.append(("Wrapping", "negative"))
+                elif pokemon.status_effects.get("Wrapped", 0) > 0:
                     status_items.append(("Wrapped", "negative"))
+                elif pokemon.status_effects.get("Wrap", 0) > 0:
+                    if hasattr(self, "wrap_bindings") and any(pokemon == b.get("attacker") for b in self.wrap_bindings):
+                        status_items.append(("Wrapping", "negative"))
+                    else:
+                        status_items.append(("Wrapped", "negative"))
                 if pokemon.status_effects.get("Sand Tomb", 0) > 0:
                     status_items.append(("Sand Tomb", "negative"))
                 if pokemon.status_effects.get("Fire Spin", 0) > 0:
