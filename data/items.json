@@ -151,7 +151,7 @@
     "appearance": "☻",
     "color": "gray",
     "value": 200,
-    "rarity": "Legendary"
+    "rarity": "Rare"
   },
   {
     "name": "Blue Apricorn",
@@ -316,7 +316,7 @@
     "appearance": "☻",
     "color": "white",
     "value": 300,
-    "rarity": "Legendary"
+    "rarity": "Very Rare"
   },
   {
     "name": "Lime Apricorn",
@@ -676,6 +676,16 @@
     "appearance": "*",
     "color": "white",
     "value": 1500,
+    "rarity": "Epic"
+  },
+  {
+    "name": "Ice Stone",
+    "usable": true,
+    "evolution_item": true,
+    "description": "A peculiar stone that can make certain species of Pokémon evolve.",
+    "appearance": "*",
+    "color": "blue",
+    "value": 1800,
     "rarity": "Epic"
   },
   {
