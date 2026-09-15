@@ -43,6 +43,38 @@ RARITY_WEIGHTS = {
     "Legendary": 1
 }
 
+
+def can_item_spawn_on_floor(item: dict | str, floor_number: int) -> bool:
+    """Returns True if the item can spawn on the given floor number based on min_floor and max_floor.
+    If neither of these values are defined for an item, then it can spawn on any floor.
+    """
+    if isinstance(item, str):
+        if item in ("Poké", "Poke"):
+            return True
+        item_data = ITEMS_DB.get(item)
+        if not item_data:
+            return False
+    elif isinstance(item, dict):
+        item_data = item
+    else:
+        return False
+
+    min_floor = item_data.get("min_floor")
+    if min_floor is not None and floor_number < int(min_floor):
+        return False
+
+    max_floor = item_data.get("max_floor")
+    if max_floor is not None and floor_number > int(max_floor):
+        return False
+
+    return True
+
+
+def get_spawnable_item_keys(floor_number: int) -> list[str]:
+    """Returns list of item keys (including 'Poké') that can spawn on the specified floor."""
+    return [k for k in list(ITEMS_DB.keys()) + ["Poké"] if can_item_spawn_on_floor(k, floor_number)]
+
+
 def get_item_display_name(item: dict) -> str:
     """Returns formatted name of an item, appending a count if item is stackable"""
     if item.get("type") == "Money" or item.get("name") == "Poke":

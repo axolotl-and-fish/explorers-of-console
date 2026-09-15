@@ -1056,12 +1056,28 @@ class Game:
             return
 
         #Guaranteed items: Apple or Apricorn, Elixir, and Money ("Poké")
-        apple_item = random.choice(["Apple", "Big Apple", "Plain Apricorn", "Blue Apricorn", "Brown Apricorn", "White Apricorn", "Gold Apricorn", "Green Apricorn", "Bronze Apricorn", "Orange Apricorn", "Transparent Apricorn", "Purple Apricorn", "Pink Apricorn", "Red Apricorn", "Indigo Apricorn", "Violet Apricorn", "Yellow Apricorn", "Lime Apricorn"])
-        elixir_item = random.choice(["Elixir", "Max Elixir"])
+        apple_pool = [
+            i for i in [
+                "Apple", "Big Apple", "Plain Apricorn", "Blue Apricorn", "Brown Apricorn",
+                "White Apricorn", "Gold Apricorn", "Green Apricorn", "Bronze Apricorn",
+                "Orange Apricorn", "Transparent Apricorn", "Purple Apricorn", "Pink Apricorn",
+                "Red Apricorn", "Indigo Apricorn", "Violet Apricorn", "Yellow Apricorn", "Lime Apricorn"
+            ] if items.can_item_spawn_on_floor(i, self.floor_number)
+        ]
+        apple_item = random.choice(apple_pool) if apple_pool else "Apple"
+
+        elixir_pool = [
+            i for i in ["Elixir", "Max Elixir"]
+            if items.can_item_spawn_on_floor(i, self.floor_number)
+        ]
+        elixir_item = random.choice(elixir_pool) if elixir_pool else "Elixir"
+
         item_names = [apple_item, elixir_item, "Poké"]
 
         #Fill remaining slots using weighted random choice based on item rarity
-        item_keys = list(items.ITEMS_DB.keys()) + ["Poké"]
+        item_keys = items.get_spawnable_item_keys(self.floor_number)
+        if not item_keys:
+            item_keys = ["Poké"]
         item_weights = [items.RARITY_WEIGHTS.get(items.ITEMS_DB[k].get("rarity", "Common"), 50) if k != "Poké" else 50 for k in item_keys]
 
         needed = len(selected_tiles) - len(item_names)
@@ -7339,7 +7355,10 @@ class Game:
     def spawn_random_item_at(self, x: int, y: int) -> dict:
         """Spawns a random item on floor at (x, y) using standard weighted rarity sampling."""
         #Special handling for money (Poké), considered to be a Common-rarity item
-        item_keys = list(items.ITEMS_DB.keys()) + ["Poké"]
+        curr_floor = getattr(self, "floor_number", 1)
+        item_keys = items.get_spawnable_item_keys(curr_floor)
+        if not item_keys:
+            item_keys = ["Poké"]
         item_weights = [items.RARITY_WEIGHTS.get(items.ITEMS_DB[k].get("rarity", "Common"), 50) if k != "Poké" else 50 for k in item_keys]
         item_name = random.choices(item_keys, weights=item_weights, k=1)[0]
 
@@ -9599,7 +9618,7 @@ class Game:
             if ally is not self.player_pokemon and not getattr(ally, "is_leader", False) and int(getattr(ally, "current_hp", 0)) > 0:
                 ax, ay = get_pokemon_position(self, ally)
                 slot_num = idx + 1
-                slot_str = str(slot_num) if slot_num < 10 else str(slot_num % 10)
+                slot_str = str(slot_num) if slot_num < 10 else str(slot_num % 10) #Indices start at zero
                 ally_map[(ax, ay)] = (ally, slot_str)
 
         output_rows = []
