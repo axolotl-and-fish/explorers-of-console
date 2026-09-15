@@ -79,6 +79,8 @@
     "color": "gray",
     "rarity": "Uncommon",
     "value": 5,
+	"min_floor": 11,
+	"max_floor": 30,
     "stackable": true
   },
   {
@@ -89,6 +91,7 @@
     "color": "brown",
     "rarity": "Common",
     "value": 2,
+	"max_floor": 20,
     "stackable": true
   },
   {
@@ -98,6 +101,8 @@
     "appearance": "/",
     "color": "white",
     "rarity": "Rare",
+	"min_floor": 21,
+	"max_floor": 40,
     "value": 20,
     "stackable": true
   },
@@ -109,6 +114,7 @@
     "color": "yellow",
     "rarity": "Legendary",
     "value": 1000,
+	"min_floor": 41,
     "stackable": true
   },
   {
@@ -119,6 +125,7 @@
     "color": "green",
     "rarity": "Very Rare",
     "value": 100,
+	"min_floor": 31,
     "stackable": true
   },
   {
@@ -129,6 +136,7 @@
     "color": "magenta",
     "rarity": "Epic",
     "value": 200,
+	"min_floor": 31,
     "stackable": true
   },
   {
@@ -338,6 +346,7 @@
     "appearance": "☻",
     "color": "yellow",
     "value": 3000,
+	"min_floor": 31,
     "rarity": "Epic"
   },
   {
@@ -356,6 +365,7 @@
     "appearance": ")",
     "color": "yellow",
     "value": 10000,
+	"min_floor": 41,
     "rarity": "Legendary"
   },
   {
@@ -374,6 +384,7 @@
     "appearance": "o",
     "color": "green",
     "value": 5,
+	"min_floor": 11,
     "rarity": "Common"
   },
   {
@@ -428,6 +439,7 @@
     "appearance": "%",
     "color": "yellow",
     "value": 250,
+	"min_floor": 31,
     "rarity": "Rare"
   },
   {
@@ -437,6 +449,7 @@
     "appearance": "%",
     "color": "magenta",
     "value": 500,
+	"min_floor": 31,
     "rarity": "Epic"
   },
   {
@@ -446,6 +459,7 @@
     "appearance": "%",
     "color": "yellow",
     "value": 250,
+	"min_floor": 31,
     "rarity": "Very Rare"
   },
   {
@@ -455,6 +469,7 @@
     "appearance": "%",
     "color": "yellow",
     "value": 500,
+	"min_floor": 31,
     "rarity": "Epic"
   },
   {
@@ -464,6 +479,7 @@
     "appearance": "%",
     "color": "red",
     "value": 500,
+	"min_floor": 21,
     "rarity": "Epic"
   },
   {
@@ -473,6 +489,7 @@
     "appearance": "%",
     "color": "blue",
     "value": 500,
+	"min_floor": 21,
     "rarity": "Epic"
   },
   {
@@ -482,6 +499,7 @@
     "appearance": "%",
     "color": "yellow",
     "value": 500,
+	"min_floor": 21,
     "rarity": "Epic"
   },
   {
@@ -491,6 +509,7 @@
     "appearance": "%",
     "color": "green",
     "value": 500,
+	"min_floor": 21,
     "rarity": "Epic"
   },
   {
@@ -500,6 +519,7 @@
     "appearance": "%",
     "color": "cyan",
     "value": 500,
+	"min_floor": 21,
     "rarity": "Epic"
   },
   {
@@ -509,6 +529,7 @@
     "appearance": "%",
     "color": "red",
     "value": 500,
+	"min_floor": 21,
     "rarity": "Epic"
   },
   {
@@ -518,6 +539,7 @@
     "appearance": "%",
     "color": "purple",
     "value": 500,
+	"min_floor": 21,
     "rarity": "Epic"
   },
   {
@@ -527,6 +549,7 @@
     "appearance": "%",
     "color": "yellow",
     "value": 500,
+	"min_floor": 21,
     "rarity": "Epic"
   },
   {
@@ -536,6 +559,7 @@
     "appearance": "%",
     "color": "cyan",
     "value": 500,
+	"min_floor": 21,
     "rarity": "Epic"
   },
   {
@@ -545,6 +569,7 @@
     "appearance": "%",
     "color": "magenta",
     "value": 500,
+	"min_floor": 21,
     "rarity": "Epic"
   },
   {
@@ -554,6 +579,7 @@
     "appearance": "%",
     "color": "green",
     "value": 500,
+	"min_floor": 21,
     "rarity": "Epic"
   },
   {
@@ -563,6 +589,7 @@
     "appearance": "%",
     "color": "yellow",
     "value": 500,
+	"min_floor": 21,
     "rarity": "Epic"
   },
   {
@@ -572,6 +599,7 @@
     "appearance": "%",
     "color": "purple",
     "value": 500,
+	"min_floor": 21,
     "rarity": "Epic"
   },
   {
@@ -581,6 +609,7 @@
     "appearance": "%",
     "color": "purple",
     "value": 500,
+	"min_floor": 21,
     "rarity": "Epic"
   },
   {
@@ -590,6 +619,7 @@
     "appearance": "%",
     "color": "darkgray",
     "value": 500,
+	"min_floor": 21,
     "rarity": "Epic"
   },
   {
@@ -599,6 +629,7 @@
     "appearance": "%",
     "color": "white",
     "value": 500,
+	"min_floor": 21,
     "rarity": "Epic"
   },
   {
@@ -608,6 +639,7 @@
     "appearance": "%",
     "color": "magenta",
     "value": 500,
+	"min_floor": 21,
     "rarity": "Epic"
   },
   {
@@ -617,6 +649,7 @@
     "appearance": "%",
     "color": "white",
     "value": 400,
+	"min_floor": 21,
     "rarity": "Very Rare"
   },
   {
@@ -626,6 +659,7 @@
     "appearance": "%",
     "color": "magenta",
     "value": 2500,
+	"min_floor": 21,
     "rarity": "Legendary"
   },
   {
@@ -636,6 +670,7 @@
     "appearance": "*",
     "color": "red",
     "value": 1200,
+	"min_floor": 21,
     "rarity": "Very Rare"
   },
   {
@@ -646,6 +681,7 @@
     "appearance": "*",
     "color": "blue",
     "value": 1200,
+	"min_floor": 21,
     "rarity": "Very Rare"
   },
   {
@@ -656,6 +692,7 @@
     "appearance": "*",
     "color": "yellow",
     "value": 1200,
+	"min_floor": 21,
     "rarity": "Very Rare"
   },
   {
@@ -666,6 +703,7 @@
     "appearance": "*",
     "color": "green",
     "value": 1200,
+	"min_floor": 21,
     "rarity": "Very Rare"
   },
   {
@@ -676,6 +714,7 @@
     "appearance": "*",
     "color": "white",
     "value": 1500,
+	"min_floor": 21,
     "rarity": "Epic"
   },
   {
@@ -686,6 +725,7 @@
     "appearance": "*",
     "color": "blue",
     "value": 1800,
+	"min_floor": 21,
     "rarity": "Epic"
   },
   {
@@ -696,6 +736,7 @@
     "appearance": "*",
     "color": "yellow",
     "value": 1500,
+	"min_floor": 21,
     "rarity": "Legendary"
   },
   {
@@ -706,6 +747,7 @@
     "appearance": "*",
     "color": "cyan",
     "value": 2000,
+	"min_floor": 21,
     "rarity": "Epic"
   },
   {
@@ -886,6 +928,7 @@
     "appearance": "!",
     "color": "green",
     "value": 1000,
+	"min_floor": 21,
     "rarity": "Very Rare"
   },
   {
@@ -895,6 +938,7 @@
     "appearance": "!",
     "color": "bright_red",
     "value": 1000,
+	"min_floor": 21,
     "rarity": "Very Rare"
   },
   {
@@ -904,6 +948,7 @@
     "appearance": "!",
     "color": "yellow",
     "value": 1000,
+	"min_floor": 21,
     "rarity": "Very Rare"
   },
   {
@@ -913,6 +958,7 @@
     "appearance": "!",
     "color": "red",
     "value": 1000,
+	"min_floor": 21,
     "rarity": "Very Rare"
   },
   {
@@ -922,6 +968,7 @@
     "appearance": "!",
     "color": "brown",
     "value": 1000,
+	"min_floor": 21,
     "rarity": "Very Rare"
   },
   {
@@ -931,6 +978,7 @@
     "appearance": "!",
     "color": "blue",
     "value": 800,
+	"min_floor": 21,
     "rarity": "Very Rare"
   },
   {
@@ -949,6 +997,7 @@
     "appearance": "!",
     "color": "yellow",
     "value": 2500,
+	"min_floor": 41,
     "rarity": "Epic"
   },
   {
@@ -1003,6 +1052,7 @@
     "appearance": "o",
     "color": "brown",
     "value": 2,
+	"max_floor": 10,
     "rarity": "Common"
   },
   {
@@ -1012,6 +1062,7 @@
     "appearance": "o",
     "color": "gray",
     "value": 3,
+	"max_floor": 20,
     "rarity": "Uncommon"
   },
   {
@@ -1039,6 +1090,7 @@
     "appearance": "*",
     "color": "yellow",
     "value": 60,
+	"min_floor": 2,
     "rarity": "Very Rare"
   },
   {
