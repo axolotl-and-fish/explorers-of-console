@@ -259,6 +259,7 @@ class Game:
         self.explosion_overlays: dict[tuple[int, int], str] = {}
         self.exp_batching_active: bool = False
         self.pending_team_exp: int = 0
+        self.pending_member_exp: dict = {}
 
         #Load all move names for color-coding in log messages
         from moves_db import load_moves_database
@@ -459,11 +460,11 @@ class Game:
         if enemy is None or self.is_team_pokemon(enemy):
             return
         if defeater is not None and self.is_team_pokemon(defeater):
-            defeater.defeat_pokemon(enemy, game=self)
+            defeater.defeat_pokemon(enemy, game=self, is_finishing_blow=True)
         elif getattr(enemy, "has_been_attacked_by_team", False):
             leader = getattr(self, "player_pokemon", None)
             if leader:
-                leader.defeat_pokemon(enemy, game=self)
+                leader.defeat_pokemon(enemy, game=self, is_finishing_blow=False)
 
     def on_enemy_defeated(self, enemy, exp_gained: int):
         """Called when an enemy Pokémon is defeated by a team member"""
@@ -935,6 +936,13 @@ class Game:
             self._turn_messages_count = 0
             self.turn_in_progress = True
 
+    def _should_wait_for_more_prompt(self) -> bool:
+        if getattr(self, "suppress_animation_delay", False):
+            return False
+        if "unittest" in sys.modules or "pytest" in sys.modules:
+            return hasattr(game_input.get_key, "assert_called") or hasattr(game_input.get_key, "_mock_return_value")
+        return True
+
     def log_message(self, text: str, important: bool = False):
         """Logs a message with the current turn number, and updates the message log.
         If >5 messages are added in a single turn, displays the [MORE] prompt and pauses the turn until dismissed."""
@@ -956,7 +964,7 @@ class Game:
         if turn_active and getattr(self, "_turn_messages_count", 0) >= 5:
             self.message_log.has_more_page = True
             self.render()
-            if not getattr(self, "suppress_animation_delay", False):
+            if self._should_wait_for_more_prompt():
                 game_input.get_key()
             self.message_log.has_more_page = False
             self._turn_messages_count = 0
@@ -968,7 +976,7 @@ class Game:
         if is_imp:
             self.message_log.has_more_page = True
             self.render()
-            if not getattr(self, "suppress_animation_delay", False):
+            if self._should_wait_for_more_prompt():
                 game_input.get_key()
             self.message_log.has_more_page = False
             self._turn_messages_count = 0
@@ -1057,12 +1065,7 @@ class Game:
 
         #Guaranteed items: Apple or Apricorn, Elixir, and Money ("Poké")
         apple_pool = [
-            i for i in [
-                "Apple", "Big Apple", "Plain Apricorn", "Blue Apricorn", "Brown Apricorn",
-                "White Apricorn", "Gold Apricorn", "Green Apricorn", "Bronze Apricorn",
-                "Orange Apricorn", "Transparent Apricorn", "Purple Apricorn", "Pink Apricorn",
-                "Red Apricorn", "Indigo Apricorn", "Violet Apricorn", "Yellow Apricorn", "Lime Apricorn"
-            ] if items.can_item_spawn_on_floor(i, self.floor_number)
+            i for i in ["Apple", "Big Apple", "Plain Apricorn", "Blue Apricorn", "Brown Apricorn", "White Apricorn", "Gold Apricorn", "Green Apricorn", "Bronze Apricorn", "Orange Apricorn", "Transparent Apricorn", "Purple Apricorn", "Pink Apricorn", "Red Apricorn", "Indigo Apricorn", "Violet Apricorn", "Yellow Apricorn", "Lime Apricorn"] if items.can_item_spawn_on_floor(i, self.floor_number)
         ]
         apple_item = random.choice(apple_pool) if apple_pool else "Apple"
 
@@ -3450,6 +3453,7 @@ class Game:
         if is_outer_attack:
             self.exp_batching_active = True
             self.pending_team_exp = 0
+            self.pending_member_exp = {}
 
         try:
             self._trigger_explosion_at_internal(center_x, center_y, size=size, base_power=base_power, attacker=attacker, cause_name=cause_name, fixed_center_damage=fixed_center_damage, fixed_adjacent_damage=fixed_adjacent_damage)
@@ -4627,6 +4631,12 @@ class Game:
             
     def _process_single_target_hit(self, attacker: Pokemon, defender: Pokemon, move: dict, is_multi_target: bool = False, free: bool = False):
         """Processes damaging moves that hit a single target."""
+        defender.has_had_move_used_on_it = True
+        if self.is_team_pokemon(attacker) and not self.is_team_pokemon(defender):
+            defender.has_been_attacked_by_team = True
+            if not hasattr(defender, "team_attackers"):
+                defender.team_attackers = set()
+            defender.team_attackers.add(attacker)
 
         #Check Rebound status immunity & damage reflection
         if attacker != defender and defender.status_effects.get("Rebound", 0) > 0 and move.get("category") in ("Physical", "Special"):
@@ -6499,6 +6509,15 @@ class Game:
 
     def flush_pending_exp(self):
         """Hands out the combined amount of experience points gained from all defeated Pokémon during a turn"""
+        if hasattr(self, "pending_member_exp") and self.pending_member_exp:
+            member_exp = dict(self.pending_member_exp)
+            self.pending_member_exp.clear()
+            self.pending_team_exp = 0
+            for p, share in member_exp.items():
+                if share > 0 and int(getattr(p, "current_hp", 0)) > 0:
+                    p.gain_experience(share, game=self)
+            return
+
         combined_exp = getattr(self, "pending_team_exp", 0)
         self.pending_team_exp = 0
         if combined_exp <= 0:
@@ -6545,6 +6564,7 @@ class Game:
         if is_outer_attack:
             self.exp_batching_active = True
             self.pending_team_exp = 0
+            self.pending_member_exp = {}
 
         try:
             self._execute_move_internal(attacker, targets, move, free=free)

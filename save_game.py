@@ -49,6 +49,12 @@ def serialize_pokemon(poke: Pokemon) -> dict:
         p_id = getattr(p, "id", None)
         if p_id:
             damaged_by[p_id] = turn
+
+    team_attackers_ids = []
+    for p in getattr(poke, "team_attackers", set()):
+        p_id = getattr(p, "id", None)
+        if p_id:
+            team_attackers_ids.append(p_id)
     #So this is fun! The game state needs to be literally 100% identical when loaded, so we need to store basically EVERYTHING.
     #There's more explanations for most of this stuff in game.py
     return {
@@ -97,6 +103,8 @@ def serialize_pokemon(poke: Pokemon) -> dict:
         "tactic": getattr(poke, "tactic", None),
         "last_damage_source": getattr(poke, "last_damage_source", None),
         "has_been_attacked_by_team": getattr(poke, "has_been_attacked_by_team", False),
+        "has_had_move_used_on_it": getattr(poke, "has_had_move_used_on_it", False),
+        "team_attackers": team_attackers_ids,
         "cannot_be_revived": getattr(poke, "cannot_be_revived", False),
         "swapped_this_turn": getattr(poke, "swapped_this_turn", False),
         "has_notified_can_evolve": getattr(poke, "has_notified_can_evolve", False),
@@ -196,6 +204,8 @@ def deserialize_pokemon(data: dict) -> Pokemon:
     poke.tactic = data.get("tactic")
     poke.last_damage_source = data.get("last_damage_source")
     poke.has_been_attacked_by_team = data.get("has_been_attacked_by_team", False)
+    poke.has_had_move_used_on_it = data.get("has_had_move_used_on_it", False)
+    poke.team_attackers = set()
     poke.cannot_be_revived = data.get("cannot_be_revived", False)
     poke.swapped_this_turn = data.get("swapped_this_turn", False)
     poke.has_notified_can_evolve = data.get("has_notified_can_evolve", False)
@@ -514,6 +524,10 @@ def apply_game_state(game, state_dict: dict):
             for att_id, turn in p_data.get("damaged_by_pokemons", {}).items():
                 if att_id in poke_map:
                     poke.damaged_by_pokemons[poke_map[att_id]] = turn
+            poke.team_attackers = set()
+            for att_id in p_data.get("team_attackers", []):
+                if att_id in poke_map:
+                    poke.team_attackers.add(poke_map[att_id])
 
     history_list = []
     for h_data in state_dict.get("all_team_members", []):

@@ -113,6 +113,11 @@ def apply_item_effect(item: dict, target, game, is_thrown: bool = False):
     """Applies the use or throw effect of an item to a target Pokémon"""
     if hasattr(game, "party") and target not in game.party:
         target.has_been_attacked_by_team = True
+        if not hasattr(target, "team_attackers"):
+            target.team_attackers = set()
+        player_poke = getattr(game, "player_pokemon", None)
+        if player_poke:
+            target.team_attackers.add(player_poke)
 
     if is_thrown and hasattr(target, "napping") and target.napping:
         target.napping = False

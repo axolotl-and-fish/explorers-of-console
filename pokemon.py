@@ -118,6 +118,8 @@ class Pokemon:
         self.cannot_be_revived: bool = False
         self.last_damage_source: str | None = None
         self.has_been_attacked_by_team: bool = False
+        self.team_attackers: set["Pokemon"] = set()
+        self.has_had_move_used_on_it: bool = False
 
         #Status effects
         self.status_effects: dict[str, int | bool] = {
@@ -663,7 +665,7 @@ class Pokemon:
                     formatted = stat.replace("_", " ")
                     game.log_message(f"{self.name}'s {formatted} increased by {diff}!")
 
-    def defeat_pokemon(self, opponent: "Pokemon", game=None):
+    def defeat_pokemon(self, opponent: "Pokemon", game=None, is_finishing_blow: bool = True):
         """Gains EVs and EXP according to the defeated Pokémon's yields."""
         if int(getattr(self, "current_hp", 1)) <= 0:
             return
@@ -679,56 +681,89 @@ class Pokemon:
         opponent_level = opponent.level
         post_evo_bonus = 1.2 if self.can_evolve(game=game) else 1.0
         
-        total_exp = math.floor(((3 * exp_yield * opponent_level) / 14) * post_evo_bonus)
+        base_exp = math.floor(((exp_yield * opponent_level) / 7) * post_evo_bonus)
 
         #EXP is distributed to all party members if one of them defeated an enemy or attacked them
         is_team_defeater = game is not None and hasattr(game, "party") and self in game.party
         is_enemy_opponent = game is not None and hasattr(game, "party") and opponent not in game.party
         was_attacked_by_team = getattr(opponent, "has_been_attacked_by_team", False) or is_team_defeater
 
+        #Half EXP given if enemy is defeated without any moves being used on it
+        if is_enemy_opponent and not getattr(opponent, "has_had_move_used_on_it", False):
+            base_exp = math.floor(base_exp * 0.5)
+
         if is_enemy_opponent:
             if was_attacked_by_team:
-                if hasattr(game, "on_enemy_defeated"):
-                    game.on_enemy_defeated(opponent, total_exp)
-                if getattr(game, "exp_batching_active", False):
-                    game.pending_team_exp = getattr(game, "pending_team_exp", 0) + total_exp
-                else:
-                    team_members = [p for p in game.party if int(getattr(p, "current_hp", 0)) > 0]
-                    if team_members:
-                        #Distribution is based on a party member's level. Lower level means more EXP
-                        weights = [1.0 / float(p.level) for p in team_members]
-                        total_weight = sum(weights)
+                finisher = self if (is_team_defeater and is_finishing_blow) else None
+                if finisher:
+                    if not hasattr(opponent, "team_attackers"):
+                        opponent.team_attackers = set()
+                    opponent.team_attackers.add(finisher)
 
-                        shares: dict = {}
-                        sum_allocated = 0
-                        for p, w in zip(team_members, weights):
-                            fraction = w / total_weight
-                            allocated = math.floor(total_exp * fraction)
-                            shares[p] = allocated
-                            sum_allocated += allocated
+                team_members = [p for p in game.party if int(getattr(p, "current_hp", 0)) > 0]
+                party_count = len(game.party) if game.party else 1
 
-                        remainder = total_exp - sum_allocated
-                        #All EXP should go somewhere
-                        if remainder > 0:
-                            min_lvl = min(p.level for p in team_members)
-                            lowest_pokes = [p for p in team_members if p.level == min_lvl]
+                #Multiply EXP by the number of party members
+                total_party_exp = base_exp * party_count
 
-                            #Prioritize team leader if leader is among the lowest level, or choose at random if not
-                            leader_in_lowest = [p for p in lowest_pokes if p is getattr(game, "player_pokemon", None) or getattr(p, "is_leader", False)]
-                            if leader_in_lowest:
-                                chosen_recipient = leader_in_lowest[0]
-                            else:
-                                chosen_recipient = random.choice(lowest_pokes)
+                if team_members:
+                    #Distribution is based on a party member's level. Lower level means more EXP
+                    weights = [1.0 / float(p.level) for p in team_members]
+                    total_weight = sum(weights)
 
-                            shares[chosen_recipient] += remainder
+                    base_shares: dict = {}
+                    sum_allocated = 0
+                    for p, w in zip(team_members, weights):
+                        fraction = w / total_weight
+                        allocated = math.floor(total_party_exp * fraction)
+                        base_shares[p] = allocated
+                        sum_allocated += allocated
 
-                        for p, share in shares.items():
+                    remainder = total_party_exp - sum_allocated
+                    #All EXP should go somewhere
+                    if remainder > 0:
+                        min_lvl = min(p.level for p in team_members)
+                        lowest_pokes = [p for p in team_members if p.level == min_lvl]
+
+                        #Prioritize team leader if leader is among the lowest level, or choose at random if not
+                        leader_in_lowest = [p for p in lowest_pokes if p is getattr(game, "player_pokemon", None) or getattr(p, "is_leader", False)]
+                        if leader_in_lowest:
+                            chosen_recipient = leader_in_lowest[0]
+                        else:
+                            chosen_recipient = random.choice(lowest_pokes)
+
+                        base_shares[chosen_recipient] += remainder
+
+                    #Apply finishing blow bonus (+25%) and non-attacker penalty (-25%)
+                    attackers = getattr(opponent, "team_attackers", set())
+                    final_shares: dict = {}
+                    for p in team_members:
+                        b_share = base_shares[p]
+                        if p is finisher:
+                            final_shares[p] = math.floor(b_share * 1.25)
+                        elif p not in attackers:
+                            final_shares[p] = math.floor(b_share * 0.75)
+                        else:
+                            final_shares[p] = b_share
+
+                    total_awarded = sum(final_shares.values())
+                    if hasattr(game, "on_enemy_defeated"):
+                        game.on_enemy_defeated(opponent, total_awarded)
+
+                    if getattr(game, "exp_batching_active", False):
+                        if not hasattr(game, "pending_member_exp"):
+                            game.pending_member_exp = {}
+                        for p, share in final_shares.items():
+                            game.pending_member_exp[p] = game.pending_member_exp.get(p, 0) + share
+                        game.pending_team_exp = sum(game.pending_member_exp.values())
+                    else:
+                        for p, share in final_shares.items():
                             if share > 0:
                                 p.gain_experience(share, game=game)
-                    else:
-                        self.gain_experience(total_exp, game=game)
+                else:
+                    self.gain_experience(total_party_exp, game=game)
         else:
-            self.gain_experience(total_exp, game=game)
+            self.gain_experience(base_exp, game=game)
 
         if game:
             allies = game.party if opponent in game.party else game.spawned_pokemon
