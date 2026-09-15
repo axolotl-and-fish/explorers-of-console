@@ -1202,7 +1202,7 @@
     "appearance": "•",
     "color": "blue",
     "value": 50,
-    "rarity": "Uncommon"
+    "rarity": "Rare"
   },
   {
     "name": "Sunny Orb",
@@ -1212,7 +1212,7 @@
     "appearance": "•",
     "color": "blue",
     "value": 50,
-    "rarity": "Uncommon"
+    "rarity": "Rare"
   },
   {
     "name": "Sandy Orb",
@@ -1222,7 +1222,7 @@
     "appearance": "•",
     "color": "blue",
     "value": 100,
-    "rarity": "Rare"
+    "rarity": "Very Rare"
   },
   {
     "name": "All Mach Orb",
