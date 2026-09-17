@@ -726,7 +726,18 @@
     "color": "blue",
     "value": 1800,
 	"min_floor": 21,
-    "rarity": "Epic"
+    "rarity": "Very Rare"
+  },
+  {
+    "name": "Unusual Cuff",
+    "usable": true,
+    "evolution_item": true,
+    "description": "A cuff made from twigs, woven together. A Pokémon might evolve with this...",
+    "appearance": "*",
+    "color": "blue",
+    "value": 4000,
+	"min_floor": 21,
+    "rarity": "Legendary"
   },
   {
     "name": "Sun Stone",
