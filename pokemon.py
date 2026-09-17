@@ -951,6 +951,8 @@ class Pokemon:
     def _apply_status_internal(self, status: str, game, duration: int | None = None):
         """Applies a negative status effect to the Pokémon and prints the log message."""
         import random
+        if status == "Confused":
+            status = "Confusion"
         
         #Type immunities for specific status effects
         p_types = self.types
@@ -1237,6 +1239,8 @@ class Pokemon:
                 game.suppress_target_logs = orig_suppress
 
     def _cure_status_internal(self, status: str, game, early: bool = False):
+        if status == "Confused":
+            status = "Confusion"
         if status == "Sleep":
             if self.status_effects.get("Sleep", 0) > 0:
                 self.status_effects["Sleep"] = 0

@@ -241,7 +241,9 @@ def generate_end_screen_report(game, game_won: bool) -> list[str]:
                 fate_str = f"Departed the team on {floor_num}F on turn {fmt(turns)}"
             else:
                 src = getattr(poke, "last_damage_source", None)
-                if src == "poison":
+                if src == "Crushed by falling debris":
+                    fate_str = "Crushed by falling debris"
+                elif src == "poison":
                     fate_str = f"Succumbed to poison on {floor_num}F on turn {fmt(turns)}"
                 elif src == "burn":
                     fate_str = f"Succumbed to burn on {floor_num}F on turn {fmt(turns)}"

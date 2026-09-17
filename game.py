@@ -153,6 +153,13 @@ class Game:
         #Spawn player in a random room
         self.player_x, self.player_y = self._get_starting_position()
         self.floor_number = 1
+        self.floor_timer = self.get_initial_floor_timer(self.floor_number)
+        self.floor_timer_warned_250 = False
+        self.floor_timer_warned_150 = False
+        self.floor_timer_warned_50 = False
+        self.floor_timer_collapsed = False
+        self.map_shake_offset = (0, 0)
+        self.collapse_blanked_tiles: set[tuple[int, int]] = set()
         self.build_string = "Beta 0.1.2"
         self.message = self.build_string
         self.stairs_position = (0, 0)
@@ -360,7 +367,9 @@ class Game:
                 floor_num = getattr(self, "floor_number", 1)
                 turns = getattr(self, "turn_number", 0) or getattr(self, "turn_count", 0)
 
-                if src == "poison":
+                if src == "Crushed by falling debris":
+                    fate_str = "Crushed by falling debris"
+                elif src == "poison":
                     fate_str = f"Succumbed to poison on {floor_num}F on turn {turns}"
                 elif src == "burn":
                     fate_str = f"Succumbed to burn on {floor_num}F on turn {turns}"
@@ -2388,6 +2397,141 @@ class Game:
             return 1 if pokemon.slow_turn_toggle else 0
         return 1
 
+    def get_initial_floor_timer(self, floor_number: int | None = None) -> int:
+        """Returns the initial floor timer in turns: 500 + (10 * n), where n is the floor number"""
+        if floor_number is None:
+            floor_number = getattr(self, "floor_number", 1)
+        return 500 + (10 * floor_number)
+
+    def play_screen_shake_animation(self, max_offset: int, num_frames: int = 8):
+        """Briefly shakes the dungeon map by randomly offsetting it within +/- max_offset on each axis"""
+        import time
+        for _ in range(num_frames):
+            ox = random.randint(-max_offset, max_offset)
+            oy = random.randint(-max_offset, max_offset)
+            self.map_shake_offset = (ox, oy)
+            self.render()
+            if not getattr(self, "suppress_animation_delay", False):
+                try:
+                    sys.stdout.flush()
+                except Exception:
+                    pass
+                time.sleep(0.04)
+        self.map_shake_offset = (0, 0)
+        self.render()
+
+    def play_floor_collapse_animation(self, num_frames: int = 16):
+        """Plays a longer form of the floor shaking animation, where tiles are gradually blanked out. Plays when the floor timer expires"""
+        import time
+        all_tiles = [(x, y) for y in range(self.floor.height) for x in range(self.floor.width)]
+        random.shuffle(all_tiles)
+
+        total_tiles = len(all_tiles)
+        tiles_per_frame = (total_tiles + num_frames - 1) // num_frames
+
+        if not hasattr(self, "collapse_blanked_tiles") or self.collapse_blanked_tiles is None:
+            self.collapse_blanked_tiles = set()
+
+        for frame in range(num_frames):
+            start_idx = frame * tiles_per_frame
+            end_idx = min(total_tiles, (frame + 1) * tiles_per_frame)
+            self.collapse_blanked_tiles.update(all_tiles[start_idx:end_idx])
+
+            ox = random.randint(-3, 3)
+            oy = random.randint(-3, 3)
+            self.map_shake_offset = (ox, oy)
+            self.render()
+            if not getattr(self, "suppress_animation_delay", False):
+                try:
+                    sys.stdout.flush()
+                except Exception:
+                    pass
+                time.sleep(0.05)
+
+        #Ensure all tiles are blanked out and offset is reset
+        self.collapse_blanked_tiles.update(all_tiles)
+        self.map_shake_offset = (0, 0)
+        self.render()
+        if not getattr(self, "suppress_animation_delay", False):
+            try:
+                sys.stdout.flush()
+            except Exception:
+                pass
+            time.sleep(0.1)
+
+    def handle_floor_collapse(self):
+        """Handles the collapse of the floor when the floor timer reaches 0 turns."""
+        self.floor_timer_collapsed = True
+        self.play_screen_shake_animation(max_offset=3, num_frames=6)
+        self.log_message("The floor collapses!", important=True)
+        self.play_floor_collapse_animation()
+
+        #Record fate of all currently active Pokémon on the team
+        for member in list(self.party):
+            member.current_hp = 0.0
+            member.last_damage_source = "Crushed by falling debris"
+            poke_id = getattr(member, "id", None)
+            found = False
+            for entry in self.all_team_members:
+                if entry.get("pokemon") is member or (poke_id and entry.get("pokemon_id") == poke_id):
+                    entry["fate"] = "Crushed by falling debris"
+                    entry["final_hp"] = 0
+                    entry["final_max_hp"] = int(member.stats.get("HP", 1)) if getattr(member, "stats", None) else 1
+                    entry["final_level"] = getattr(member, "level", 1)
+                    entry["final_moves"] = [m["name"] for m in member.moves if isinstance(m, dict) and "name" in m] if getattr(member, "moves", None) else []
+                    entry["final_stats"] = dict(member.stats) if getattr(member, "stats", None) else {}
+                    found = True
+                    break
+            if not found:
+                self.add_to_team_history(member)
+                for entry in self.all_team_members:
+                    if entry.get("pokemon") is member or (poke_id and entry.get("pokemon_id") == poke_id):
+                        entry["fate"] = "Crushed by falling debris"
+                        entry["final_hp"] = 0
+                        entry["final_max_hp"] = int(member.stats.get("HP", 1)) if getattr(member, "stats", None) else 1
+                        entry["final_level"] = getattr(member, "level", 1)
+                        entry["final_moves"] = [m["name"] for m in member.moves if isinstance(m, dict) and "name" in m] if getattr(member, "moves", None) else []
+                        entry["final_stats"] = dict(member.stats) if getattr(member, "stats", None) else {}
+                        break
+
+        self.game_won = False
+        self.game_ended = True
+        self.is_running = False
+
+    def check_floor_timer(self):
+        """Checks floor timer thresholds and triggers warnings or floor collapse."""
+        if not getattr(self, "is_running", True) or getattr(self, "game_ended", False):
+            return
+
+        if self.floor_timer <= 0:
+            if not getattr(self, "floor_timer_collapsed", False):
+                self.handle_floor_collapse()
+            return
+
+        if self.floor_timer <= 50:
+            if not getattr(self, "floor_timer_warned_50", False):
+                self.floor_timer_warned_50 = True
+                self.floor_timer_warned_150 = True
+                self.floor_timer_warned_250 = True
+                self.play_screen_shake_animation(max_offset=3, num_frames=10)
+                self.log_message("The floor will collapse any moment! Get out of there!", important=True)
+            return
+
+        if self.floor_timer <= 150:
+            if not getattr(self, "floor_timer_warned_150", False):
+                self.floor_timer_warned_150 = True
+                self.floor_timer_warned_250 = True
+                self.play_screen_shake_animation(max_offset=2, num_frames=8)
+                self.log_message("Cracks start to form on the walls!", important=True)
+            return
+
+        if self.floor_timer <= 250:
+            if not getattr(self, "floor_timer_warned_250", False):
+                self.floor_timer_warned_250 = True
+                self.play_screen_shake_animation(max_offset=1, num_frames=6)
+                self.log_message("You feel the floor start to rumble...", important=True)
+            return
+
     def replenish_player_actions(self):
         """Replenishes player_actions_left for new turn according to current player movement speed stage"""
         self.player_actions_left = self.get_pokemon_actions_this_turn(self.player_pokemon)
@@ -2408,6 +2552,12 @@ class Game:
 
         self.turn_number += 1
         self.message_log.has_more_page = False
+
+        #Floor turn timer countdown and collapse check
+        self.floor_timer = getattr(self, "floor_timer", self.get_initial_floor_timer(self.floor_number)) - 1
+        self.check_floor_timer()
+        if not self.is_running or getattr(self, "game_ended", False):
+            return
         
         #1. Deduct belly points and print warnings if needed, then apply hunger effects or natural recovery
         import math
@@ -9351,6 +9501,13 @@ class Game:
         self.add_to_team_history(self.player_pokemon, is_starter=True)
 
         self.floor_number = 1
+        self.floor_timer = self.get_initial_floor_timer(self.floor_number)
+        self.floor_timer_warned_250 = False
+        self.floor_timer_warned_150 = False
+        self.floor_timer_warned_50 = False
+        self.floor_timer_collapsed = False
+        self.map_shake_offset = (0, 0)
+        self.collapse_blanked_tiles = set()
         self.floor = DungeonFloor(width=getattr(self, "floor_width_override", 56) or 56)
         self.explored_tiles.clear()
         self.player_x, self.player_y = self._get_starting_position()
@@ -9642,6 +9799,9 @@ class Game:
                 ally_map[(ax, ay)] = (ally, slot_str)
 
         output_rows = []
+        shake_x, shake_y = getattr(self, "map_shake_offset", (0, 0))
+        blanked_tiles = getattr(self, "collapse_blanked_tiles", set())
+
         for y in range(self.floor.height):
             row_chars = []
             skip_x = 0
@@ -9650,16 +9810,22 @@ class Game:
                     skip_x -= 1
                     continue
 
+                src_x = x - shake_x
+                src_y = y - shake_y
+                if not (0 <= src_x < self.floor.width and 0 <= src_y < self.floor.height) or (blanked_tiles and (src_x, src_y) in blanked_tiles):
+                    row_chars.append(" ")
+                    continue
+
                 #Animation overlays
                 anim = self.flying_item_animation
-                if (x, y) in getattr(self, "explosion_overlays", {}):
-                    row_chars.append(self.explosion_overlays[(x, y)])
-                elif anim is not None and (x, y) == (anim["x"], anim["y"]) and (x, y) in currently_visible:
+                if (src_x, src_y) in getattr(self, "explosion_overlays", {}):
+                    row_chars.append(self.explosion_overlays[(src_x, src_y)])
+                elif anim is not None and (src_x, src_y) == (anim["x"], anim["y"]) and (src_x, src_y) in currently_visible:
                     row_chars.append(f"{anim['color']}{anim['char']}\033[0m")
-                elif getattr(self, "look_around_mode", False) and x == self.look_around_cursor[0] and y == self.look_around_cursor[1] and getattr(self, "look_around_cursor_visible", True):
+                elif getattr(self, "look_around_mode", False) and src_x == self.look_around_cursor[0] and src_y == self.look_around_cursor[1] and getattr(self, "look_around_cursor_visible", True):
                     row_chars.append("\033[93mX\033[0m")
-                elif (x, y) in self.flash_damages:
-                    dmg, mult = self.flash_damages[(x, y)]
+                elif (src_x, src_y) in self.flash_damages:
+                    dmg, mult = self.flash_damages[(src_x, src_y)]
                     if mult == "EXP":
                         color = "\033[94m"  #Blue
                     elif mult == "HEAL":
@@ -9678,9 +9844,9 @@ class Game:
                     dmg_str = str(dmg)
                     row_chars.append(f"{color}{dmg_str}\033[0m")
                     skip_x = len(dmg_str) - 1
-                elif self.targeting_mode and x == self.targeting_cursor[0] and y == self.targeting_cursor[1]:
+                elif self.targeting_mode and src_x == self.targeting_cursor[0] and src_y == self.targeting_cursor[1]:
                     row_chars.append("X")
-                elif x == self.player_x and y == self.player_y:
+                elif src_x == self.player_x and src_y == self.player_y:
                     is_hallucinating = bool(getattr(self.player_pokemon, "status_effects", {}).get("Hallucinating", 0) > 0)
                     if is_hallucinating: #Hallucinate Pokémon at random
                         fake_p = random.choice(self.pokemon_db) if self.pokemon_db else {"name": "Mew", "types": ["Psychic"]}
@@ -9691,9 +9857,9 @@ class Game:
                         row_chars.append("\033[92m?\033[0m")
                     else:
                         row_chars.append(PLAYER_CHAR)
-                elif (x, y) in currently_visible and (x, y) in ally_map:
+                elif (src_x, src_y) in currently_visible and (src_x, src_y) in ally_map:
                     is_hallucinating = bool(getattr(self.player_pokemon, "status_effects", {}).get("Hallucinating", 0) > 0)
-                    ally, slot_str = ally_map[(x, y)]
+                    ally, slot_str = ally_map[(src_x, src_y)]
                     if is_hallucinating:
                         fake_p = random.choice(self.pokemon_db) if self.pokemon_db else {"name": "Ditto", "types": ["Normal"]}
                         fake_type = fake_p.get("types", ["Normal"])[0] if fake_p.get("types") else "Normal"
@@ -9705,15 +9871,15 @@ class Game:
                         primary_type = ally.types[0] if getattr(ally, "types", None) else (ally.species_data["types"][0] if "types" in ally.species_data and ally.species_data["types"] else "Typeless")
                         color = TYPE_COLORS.get(primary_type, "\033[37m")
                         row_chars.append(f"{color}{slot_str}\033[0m")
-                elif ((x, y) in currently_visible or getattr(self, "radar_active", False)) and (x, y) in spawned_map:
+                elif ((src_x, src_y) in currently_visible or getattr(self, "radar_active", False)) and (src_x, src_y) in spawned_map:
                     is_hallucinating = bool(getattr(self.player_pokemon, "status_effects", {}).get("Hallucinating", 0) > 0)
-                    poke = spawned_map[(x, y)]
+                    poke = spawned_map[(src_x, src_y)]
                     if int(getattr(poke, "current_hp", 0)) > 0:
                         if is_hallucinating:
                             fake_p = random.choice(self.pokemon_db) if self.pokemon_db else {"name": "Eevee", "types": ["Normal"]}
                             fake_type = fake_p.get("types", ["Normal"])[0] if fake_p.get("types") else "Normal"
                             color = TYPE_COLORS.get(fake_type, "\033[37m")
-                            if (x, y) in currently_visible:
+                            if (src_x, src_y) in currently_visible:
                                 row_chars.append(f"{color}{fake_p['name'][0]}\033[0m")
                             else:
                                 row_chars.append(f"\033[91m{fake_p['name'][0]}\033[0m")
@@ -9722,56 +9888,56 @@ class Game:
                         else:
                             primary_type = poke.species_data["types"][0] if "types" in poke.species_data and poke.species_data["types"] else "Typeless"
                             color = TYPE_COLORS.get(primary_type, "\033[37m")
-                            if (x, y) in currently_visible:
+                            if (src_x, src_y) in currently_visible:
                                 row_chars.append(f"{color}{poke.name[0]}\033[0m")
                             else:
                                 row_chars.append(f"\033[91m{poke.name[0]}\033[0m")
-                elif (x, y) in currently_visible:
+                elif (src_x, src_y) in currently_visible:
                     is_hallucinating = bool(getattr(self.player_pokemon, "status_effects", {}).get("Hallucinating", 0) > 0)
-                    if (x, y) == getattr(self, "stairs_position", None):
+                    if (src_x, src_y) == getattr(self, "stairs_position", None):
                         if is_hallucinating: #Change tile colors randomly while hallucinating
                             row_chars.append(f"{random.choice(SCINTILLATING_COLORS)}>\033[0m")
                         else:
                             row_chars.append(">")
-                    elif (x, y) == getattr(self, "wonder_tile_position", None):
+                    elif (src_x, src_y) == getattr(self, "wonder_tile_position", None):
                         if is_hallucinating: #Change tile colors randomly while hallucinating
                             row_chars.append(f"{random.choice(SCINTILLATING_COLORS)}↑\033[0m")
                         else:
                             row_chars.append("\033[32m↑\033[0m")
-                    elif (x, y) in self.items_on_floor:
+                    elif (src_x, src_y) in self.items_on_floor:
                         if is_hallucinating: #Randomize item appearances while hallucinating
                             fake_item = random.choice(list(items.ITEMS_DB.values()))
                             row_chars.append(self.get_item_render_char(fake_item, is_visible=True))
                         else:
-                            item = self.items_on_floor[(x, y)]
+                            item = self.items_on_floor[(src_x, src_y)]
                             row_chars.append(self.get_item_render_char(item, is_visible=True))
                     else:
-                        grid_char = self.floor.grid[y][x]
+                        grid_char = self.floor.grid[src_y][src_x]
                         if is_hallucinating:
                             row_chars.append(f"{random.choice(SCINTILLATING_COLORS)}{grid_char}\033[0m")
                         else:
                             row_chars.append(grid_char)
-                elif (x, y) in self.explored_tiles or getattr(self, "scanner_active", False) or getattr(self, "stairs_revealed", False):
+                elif (src_x, src_y) in self.explored_tiles or getattr(self, "scanner_active", False) or getattr(self, "stairs_revealed", False):
                     is_hallucinating = bool(getattr(self.player_pokemon, "status_effects", {}).get("Hallucinating", 0) > 0)
-                    if (x, y) == getattr(self, "stairs_position", None) and ((x, y) in self.explored_tiles or getattr(self, "stairs_revealed", False)):
+                    if (src_x, src_y) == getattr(self, "stairs_position", None) and ((src_x, src_y) in self.explored_tiles or getattr(self, "stairs_revealed", False)):
                         if is_hallucinating:
                             row_chars.append(f"{random.choice(SCINTILLATING_COLORS)}>\033[0m")
                         else:
                             row_chars.append("\033[93m>\033[0m" if getattr(self, "stairs_revealed", False) else "\033[90m>\033[0m")
-                    elif (x, y) == getattr(self, "wonder_tile_position", None) and (x, y) in self.explored_tiles:
+                    elif (src_x, src_y) == getattr(self, "wonder_tile_position", None) and (src_x, src_y) in self.explored_tiles:
                         if is_hallucinating:
                             row_chars.append(f"{random.choice(SCINTILLATING_COLORS)}↑\033[0m")
                         else:
                             row_chars.append("\033[90m↑\033[0m")
-                    elif (x, y) in self.items_on_floor and ((x, y) in self.explored_tiles or getattr(self, "scanner_active", False)):
+                    elif (src_x, src_y) in self.items_on_floor and ((src_x, src_y) in self.explored_tiles or getattr(self, "scanner_active", False)):
                         if is_hallucinating:
                             fake_item = random.choice(list(items.ITEMS_DB.values()))
                             row_chars.append(self.get_item_render_char(fake_item, is_visible=False))
                         else:
-                            item = self.items_on_floor[(x, y)]
+                            item = self.items_on_floor[(src_x, src_y)]
                             row_chars.append(self.get_item_render_char(item, is_visible=False))
-                    elif (x, y) in self.explored_tiles:
-                        grid_char = self.floor.grid[y][x]
+                    elif (src_x, src_y) in self.explored_tiles:
+                        grid_char = self.floor.grid[src_y][src_x]
                         if is_hallucinating:
                             row_chars.append(f"{random.choice(SCINTILLATING_COLORS)}{grid_char}\033[0m")
                         else:
@@ -11964,6 +12130,13 @@ class Game:
                             self.render()
                     else:
                         self.floor_number += 1
+                        self.floor_timer = self.get_initial_floor_timer(self.floor_number)
+                        self.floor_timer_warned_250 = False
+                        self.floor_timer_warned_150 = False
+                        self.floor_timer_warned_50 = False
+                        self.floor_timer_collapsed = False
+                        self.map_shake_offset = (0, 0)
+                        self.collapse_blanked_tiles.clear()
                         self.log_message("You ascend the stairs.")
                         
                         #Generate new floor

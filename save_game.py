@@ -369,6 +369,7 @@ def serialize_game_state(game) -> dict:
         "compatibility_mode": getattr(game, "compatibility_mode", False),
         "player_pokemon_id": getattr(getattr(game, "player_pokemon", None), "id", None),
         "floor_number": getattr(game, "floor_number", 1),
+        "floor_timer": getattr(game, "floor_timer", 500 + 10 * getattr(game, "floor_number", 1)),
         "turn_number": getattr(game, "turn_number", 0),
         "player_action_number": getattr(game, "player_action_number", 0),
         "turn_count": getattr(game, "turn_count", 0),
@@ -415,6 +416,12 @@ def apply_game_state(game, state_dict: dict):
     """Restores a Game instance to match the serialized state_dict (when loading a save)"""
     import time
     game.floor_number = state_dict.get("floor_number", 1)
+    default_timer = 500 + 10 * game.floor_number
+    game.floor_timer = state_dict.get("floor_timer", default_timer)
+    game.floor_timer_warned_250 = game.floor_timer <= 250
+    game.floor_timer_warned_150 = game.floor_timer <= 150
+    game.floor_timer_warned_50 = game.floor_timer <= 50
+    game.floor_timer_collapsed = game.floor_timer <= 0
     game.turn_number = state_dict.get("turn_number", 0)
     game.player_action_number = state_dict.get("player_action_number", state_dict.get("turn_number", 0))
     game.turn_count = state_dict.get("turn_count", 0)
