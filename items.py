@@ -692,7 +692,7 @@ def apply_item_effect(item: dict, target, game, is_thrown: bool = False):
         target.apply_status("Petrified", game)
         
     elif name == "Totter Seed":
-        target.apply_status("Confused", game)
+        target.apply_status("Confusion", game)
         
     elif name == "HP Up":
         if hasattr(target, "current_belly") and getattr(target, "current_belly", 0) <= getattr(target, "max_belly", 100):
