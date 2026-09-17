@@ -9959,6 +9959,11 @@ class Game:
                 start_y = max(0, (len(base_rows) - overlay_height) // 2)
                 rows = self.overlay_rows_on_base(base_rows, nickname_rows, start_x, start_y)
 
+        elif getattr(self, "move_replacement_queue", None):
+            screen_view = "move_replacement"
+            pokemon, new_move = self.move_replacement_queue[0]
+            rows = self.render_move_replacement_screen(pokemon, new_move)
+
         elif getattr(self, "active_status_pokemon", None) is not None:
             screen_view = "full_status"
             rows = self.render_full_screen_status()
@@ -9970,11 +9975,6 @@ class Game:
         elif getattr(self, "inventory_state", None) is not None:
             screen_view = "inventory"
             rows = self.render_inventory_screen()
-
-        elif getattr(self, "move_replacement_queue", None):
-            screen_view = "move_replacement"
-            pokemon, new_move = self.move_replacement_queue[0]
-            rows = self.render_move_replacement_screen(pokemon, new_move)
 
         elif getattr(self, "mimic_selection_state", None) is not None:
             screen_view = "mimic_selection"
@@ -9992,7 +9992,7 @@ class Game:
             screen_changed = (prev_screen != screen_view)
             self._last_rendered_screen = screen_view
 
-            prefix = "\033[2J\033[H" if (screen_changed or screen_view in ("title", "starter_select", "high_scores", "load_game", "disclaimer")) else "\033[H"
+            prefix = "\033[2J\033[H" if (screen_changed or screen_view in ("title", "starter_select", "high_scores", "load_game", "disclaimer", "move_replacement")) else "\033[H"
             output_buffer = prefix + "\n".join(rows) + "\n\033[J"
             try:
                 sys.stdout.write(output_buffer)
@@ -11326,25 +11326,25 @@ class Game:
                     continue
                 pokemon, new_move = self.move_replacement_queue[0]
                 slot_index = None
-                if action == game_input.USE_MOVE_1:
+                if action in (game_input.USE_MOVE_1, "z", "Z", "1"):
                     slot_index = 0
-                elif action == game_input.USE_MOVE_2:
+                elif action in (game_input.USE_MOVE_2, "x", "X", "2"):
                     slot_index = 1
-                elif action == game_input.USE_MOVE_3:
+                elif action in (game_input.USE_MOVE_3, "c", "C", "3"):
                     slot_index = 2
-                elif action == game_input.USE_MOVE_4:
+                elif action in (game_input.USE_MOVE_4, "v", "V", "4"):
                     slot_index = 3
                 
                 if slot_index is not None:
                     old_move = pokemon.moves[slot_index]
                     new_move["enabled"] = True
                     pokemon.moves[slot_index] = new_move
+                    self.move_replacement_queue.pop(0)
                     self.log_message(f"{pokemon.name} forgot {old_move['name']} and learned {new_move['name']}!")
-                    self.move_replacement_queue.pop(0)
                     self.render()
-                elif action == game_input.QUIT:
-                    self.log_message(f"{pokemon.name} did not learn {new_move['name']}.")
+                elif action in (game_input.QUIT, "\x1b", "q", "Q"):
                     self.move_replacement_queue.pop(0)
+                    self.log_message(f"{pokemon.name} did not learn {new_move['name']}.")
                     self.render()
                 continue
 
