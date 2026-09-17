@@ -12,7 +12,7 @@ import random
 import os
 import re
 import atexit
-from dungeon import DungeonFloor, WALL_CHAR, FLOOR_CHAR
+from dungeon import DungeonFloor, WALL_CHAR, FLOOR_CHAR, get_target_floor_width
 import input as game_input
 from pokemon import Pokemon  #type: ignore
 from message_log import MessageLog  #type: ignore
@@ -149,10 +149,12 @@ class Game:
             or os.environ.get("NO_COLOR")
             or os.environ.get("GAME_COMPATIBILITY_MODE")
         )
-        self.floor = DungeonFloor(width=width)
+        self.floor_number = 1
+        self.floor_width_override: int | None = width
+        init_width = width if width is not None else self.get_target_floor_width(self.floor_number)
+        self.floor = DungeonFloor(width=init_width)
         #Spawn player in a random room
         self.player_x, self.player_y = self._get_starting_position()
-        self.floor_number = 1
         self.floor_timer = self.get_initial_floor_timer(self.floor_number)
         self.floor_timer_warned_250 = False
         self.floor_timer_warned_150 = False
@@ -2396,6 +2398,14 @@ class Game:
             pokemon.slow_turn_toggle = not pokemon.slow_turn_toggle
             return 1 if pokemon.slow_turn_toggle else 0
         return 1
+
+    def get_target_floor_width(self, floor_number: int | None = None) -> int:
+        """Returns the target width for a dungeon floor based on the floor number for generation."""
+        if getattr(self, "floor_width_override", None) is not None:
+            return self.floor_width_override
+        if floor_number is None:
+            floor_number = getattr(self, "floor_number", 1)
+        return get_target_floor_width(floor_number)
 
     def get_initial_floor_timer(self, floor_number: int | None = None) -> int:
         """Returns the initial floor timer in turns: 500 + (10 * n), where n is the floor number"""
@@ -9508,7 +9518,10 @@ class Game:
         self.floor_timer_collapsed = False
         self.map_shake_offset = (0, 0)
         self.collapse_blanked_tiles = set()
-        self.floor = DungeonFloor(width=getattr(self, "floor_width_override", 56) or 56)
+        new_width = getattr(self, "floor_width_override", None)
+        if new_width is None:
+            new_width = self.get_target_floor_width(self.floor_number)
+        self.floor = DungeonFloor(width=new_width)
         self.explored_tiles.clear()
         self.player_x, self.player_y = self._get_starting_position()
         self.player_pokemon.x, self.player_pokemon.y = self.player_x, self.player_y
@@ -11624,7 +11637,11 @@ class Game:
             else:
                 timeout = 0.5 if (needs_flash or getattr(self, "look_around_mode", False)) else None
             self.party_start_positions = {p: get_pokemon_position(self, p) for p in self.party}
-            action = game_input.get_key(timeout=timeout)
+            try:
+                action = game_input.get_key(timeout=timeout)
+            except (StopIteration, RuntimeError):
+                self.is_running = False
+                break
 
             if action is None:
                 #Timeout occurred - re-render to update warning flashing states
@@ -12140,7 +12157,10 @@ class Game:
                         self.log_message("You ascend the stairs.")
                         
                         #Generate new floor
-                        self.floor = DungeonFloor(width=self.floor.width)
+                        new_width = getattr(self, "floor_width_override", None)
+                        if new_width is None:
+                            new_width = self.get_target_floor_width(self.floor_number)
+                        self.floor = DungeonFloor(width=new_width)
                         self.explored_tiles.clear()
                         self.radar_active = False
                         self.scanner_active = False

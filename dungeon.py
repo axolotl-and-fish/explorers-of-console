@@ -46,12 +46,22 @@ class Room:
         )
 
 
+def get_target_floor_width(floor_number: int = 1) -> int:
+    """Returns the target width for a dungeon floor based on the floor number."""
+    if floor_number < 1:
+        floor_number = 1
+    return min(56, 32 + (floor_number - 1))
+
+
 class DungeonFloor:
     """Generates a single dungeon floor of size Width x Height"""
 
-    def __init__(self, width: int | None = None, height: int = 32):
+    def __init__(self, width: int | None = None, height: int = 32, floor_number: int | None = None):
         if width is None:
-            width = random.randint(32, 56)
+            if floor_number is not None:
+                width = get_target_floor_width(floor_number)
+            else:
+                width = random.randint(32, 56)
 
         if not (32 <= width <= 56): #May raise this limit in the future. Big dungeon floors could be kinda cool? But need to implement map screen scrolling for that
             raise ValueError(f"Dungeon width must be between 32 and 56, got {width}")
