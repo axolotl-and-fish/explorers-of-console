@@ -1547,7 +1547,7 @@
   },
   {
     "name": "Nasty Plot",
-    "type": "Fairy",
+    "type": "Dark",
     "description": "Raises user's Special Attack by two levels.",
     "category": "Status",
     "power": null,
@@ -2147,9 +2147,9 @@
     "effects": [
       {
         "effect_type": "stat_change",
-        "stat": "Special_Defense",
+        "stat": "Special_Attack",
         "stages": -1,
-        "chance": 0.1
+        "chance": 0.3
       }
     ]
   },
@@ -5510,7 +5510,7 @@
   },
   {
     "name": "Counter",
-    "type": "Dark",
+    "type": "Fighting",
     "description": "Allows user to counter Physical attacks made against them for a short time, reflecting half of the damage back to the attacker.",
     "category": "Status",
     "power": null,
@@ -5934,5 +5934,240 @@
     "range": "User",
     "pp_cost": 10,
     "effects": []
+  },
+  {
+    "name": "Egg Bomb",
+    "type": "Normal",
+    "description": "Damages an enemy. Cuts corners.",
+    "category": "Physical",
+    "power": 100,
+    "accuracy": 75,
+    "range": "Adjacent enemy",
+    "pp_cost": 6,
+	"cuts_corners": true,
+    "effects": []
+  },
+  {
+    "name": "Iron Head",
+    "type": "Steel",
+    "description": "Damages an enemy and has a 30% chance of causing them to flinch.",
+    "category": "Physical",
+    "power": 80,
+    "accuracy": 100,
+    "range": "Adjacent enemy",
+    "pp_cost": 6,
+    "effects": [
+      {
+        "effect_type": "status_apply",
+        "status": "Flinch",
+        "chance": 0.3
+      }
+    ]
+  },
+  {
+    "name": "Hone Claws",
+    "type": "Dark",
+    "description": "Boosts user's Attack and Accuracy by one level each.",
+    "category": "Status",
+    "power": null,
+    "accuracy": null,
+    "range": "User",
+    "pp_cost": 2,
+    "effects": [
+      {
+        "effect_type": "stat_change",
+        "stat": "Attack",
+        "stages": 1,
+        "chance": 1.0
+      },
+      {
+        "effect_type": "stat_change",
+        "stat": "Accuracy",
+        "stages": 1,
+        "chance": 1.0
+      }
+    ]
+  },
+  {
+    "name": "Quash",
+    "type": "Dark",
+    "description": "Forces an enemy to flinch.",
+    "category": "Status",
+    "power": null,
+    "accuracy": 100,
+    "range": "Adjacent enemy",
+    "pp_cost": 3,
+    "effects": [
+      {
+        "effect_type": "status_apply",
+        "status": "Flinch",
+        "chance": 1.0
+      }
+    ]
+  },
+  {
+    "name": "Brutal Swing",
+    "type": "Dark",
+    "description": "Damages all adjacent Pokémon, including allies.",
+    "category": "Physical",
+    "power": 60,
+    "accuracy": 100,
+    "range": "All adjacent enemies and allies",
+    "pp_cost": 4,
+    "effects": []
+  },
+  {
+    "name": "Defog",
+    "type": "Normal",
+    "description": "Lowers the evasiveness of all enemies in the room by one level, removes the effects of Reflect, Light Screen & Safeguard, and removes Terrains & certain other weather effects.",
+    "category": "Status",
+    "power": null,
+    "accuracy": null,
+    "range": "All enemies in room",
+    "pp_cost": 3,
+    "effects": [
+      {
+        "effect_type": "stat_change",
+        "stat": "Evasion",
+        "stages": -1,
+        "chance": 1.0
+      }
+    ]
+  },
+  {
+    "name": "Energy Ball",
+    "type": "Grass",
+    "description": "Damages a distant enemy and has a 10% chance of lowering their Special Defense by one level.",
+    "category": "Special",
+    "power": 90,
+    "accuracy": 100,
+    "range": "Straight line up to 4 tiles",
+	"cuts_corners": true,
+    "pp_cost": 7,
+    "effects": [
+      {
+        "effect_type": "stat_change",
+        "stat": "Special_Defense",
+        "stages": -1,
+        "chance": 0.1
+      }
+    ]
+  },
+  {
+    "name": "Dragon Hammer",
+    "type": "Dragon",
+    "description": "Damages an enemy.",
+    "category": "Physical",
+    "power": 90,
+    "accuracy": 100,
+    "range": "Adjacent enemy",
+    "pp_cost": 6,
+    "effects": []
+  },
+  {
+    "name": "Shadow Bone",
+    "type": "Ghost",
+    "description": "Damages an enemy and has a 20% chance of lowering their Defense by one level.",
+    "category": "Physical",
+    "power": 85,
+    "accuracy": 100,
+    "range": "Adjacent enemy",
+    "pp_cost": 6,
+    "effects": [
+      {
+        "effect_type": "stat_change",
+        "stat": "Defense",
+        "stages": -1,
+        "chance": 0.2
+      }
+    ]
+  },
+  {
+    "name": "Aromatic Mist",
+    "type": "Fairy",
+    "description": "Raises the Special Defense of all allies in the room by one level.",
+    "category": "Status",
+    "power": null,
+    "accuracy": null,
+    "range": "All allies in room",
+    "pp_cost": 2,
+    "effects": [
+      {
+        "effect_type": "stat_change",
+        "stat": "Special_Defense",
+        "stages": 1,
+        "chance": 1.0
+      }
+    ]
+  },
+  {
+    "name": "Strange Steam",
+    "type": "Fairy",
+    "description": "Damages an enemy up to 2 tiles away and has a 20% chance of confusing them.",
+    "category": "Special",
+    "power": 90,
+    "accuracy": 95,
+    "range": "Enemy up to 2 tiles away",
+    "pp_cost": 7,
+    "effects": [
+      {
+        "effect_type": "status_apply",
+        "status": "Confusion",
+        "chance": 0.2
+      }
+    ]
+  },
+  {
+    "name": "Freezing Glare",
+    "type": "Psychic",
+    "description": "Damages an enemy up to 3 tiles away and has a 10% chance of freezing them.",
+    "category": "Special",
+    "power": 90,
+    "accuracy": 100,
+    "range": "Enemy up to 3 tiles away",
+    "pp_cost": 6,
+    "effects": [
+      {
+        "effect_type": "status_apply",
+        "status": "Frozen",
+        "chance": 0.1
+      }
+    ]
+  },
+  {
+    "name": "Thunderous Kick",
+    "type": "Fighting",
+    "description": "Damages an enemy and lowers their Defense by one level.",
+    "category": "Physical",
+    "power": 90,
+    "accuracy": 100,
+    "range": "Adjacent enemy",
+    "pp_cost": 7,
+    "effects": [
+      {
+        "effect_type": "stat_change",
+        "stat": "Defense",
+        "stages": -1,
+        "chance": 1.0
+      }
+    ]
+  },
+  {
+    "name": "Fiery Wrath",
+    "type": "Normal",
+    "description": "Damages all adjacent enemies and has a 20% chance of causing each to flinch.",
+    "category": "Physical",
+    "power": 90,
+    "accuracy": 100,
+    "range": "All adjacent enemies",
+	"cuts_corners": true,
+    "pp_cost": 8,
+    "effects": [
+      {
+        "effect_type": "status_apply",
+        "status": "Flinch",
+        "chance": 0.2
+      }
+    ]
   }
 ]
