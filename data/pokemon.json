@@ -37,7 +37,7 @@
 	  [33, "Power Whip"],
 	  [36, "Solar Beam"]
     ],
-    "tm_moves": [],
+    "tm_moves": ["Flash", "Strength", "Cut", "Skull Bash", "Reflect", "Solar Beam", "Mega Drain", "Take Down", "Double-Edge", "Body Slam", "Razor Wind", "Swords Dance", "Toxic", "Mimic", "Bide", "Rest", "Double Team", "Vacuum-Cut", "Wide Slash", "Spin Slash", "Rage"],
     "evolutions": [
       {
         "to": "Ivysaur",
@@ -84,7 +84,7 @@
 	  [45, "Power Whip"],
 	  [50, "Solar Beam"]
     ],
-    "tm_moves": [],
+    "tm_moves": ["Flash", "Strength", "Cut", "Skull Bash", "Reflect", "Solar Beam", "Mega Drain","Take Down", "Double-Edge", "Body Slam", "Razor Wind", "Swords Dance", "Toxic", "Mimic", "Bide", "Rest", "Double Team", "Vacuum-Cut", "Wide Slash", "Spin Slash", "Rage"],
     "evolutions": [
       {
         "to": "Venusaur",
@@ -133,7 +133,7 @@
 	  [51, "Power Whip"],
 	  [58, "Solar Beam"]
     ],
-    "tm_moves": []
+    "tm_moves": ["Flash", "Strength", "Cut", "Skull Bash", "Reflect", "Earthquake", "Solar Beam", "Mega Drain","Hyper Beam", "Take Down", "Double-Edge", "Body Slam", "Razor Wind", "Swords Dance", "Toxic", "Mimic", "Bide", "Rest", "Double Team", "Vacuum-Cut", "Wide Slash", "Spin Slash", "Rage"]
   },
   {
     "id": "4",
@@ -170,7 +170,7 @@
 	  [36, "Inferno"],
 	  [40, "Flare Blitz"]
     ],
-    "tm_moves": [],
+    "tm_moves": ["Strength", "Cut", "Rock Slide", "Skull Bash", "Swift", "Fire Blast", "Reflect", "Dig", "Dragon Rage", "Counter", "Seismic Toss","Submission", "Take Down", "Double-Edge", "Body Slam", "Mega Punch", "Swords Dance", "Mega Kick", "Toxic", "Mimic", "Bide", "Rest", "Double Team", "Vacuum-Cut", "Wide Slash", "Spin Slash", "Rage"],
     "evolutions": [
       {
         "to": "Charmeleon",
@@ -213,7 +213,7 @@
 	  [48, "Inferno"],
 	  [52, "Flare Blitz"]
     ],
-    "tm_moves": [],
+    "tm_moves": ["Strength", "Cut", "Rock Slide", "Skull Bash", "Swift", "Fire Blast", "Reflect", "Dig", "Dragon Rage", "Counter", "Seismic Toss","Submission", "Take Down", "Double-Edge", "Body Slam", "Mega Punch", "Swords Dance", "Mega Kick", "Toxic", "Mimic", "Bide", "Rest", "Double Team", "Vacuum-Cut", "Wide Slash", "Spin Slash", "Rage"],
     "evolutions": [
       {
         "to": "Charizard",
@@ -259,7 +259,7 @@
 	  [54, "Inferno"],
 	  [62, "Flare Blitz"]
     ],
-    "tm_moves": []
+    "tm_moves": ["Strength", "Fly", "Cut", "Rock Slide", "Skull Bash", "Swift", "Fire Blast", "Reflect", "Dig", "Fissure", "Earthquake", "Dragon Rage", "Solar Beam", "Counter", "Seismic Toss","Submission", "Hyper Beam", "Take Down", "Double-Edge", "Body Slam", "Mega Punch", "Swords Dance", "Mega Kick", "Toxic", "Mimic", "Bide", "Rest", "Double Team", "Vacuum-Cut", "Wide Slash", "Spin Slash", "Rage"]
   },
   {
     "id": "7",
@@ -298,7 +298,7 @@
 	  [33, "Hydro Pump"],
 	  [36, "Wave Crash"]
     ],
-    "tm_moves": [],
+    "tm_moves": ["Strength", "Surf", "Rock Slide", "Skull Bash", "Reflect", "Dig", "Counter", "Seismic Toss","Submission", "Bubble Beam", "Water Gun", "Ice Beam", "Blizzard", "Take Down", "Double-Edge", "Body Slam", "Mega Punch", "Mega Kick", "Toxic", "Mimic", "Bide", "Rest", "Double Team", "Vacuum-Cut", "Wide Slash", "Spin Slash", "Rage"],
     "evolutions": [
       {
         "to": "Wartortle",
@@ -344,7 +344,7 @@
 	  [45, "Hydro Pump"],
 	  [50, "Wave Crash"]
     ],
-    "tm_moves": [],
+    "tm_moves": ["Strength", "Surf", "Rock Slide", "Skull Bash", "Reflect", "Dig", "Counter", "Seismic Toss","Submission", "Bubble Beam", "Water Gun", "Ice Beam", "Blizzard", "Take Down", "Double-Edge", "Body Slam", "Mega Punch", "Mega Kick", "Toxic", "Mimic", "Bide", "Rest", "Double Team", "Vacuum-Cut", "Wide Slash", "Spin Slash", "Rage"],
     "evolutions": [
       {
         "to": "Blastoise",
@@ -390,7 +390,7 @@
 	  [49, "Hydro Pump"],
 	  [56, "Wave Crash"]
     ],
-    "tm_moves": []
+    "tm_moves": ["Strength", "Surf", "Rock Slide", "Skull Bash", "Reflect", "Dig", "Fissure", "Earthquake", "Counter", "Seismic Toss","Submission", "Hyper Beam", "Bubble Beam", "Water Gun", "Ice Beam", "Blizzard", "Take Down", "Double-Edge", "Body Slam", "Mega Punch", "Mega Kick", "Toxic", "Mimic", "Bide", "Rest", "Double Team", "Vacuum-Cut", "Wide Slash", "Spin Slash", "Rage"]
   },
   {
     "id": "10",
@@ -501,7 +501,7 @@
 	  [40, "Rage Powder"],
 	  [44, "Quiver Dance"]
     ],
-    "tm_moves": []
+    "tm_moves": ["Flash", "Psywave", "Dream Eater", "Swift", "Reflect", "Teleport", "Psychic", "Solar Beam", "Mega Drain","Hyper Beam", "Take Down", "Double-Edge", "Razor Wind", "Whirlwind", "Toxic", "Mimic", "Bide", "Rest", "Double Team", "Vacuum-Cut", "Wide Slash", "Spin Slash", "Rage"]
   },
   {
     "id": "13",
@@ -530,7 +530,7 @@
 	  [5, "Poison Sting"],
       [9, "Bug Bite"]
     ],
-    "tm_moves": [],
+    "tm_moves": ["Toxic"],
     "evolutions": [
       {
         "to": "Kakuna",
@@ -563,7 +563,7 @@
       [0, "Harden"],
       [1, "Harden"]
     ],
-    "tm_moves": [],
+    "tm_moves": ["Toxic"],
     "evolutions": [
       {
         "to": "Beedrill",
@@ -612,7 +612,7 @@
 	  [41, "Endeavor"],
 	  [44, "Fell Stinger"]
     ],
-    "tm_moves": []
+    "tm_moves": ["Flash", "Cut", "Skull Bash", "Swift", "Reflect", "Solar Beam", "Mega Drain", "Hyper Beam", "Take Down", "Double-Edge", "Swords Dance", "Toxic", "Mimic", "Bide", "Rest", "Double Team", "Vacuum-Cut", "Wide Slash", "Spin Slash", "Rage"]
   },
   {
     "id": "16",
@@ -651,7 +651,7 @@
 	  [49, "Air Slash"],
 	  [53, "Hurricane"]
     ],
-    "tm_moves": [],
+    "tm_moves": ["Fly", "Sky Attack", "Swift", "Reflect", "Take Down", "Double-Edge", "Razor Wind", "Whirlwind", "Toxic", "Mimic", "Bide", "Rest", "Double Team", "Vacuum-Cut", "Wide Slash", "Spin Slash", "Rage"],
     "evolutions": [
       {
         "to": "Pidgeotto",
@@ -696,7 +696,7 @@
 	  [57, "Air Slash"],
 	  [62, "Hurricane"]
     ],
-    "tm_moves": [],
+    "tm_moves": ["Fly", "Sky Attack", "Swift", "Reflect", "Take Down", "Double-Edge", "Razor Wind", "Whirlwind", "Toxic", "Mimic", "Bide", "Rest", "Double Team", "Vacuum-Cut", "Wide Slash", "Spin Slash", "Rage"],
     "evolutions": [
       {
         "to": "Pidgeot",
@@ -741,7 +741,7 @@
 	  [62, "Air Slash"],
 	  [68, "Hurricane"]
     ],
-    "tm_moves": []
+    "tm_moves": ["Fly", "Sky Attack", "Swift", "Reflect", "Hyper Beam", "Take Down", "Double-Edge", "Razor Wind", "Whirlwind", "Toxic", "Mimic", "Bide", "Rest", "Double Team", "Vacuum-Cut", "Wide Slash", "Spin Slash", "Rage"]
   },
   {
     "id": "19",
@@ -779,10 +779,54 @@
 	  [31, "Double-Edge"],
 	  [34, "Endeavor"]
     ],
-    "tm_moves": [],
+    "tm_moves": ["Cut", "Thunder Wave", "Skull Bash", "Swift", "Dig", "Thunderbolt", "Thunder", "Counter", "Seismic Toss","Bubble Beam", "Water Gun", "Ice Beam", "Blizzard", "Take Down", "Double-Edge", "Body Slam", "Toxic", "Mimic", "Bide", "Rest", "Double Team", "Vacuum-Cut", "Wide Slash", "Spin Slash", "Rage"],
     "evolutions": [
       {
         "to": "Raticate",
+        "min_level": 20
+      }
+    ]
+  },
+  {
+    "id": "019A",
+    "name": "Rattata-A",
+    "base_stats": {
+      "HP": 30,
+      "Attack": 56,
+      "Defense": 35,
+      "Special_Attack": 25,
+      "Special_Defense": 35,
+      "Speed": 72
+    },
+    "types": ["Dark", "Normal"],
+    "ev_yield": {
+	  "Speed": 1
+    },
+    "exp_yield": 51,
+    "gender_ratio": 0.5,
+	"recruit_rate": 250,
+	"weight": 3.8,
+    "experience_group": "Medium Fast",
+    "description": "Its whiskers provide it with a keen sense of smell, enabling it to pick up the scent of hidden food and locate it instantly.",
+    "level_up_moves": [
+      [1, "Tackle"],
+      [1, "Tail Whip"],
+      [4, "Quick Attack"],
+      [7, "Focus Energy"],
+	  [10, "Bite"],
+	  [13, "Laser Focus"],
+	  [16, "Take Down"],
+	  [19, "Assurance"],
+	  [22, "Crunch"],
+	  [25, "Sucker Punch"],
+	  [28, "Super Fang"],
+	  [31, "Double-Edge"],
+	  [34, "Endeavor"]
+    ],
+    "tm_moves": ["Dig", "Counter", "Blizzard", "Ice Beam", "Toxic", "Mimic", "Bide", "Rest", "Double Team", "Vacuum-Cut", "Wide Slash", "Spin Slash", "Rage"],
+    "evolutions": [
+      {
+        "to": "Raticate-A",
         "min_level": 20
       }
     ]
@@ -826,7 +870,48 @@
 	  [39, "Double-Edge"],
 	  [44, "Endeavor"]
     ],
-    "tm_moves": []
+    "tm_moves": ["Strength", "Cut", "Thunder Wave", "Skull Bash", "Swift", "Dig", "Thunderbolt", "Thunder", "Counter", "Seismic Toss","Hyper Beam", "Bubble Beam", "Water Gun", "Ice Beam", "Blizzard", "Take Down", "Double-Edge", "Body Slam", "Swords Dance", "Toxic", "Mimic", "Bide", "Rest", "Double Team", "Vacuum-Cut", "Wide Slash", "Spin Slash", "Rage"]
+  },
+  {
+    "id": "020A",
+    "name": "Raticate-A",
+    "base_stats": {
+      "HP": 75,
+      "Attack": 71,
+      "Defense": 70,
+      "Special_Attack": 40,
+      "Special_Defense": 80,
+      "Speed": 77
+    },
+    "types": ["Dark", "Normal"],
+    "ev_yield": {
+	  "Speed": 2
+    },
+    "exp_yield": 145,
+    "gender_ratio": 0.5,
+	"recruit_rate": 125,
+    "experience_group": "Medium Fast",
+	"weight": 25.5,
+    "description": "It has an incredibly greedy personality. Its nest is filled with so much food gathered by Rattata at its direction, it can't possibly eat it all.",
+    "level_up_moves": [
+      [0, "Scary Face"],
+	  [0, "Swords Dance"],
+	  [1, "Scary Face"],
+	  [1, "Tackle"],
+      [1, "Tail Whip"],
+      [4, "Quick Attack"],
+      [7, "Focus Energy"],
+	  [10, "Bite"],
+	  [13, "Laser Focus"],
+	  [16, "Take Down"],
+	  [19, "Assurance"],
+	  [24, "Crunch"],
+	  [29, "Sucker Punch"],
+	  [34, "Super Fang"],
+	  [39, "Double-Edge"],
+	  [44, "Endeavor"]
+    ],
+    "tm_moves": ["Dig", "Counter", "Hyper Beam", "Blizzard", "Ice Beam", "Swords Dance", "Toxic", "Mimic", "Bide", "Rest", "Double Team", "Vacuum-Cut", "Wide Slash", "Spin Slash", "Rage"]
   },
   {
     "id": "21",
@@ -863,7 +948,7 @@
 	  [32, "Roost"],
 	  [36, "Drill Peck"]
     ],
-    "tm_moves": [],
+    "tm_moves": ["Fly", "Tri Attack", "Sky Attack", "Swift", "Take Down", "Double-Edge", "Razor Wind", "Whirlwind", "Toxic", "Mimic", "Bide", "Rest", "Double Team", "Vacuum-Cut", "Wide Slash", "Spin Slash", "Rage"],
     "evolutions": [
       {
         "to": "Fearow",
@@ -908,7 +993,7 @@
 	  [41, "Drill Peck"],
 	  [45, "Drill Run"]
     ],
-    "tm_moves": []
+    "tm_moves": ["Fly", "Tri Attack", "Sky Attack", "Swift", "Pay Day", "Hyper Beam", "Take Down", "Double-Edge", "Razor Wind", "Whirlwind", "Toxic", "Mimic", "Bide", "Rest", "Double Team", "Vacuum-Cut", "Wide Slash", "Spin Slash", "Rage"]
   },
   {
     "id": "23",
@@ -948,7 +1033,7 @@
 	  [44, "Coil"],
 	  [49, "Gunk Shot"]
     ],
-    "tm_moves": [],
+    "tm_moves": ["Strength", "Rock Slide", "Skull Bash", "Dig", "Fissure", "Earthquake", "Mega Drain", "Take Down", "Double-Edge", "Body Slam", "Toxic", "Mimic", "Bide", "Rest", "Double Team", "Vacuum-Cut", "Wide Slash", "Spin Slash", "Rage"],
     "evolutions": [
       {
         "to": "Arbok",
@@ -998,7 +1083,7 @@
 	  [56, "Coil"],
 	  [63, "Gunk Shot"]
     ],
-    "tm_moves": []
+    "tm_moves": ["Strength", "Rock Slide", "Skull Bash", "Dig", "Fissure", "Earthquake", "Mega Drain", "Hyper Beam", "Take Down", "Double-Edge", "Body Slam", "Toxic", "Mimic", "Bide", "Rest", "Double Team", "Vacuum-Cut", "Wide Slash", "Spin Slash", "Rage"]
   },
   {
     "id": "25",
@@ -1043,12 +1128,10 @@
 	  [40, "Light Screen"],
 	  [44, "Thunder"]
     ],
-    "tm_moves": [],
+    "tm_moves": ["Flash", "Strength", "Surf", "Fly", "Thunder Wave", "Skull Bash", "Swift", "Reflect", "Dig", "Thunderbolt", "Thunder", "Counter", "Seismic Toss","Submission", "Pay Day", "Take Down", "Double-Edge", "Body Slam", "Mega Punch", "Mega Kick", "Toxic", "Mimic", "Bide", "Rest", "Double Team", "Vacuum-Cut", "Wide Slash", "Spin Slash", "Rage"],
     "evolutions": [
-      {
-        "to": "Raichu",
-        "item": "Thunder Stone"
-      }
+      { "to": "Raichu", "item": "Thunder Stone" },
+      { "to": "Raichu-A", "item": "Thunder Stone" }
     ]
   },
   {
@@ -1095,7 +1178,53 @@
 	  [40, "Light Screen"],
 	  [44, "Thunder"]
     ],
-    "tm_moves": []
+    "tm_moves": ["Flash", "Strength", "Surf", "Thunder Wave", "Skull Bash", "Swift", "Reflect", "Dig", "Thunderbolt", "Thunder", "Counter", "Seismic Toss","Submission", "Pay Day", "Hyper Beam", "Take Down", "Double-Edge", "Body Slam", "Mega Punch", "Mega Kick", "Toxic", "Mimic", "Bide", "Rest", "Double Team", "Vacuum-Cut", "Wide Slash", "Spin Slash", "Rage"]
+  },
+  {
+    "id": "026A",
+    "name": "Raichu-A",
+    "base_stats": {
+      "HP": 60,
+      "Attack": 85,
+      "Defense": 50,
+      "Special_Attack": 95,
+      "Special_Defense": 85,
+      "Speed": 110
+    },
+    "types": ["Electric", "Psychic"],
+    "ev_yield": {
+	  "Speed": 3
+    },
+    "exp_yield": 218,
+    "gender_ratio": 0.5,
+	"recruit_rate": 75,
+    "experience_group": "Medium Fast",
+	"weight": 21.0,
+    "description": "It uses psychokinesis to control electricity. It hops aboard its own tail, using psychic power to lift the tail and move about while riding it.",
+    "level_up_moves": [
+      [0, "Psychic"],
+	  [1, "Nuzzle"],
+      [1, "Nasty Plot"],
+      [1, "Charm"],
+      [1, "Sweet Kiss"],
+	  [1, "Play Nice"],
+	  [1, "Quick Attack"],
+	  [1, "Tail Whip"],
+	  [1, "Thunder Shock"],
+	  [1, "Growl"],
+	  [4, "Thunder Wave"],
+	  [5, "Thunderbolt"],
+	  [8, "Double Team"],
+	  [12, "Electro Ball"],
+	  [16, "Feint"],
+	  [20, "Spark"],
+	  [24, "Agility"],
+	  [28, "Iron Tail"],
+	  [32, "Discharge"],
+	  [40, "Light Screen"],
+	  [44, "Thunder"]
+    ],
+    "tm_moves": ["Surf", "Thunder Wave", "Swift", "Reflect", "Teleport", "Psychic", "Dig", "Thunder", "Thunderbolt", "Seismic Toss", "Pay Day", "Hyper Beam", "Take Down", "Body Slam", "Mega Punch", "Toxic", "Mimic", "Bide", "Rest", "Double Team", "Vacuum-Cut", "Wide Slash", "Spin Slash", "Rage"]
   },
   {
     "id": "27",
@@ -1137,11 +1266,59 @@
 	  [42, "Sandstorm"],
 	  [45, "Earthquake"]
     ],
-    "tm_moves": [],
+    "tm_moves": ["Strength", "Cut", "Rock Slide", "Skull Bash", "Swift", "Dig", "Fissure", "Earthquake", "Counter", "Seismic Toss","Submission", "Take Down", "Double-Edge", "Body Slam", "Swords Dance", "Toxic", "Mimic", "Bide", "Rest", "Double Team", "Vacuum-Cut", "Wide Slash", "Spin Slash", "Rage"],
     "evolutions": [
       {
         "to": "Sandslash",
         "min_level": 22
+      }
+    ]
+  },
+  {
+    "id": "027A",
+    "name": "Sandshrew-A",
+    "base_stats": {
+      "HP": 50,
+      "Attack": 75,
+      "Defense": 90,
+      "Special_Attack": 10,
+      "Special_Defense": 35,
+      "Speed": 40
+    },
+    "types": ["Ice", "Steel"],
+    "ev_yield": {
+	  "Defense": 1
+    },
+    "exp_yield": 60,
+    "gender_ratio": 0.5,
+	"recruit_rate": 250,
+    "experience_group": "Medium Fast",
+	"weight": 40.0,
+    "description": "It lives in snowy mountains on southern islands. When a blizzard rolls in, this Pokémon hunkers down in the snow to avoid getting blown away.",
+    "level_up_moves": [
+      [1, "Tackle"],
+      [1, "Defense Curl"],
+      [3, "Mist"],
+      [6, "Powder Snow"],
+	  [9, "Rollout"],
+	  [12, "Fury Cutter"],
+	  [15, "Rapid Spin"],
+	  [18, "Metal Claw"],
+	  [21, "Swift"],
+	  [24, "Fury Swipes"],
+	  [27, "Iron Defense"],
+	  [30, "Slash"],
+	  [33, "Iron Head"],
+	  [36, "Gyro Ball"],
+	  [39, "Swords Dance"],
+	  [42, "Snowscape"],
+	  [45, "Blizzard"]
+    ],
+    "tm_moves": ["Rock Slide", "Swift", "Dig", "Earthquake", "Seismic Toss", "Counter", "Blizzard", "Ice Beam", "Double-Edge", "Take Down", "Body Slam", "Swords Dance", "Toxic", "Mimic", "Bide", "Rest", "Double Team", "Vacuum-Cut", "Wide Slash", "Spin Slash", "Rage"],
+    "evolutions": [
+      {
+        "to": "Sandslash-A",
+        "item": "Ice Stone"
       }
     ]
   },
@@ -1186,7 +1363,53 @@
 	  [56, "Sandstorm"],
 	  [61, "Earthquake"]
     ],
-    "tm_moves": []
+    "tm_moves": ["Strength", "Cut", "Rock Slide", "Skull Bash", "Swift", "Dig", "Fissure", "Earthquake", "Counter", "Seismic Toss","Submission", "Hyper Beam", "Take Down", "Double-Edge", "Body Slam", "Swords Dance", "Toxic", "Mimic", "Bide", "Rest", "Double Team", "Vacuum-Cut", "Wide Slash", "Spin Slash", "Rage"]
+  },
+  {
+    "id": "028A",
+    "name": "Sandslash-A",
+    "base_stats": {
+      "HP": 75,
+      "Attack": 100,
+      "Defense": 120,
+      "Special_Attack": 25,
+      "Special_Defense": 65,
+      "Speed": 65
+    },
+    "types": ["Ice", "Steel"],
+    "ev_yield": {
+	  "Defense": 2
+    },
+    "exp_yield": 158,
+    "gender_ratio": 0.5,
+	"recruit_rate": 90,
+    "experience_group": "Medium Fast",
+	"weight": 55.0,
+    "description": "This Pokémon’s steel spikes are sheathed in ice. Stabs from these spikes cause deep wounds and severe frostbite as well.",
+    "level_up_moves": [
+      [0, "Icicle Spear"],
+	  [0, "Metal Burst"],
+	  [0, "Swords Dance"],
+	  [0, "Icicle Crash"],
+	  [1, "Tackle"],
+      [1, "Defense Curl"],
+      [3, "Mist"],
+      [6, "Powder Snow"],
+	  [9, "Rollout"],
+	  [12, "Fury Cutter"],
+	  [15, "Rapid Spin"],
+	  [18, "Metal Claw"],
+	  [21, "Swift"],
+	  [26, "Fury Swipes"],
+	  [31, "Iron Defense"],
+	  [36, "Slash"],
+	  [41, "Iron Head"],
+	  [46, "Gyro Ball"],
+	  [51, "Swords Dance"],
+	  [56, "Snowscape"],
+	  [61, "Blizzard"]
+    ],
+    "tm_moves": ["Rock Slide", "Swift", "Dig", "Earthquake", "Seismic Toss", "Counter", "Hyper Beam", "Blizzard", "Ice Beam", "Double-Edge", "Take Down", "Body Slam", "Swords Dance", "Toxic", "Mimic", "Bide", "Rest", "Double Team", "Vacuum-Cut", "Wide Slash", "Spin Slash", "Rage"]
   },
   {
     "id": "29",
@@ -1223,7 +1446,7 @@
 	  [50, "Crunch"],
 	  [55, "Earth Power"]
     ],
-    "tm_moves": [],
+    "tm_moves": ["Strength", "Cut", "Skull Bash", "Reflect", "Dig", "Thunderbolt", "Thunder", "Counter", "Seismic Toss","Take Down", "Double-Edge", "Body Slam", "Toxic", "Mimic", "Bide", "Rest", "Double Team", "Vacuum-Cut", "Wide Slash", "Spin Slash", "Rage"],
     "evolutions": [
       {
         "to": "Nidorina",
@@ -1266,7 +1489,7 @@
 	  [64, "Crunch"],
 	  [71, "Earth Power"]
     ],
-    "tm_moves": [],
+    "tm_moves": ["Strength", "Cut", "Skull Bash", "Reflect", "Dig", "Thunderbolt", "Thunder", "Counter", "Seismic Toss","Bubble Beam", "Water Gun", "Ice Beam", "Blizzard", "Take Down", "Double-Edge", "Body Slam", "Guillotine", "Toxic", "Mimic", "Bide", "Rest", "Double Team", "Vacuum-Cut", "Wide Slash", "Spin Slash", "Rage"],
     "evolutions": [
       {
         "to": "Nidoqueen",
@@ -1310,7 +1533,7 @@
 	  [64, "Crunch"],
 	  [71, "Earth Power"]
     ],
-    "tm_moves": []
+    "tm_moves": ["Strength", "Surf", "Cut", "Rock Slide", "Skull Bash", "Fire Blast", "Reflect", "Dig", "Fissure", "Earthquake", "Thunderbolt", "Thunder", "Counter", "Seismic Toss","Submission", "Pay Day", "Hyper Beam", "Bubble Beam", "Water Gun", "Ice Beam", "Blizzard", "Take Down", "Double-Edge", "Body Slam", "Guillotine", "Mega Punch", "Mega Kick", "Toxic", "Mimic", "Bide", "Rest", "Double Team", "Vacuum-Cut", "Wide Slash", "Spin Slash", "Rage"]
   },
   {
     "id": "32",
@@ -1347,7 +1570,7 @@
 	  [50, "Poison Jab"],
 	  [55, "Earth Power"]
     ],
-    "tm_moves": [],
+    "tm_moves": ["Strength", "Cut", "Skull Bash", "Reflect", "Dig", "Thunderbolt", "Thunder", "Counter", "Seismic Toss","Take Down", "Double-Edge", "Body Slam", "Guillotine", "Toxic", "Mimic", "Bide", "Rest", "Double Team", "Vacuum-Cut", "Wide Slash", "Spin Slash", "Rage"],
     "evolutions": [
       {
         "to": "Nidorino",
@@ -1390,7 +1613,7 @@
 	  [64, "Poison Jab"],
 	  [71, "Earth Power"]
     ],
-    "tm_moves": [],
+    "tm_moves": ["Strength", "Cut", "Skull Bash", "Reflect", "Dig", "Thunderbolt", "Thunder", "Counter", "Seismic Toss","Bubble Beam", "Water Gun", "Ice Beam", "Blizzard", "Take Down", "Double-Edge", "Body Slam", "Guillotine", "Toxic", "Mimic", "Bide", "Rest", "Double Team", "Vacuum-Cut", "Wide Slash", "Spin Slash", "Rage"],
     "evolutions": [
       {
         "to": "Nidoking",
@@ -1435,7 +1658,7 @@
 	  [64, "Poison Jab"],
 	  [71, "Earth Power"]
     ],
-    "tm_moves": []
+    "tm_moves": ["Strength", "Surf", "Cut", "Rock Slide", "Skull Bash", "Fire Blast", "Reflect", "Dig", "Fissure", "Earthquake", "Thunderbolt", "Thunder", "Counter", "Seismic Toss","Submission", "Pay Day", "Hyper Beam", "Bubble Beam", "Water Gun", "Ice Beam", "Blizzard", "Take Down", "Double-Edge", "Body Slam", "Guillotine", "Mega Punch", "Mega Kick", "Toxic", "Mimic", "Bide", "Rest", "Double Team", "Vacuum-Cut", "Wide Slash", "Spin Slash", "Rage"]
   },
   {
     "id": "35",
@@ -1482,7 +1705,7 @@
 	  [44, "Moonblast"],
 	  [48, "Healing Wish"]
     ],
-    "tm_moves": [],
+    "tm_moves": ["Flash", "Strength", "Tri Attack", "Psywave", "Thunder Wave", "Dream Eater", "Recover", "Skull Bash", "Swift", "Fire Blast", "Metronome", "Reflect", "Teleport", "Psychic", "Dig", "Thunderbolt", "Thunder", "Solar Beam", "Counter", "Seismic Toss","Submission", "Bubble Beam", "Water Gun", "Ice Beam", "Blizzard", "Take Down", "Double-Edge", "Body Slam", "Mega Punch", "Mega Kick", "Toxic", "Mimic", "Bide", "Rest", "Double Team", "Vacuum-Cut", "Wide Slash", "Spin Slash", "Rage"],
     "evolutions": [
       {
         "to": "Clefable",
@@ -1535,7 +1758,7 @@
 	  [44, "Moonblast"],
 	  [48, "Healing Wish"]
     ],
-    "tm_moves": []
+    "tm_moves": ["Flash", "Strength", "Tri Attack", "Psywave", "Thunder Wave", "Dream Eater", "Recover", "Skull Bash", "Swift", "Fire Blast", "Metronome", "Reflect", "Teleport", "Psychic", "Dig", "Thunderbolt", "Thunder", "Solar Beam", "Counter", "Seismic Toss","Submission", "Hyper Beam", "Bubble Beam", "Water Gun", "Ice Beam", "Blizzard", "Take Down", "Double-Edge", "Body Slam", "Mega Punch", "Mega Kick", "Toxic", "Mimic", "Bide", "Rest", "Double Team", "Vacuum-Cut", "Wide Slash", "Spin Slash", "Rage"]
   },
   {
     "id": "37",
@@ -1575,11 +1798,57 @@
 	  [48, "Inferno"],
 	  [52, "Fire Blast"]
     ],
-    "tm_moves": [],
+    "tm_moves": ["Skull Bash", "Swift", "Fire Blast", "Reflect", "Dig", "Take Down", "Double-Edge", "Body Slam", "Toxic", "Mimic", "Bide", "Rest", "Double Team", "Vacuum-Cut", "Wide Slash", "Spin Slash", "Rage"],
     "evolutions": [
       {
         "to": "Ninetales",
         "item": "Fire Stone"
+      }
+    ]
+  },
+  {
+    "id": "037A",
+    "name": "Vulpix-A",
+    "base_stats": {
+      "HP": 38,
+      "Attack": 41,
+      "Defense": 40,
+      "Special_Attack": 50,
+      "Special_Defense": 65,
+      "Speed": 65
+    },
+    "types": ["Ice"],
+    "ev_yield": {
+	  "Speed": 1
+    },
+    "exp_yield": 60,
+    "gender_ratio": 0.25,
+	"recruit_rate": 190,
+    "experience_group": "Medium Fast",
+	"weight": 9.9,
+    "description": "They live together in a skulk, helping one another. Before eating their prey, they freeze it solid with their −50 degrees Celsius breath.",
+    "level_up_moves": [
+      [1, "Tail Whip"],
+      [1, "Powder Snow"],
+      [4, "Disable"],
+      [8, "Ice Shard"],
+	  [12, "Spite"],
+	  [16, "Icy Wind"],
+	  [20, "Confuse Ray"],
+	  [24, "Aurora Beam"],
+	  [28, "Extrasensory"],
+	  [32, "Ice Beam"],
+	  [36, "Imprison"],
+	  [40, "Mist"],
+	  [44, "Aurora Veil"],
+	  [48, "Freeze Dry"],
+	  [52, "Blizzard"]
+    ],
+    "tm_moves": ["Swift", "Reflect", "Dig", "Blizzard", "Ice Beam", "Double-Edge", "Take Down", "Body Slam", "Toxic", "Mimic", "Bide", "Rest", "Double Team", "Vacuum-Cut", "Wide Slash", "Spin Slash", "Rage"],
+    "evolutions": [
+      {
+        "to": "Ninetales-A",
+        "item": "Ice Stone"
       }
     ]
   },
@@ -1623,7 +1892,49 @@
 	  [48, "Inferno"],
 	  [52, "Fire Blast"]
     ],
-    "tm_moves": []
+    "tm_moves": ["Dream Eater", "Skull Bash", "Swift", "Fire Blast", "Reflect", "Dig", "Solar Beam", "Hyper Beam", "Take Down", "Double-Edge", "Body Slam", "Toxic", "Mimic", "Bide", "Rest", "Double Team", "Vacuum-Cut", "Wide Slash", "Spin Slash", "Rage"]
+  },
+  {
+    "id": "038A",
+    "name": "Ninetales-A",
+    "base_stats": {
+      "HP": 73,
+      "Attack": 67,
+      "Defense": 75,
+      "Special_Attack": 81,
+      "Special_Defense": 100,
+      "Speed": 109
+    },
+    "types": ["Ice", "Fairy"],
+    "ev_yield": {
+	  "Speed": 2
+    },
+    "exp_yield": 177,
+    "gender_ratio": 0.25,
+	"recruit_rate": 75,
+    "experience_group": "Medium Fast",
+	"weight": 19.9,
+    "description": "It creates drops of ice in its coat and showers them over its enemies. Anyone who angers it will be frozen stiff in an instant.",
+    "level_up_moves": [
+      [0, "Dazzling Gleam"],
+	  [0, "Nasty Plot"],
+	  [1, "Tail Whip"],
+      [1, "Powder Snow"],
+      [4, "Disable"],
+      [8, "Ice Shard"],
+	  [12, "Spite"],
+	  [16, "Icy Wind"],
+	  [20, "Confuse Ray"],
+	  [24, "Aurora Beam"],
+	  [28, "Extrasensory"],
+	  [32, "Ice Beam"],
+	  [36, "Imprison"],
+	  [40, "Mist"],
+	  [44, "Aurora Veil"],
+	  [48, "Freeze Dry"],
+	  [52, "Blizzard"]
+    ],
+    "tm_moves": ["Dream Eater", "Swift", "Reflect", "Dig", "Solar Beam", "Hyper Beam", "Blizzard", "Ice Beam", "Double-Edge", "Take Down", "Body Slam", "Toxic", "Mimic", "Bide", "Rest", "Double Team", "Vacuum-Cut", "Wide Slash", "Spin Slash", "Rage"]
   },
   {
     "id": "39",
@@ -1668,7 +1979,7 @@
 	  [36, "Hyper Voice"],
 	  [44, "Double-Edge"]
     ],
-    "tm_moves": [],
+    "tm_moves": ["Flash", "Strength", "Tri Attack", "Psywave", "Thunder Wave", "Dream Eater", "Skull Bash", "Swift", "Fire Blast", "Self-Destruct", "Metronome", "Reflect", "Teleport", "Psychic", "Dig", "Solar Beam", "Counter", "Seismic Toss","Submission", "Bubble Beam", "Water Gun", "Ice Beam", "Blizzard", "Take Down", "Double-Edge", "Body Slam", "Mega Punch", "Mega Kick", "Toxic", "Mimic", "Bide", "Rest", "Double Team", "Vacuum-Cut", "Wide Slash", "Spin Slash", "Rage"],
     "evolutions": [
       {
         "to": "Wigglytuff",
@@ -1720,7 +2031,7 @@
 	  [36, "Hyper Voice"],
 	  [44, "Double-Edge"]
     ],
-    "tm_moves": []
+    "tm_moves": ["Flash", "Strength", "Tri Attack", "Psywave", "Thunder Wave", "Dream Eater", "Skull Bash", "Swift", "Fire Blast", "Self-Destruct", "Metronome", "Reflect", "Teleport", "Psychic", "Dig", "Thunderbolt", "Thunder", "Solar Beam", "Counter", "Seismic Toss","Submission", "Hyper Beam", "Bubble Beam", "Water Gun", "Ice Beam", "Blizzard", "Take Down", "Double-Edge", "Body Slam", "Mega Punch", "Mega Kick", "Toxic", "Mimic", "Bide", "Rest", "Double Team", "Vacuum-Cut", "Wide Slash", "Spin Slash", "Rage"]
   },
   {
     "id": "41",
@@ -1758,7 +2069,7 @@
 	  [50, "Air Slash"],
 	  [55, "Leech Life"]
     ],
-    "tm_moves": [],
+    "tm_moves": ["Fly", "Swift", "Mega Drain", "Take Down", "Double-Edge", "Razor Wind", "Whirlwind", "Toxic", "Mimic", "Bide", "Rest", "Double Team", "Vacuum-Cut", "Wide Slash", "Spin Slash", "Rage"],
     "evolutions": [
       {
         "to": "Golbat",
@@ -1803,7 +2114,7 @@
 	  [62, "Air Slash"],
 	  [69, "Leech Life"]
     ],
-    "tm_moves": []
+    "tm_moves": ["Fly", "Sky Attack", "Swift", "Mega Drain", "Hyper Beam", "Take Down", "Double-Edge", "Razor Wind", "Whirlwind", "Toxic", "Mimic", "Bide", "Rest", "Double Team", "Vacuum-Cut", "Wide Slash", "Spin Slash", "Rage"]
   },
   {
     "id": "43",
@@ -1842,7 +2153,7 @@
 	  [36, "Moonlight"],
 	  [40, "Petal Dance"]
     ],
-    "tm_moves": [],
+    "tm_moves": ["Flash", "Cut", "Reflect", "Solar Beam", "Mega Drain", "Take Down", "Double-Edge", "Swords Dance", "Toxic", "Mimic", "Bide", "Rest", "Double Team", "Vacuum-Cut", "Wide Slash", "Spin Slash", "Rage"],
     "evolutions": [
       {
         "to": "Gloom",
@@ -1887,7 +2198,7 @@
 	  [44, "Moonlight"],
 	  [50, "Petal Dance"]
     ],
-    "tm_moves": [],
+    "tm_moves": ["Flash", "Cut", "Sky Attack", "Reflect", "Solar Beam", "Mega Drain", "Take Down", "Double-Edge", "Swords Dance", "Toxic", "Mimic", "Bide", "Rest", "Double Team", "Vacuum-Cut", "Wide Slash", "Spin Slash", "Rage"],
     "evolutions": [
       {
         "to": "Vileplume",
@@ -1934,7 +2245,7 @@
 	  [50, "Petal Dance"],
 	  [56, "Moonblast"]
     ],
-    "tm_moves": []
+    "tm_moves": ["Flash", "Cut", "Reflect", "Solar Beam", "Mega Drain", "Hyper Beam", "Take Down", "Double-Edge", "Body Slam", "Swords Dance", "Toxic", "Mimic", "Bide", "Rest", "Double Team", "Vacuum-Cut", "Wide Slash", "Spin Slash", "Rage"]
   },
   {
     "id": "46",
@@ -1971,7 +2282,7 @@
 	  [49, "Rage Powder"],
 	  [54, "Cross Scissor"]
     ],
-    "tm_moves": [],
+    "tm_moves": ["Flash", "Cut", "Skull Bash", "Reflect", "Dig", "Solar Beam", "Mega Drain", "Counter", "Seismic Toss","Take Down", "Double-Edge", "Body Slam", "Swords Dance", "Toxic", "Mimic", "Bide", "Rest", "Double Team", "Vacuum-Cut", "Wide Slash", "Spin Slash", "Rage"],
     "evolutions": [
       {
         "to": "Parasect",
@@ -2016,7 +2327,7 @@
 	  [59, "Rage Powder"],
 	  [66, "Cross Scissor"]
     ],
-    "tm_moves": []
+    "tm_moves": ["Flash", "Cut", "Skull Bash", "Reflect", "Dig", "Solar Beam", "Mega Drain", "Counter", "Seismic Toss","Hyper Beam", "Take Down", "Double-Edge", "Body Slam", "Swords Dance", "Toxic", "Mimic", "Bide", "Rest", "Double Team", "Vacuum-Cut", "Wide Slash", "Spin Slash", "Rage"]
   },
   {
     "id": "48",
@@ -2054,7 +2365,7 @@
 	  [41, "Poison Fang"],
 	  [47, "Psychic"]
     ],
-    "tm_moves": [],
+    "tm_moves": ["Flash", "Psywave", "Swift", "Reflect", "Psychic", "Solar Beam", "Mega Drain", "Take Down", "Double-Edge", "Toxic", "Mimic", "Bide", "Rest", "Double Team", "Vacuum-Cut", "Wide Slash", "Spin Slash", "Rage"],
     "evolutions": [
       {
         "to": "Venomoth",
@@ -2101,7 +2412,7 @@
 	  [47, "Poison Fang"],
 	  [55, "Psychic"]
     ],
-    "tm_moves": []
+    "tm_moves": ["Flash", "Psywave", "Dream Eater", "Swift", "Reflect", "Teleport", "Psychic", "Solar Beam", "Mega Drain", "Hyper Beam", "Take Down", "Double-Edge", "Razor Wind", "Whirlwind", "Toxic", "Mimic", "Bide", "Rest", "Double Team", "Vacuum-Cut", "Wide Slash", "Spin Slash", "Rage"]
   },
   {
     "id": "50",
@@ -2139,11 +2450,55 @@
 	  [40, "Earthquake"],
 	  [44, "Fissure"]
     ],
-    "tm_moves": [],
+    "tm_moves": ["Cut", "Rock Slide", "Dig", "Fissure", "Earthquake", "Take Down", "Double-Edge", "Body Slam", "Swords Dance", "Toxic", "Mimic", "Bide", "Rest", "Double Team", "Vacuum-Cut", "Wide Slash", "Spin Slash", "Rage"],
     "evolutions": [
       {
         "to": "Dugtrio",
-        "min_level": 24
+        "min_level": 26
+      }
+    ]
+  },
+  {
+    "id": "050A",
+    "name": "Diglett-A",
+    "base_stats": {
+      "HP": 10,
+      "Attack": 55,
+      "Defense": 30,
+      "Special_Attack": 35,
+      "Special_Defense": 45,
+      "Speed": 90
+    },
+    "types": ["Ground", "Steel"],
+    "ev_yield": {
+	  "Speed": 1
+    },
+    "exp_yield": 53,
+    "gender_ratio": 0.5,
+	"recruit_rate": 250,
+    "experience_group": "Medium Fast",
+	"weight": 1.0,
+    "description": "Its golden whiskers function as sensors. It pokes them out of its burrow to monitor its surroundings.",
+    "level_up_moves": [
+      [1, "Metal Claw"],
+      [1, "Sand Attack"],
+      [4, "Growl"],
+      [8, "Astonish"],
+	  [12, "Mud Slap"],
+	  [16, "Bulldoze"],
+	  [20, "Sucker Punch"],
+	  [24, "Iron Head"],
+	  [28, "Sandstorm"],
+	  [32, "Dig"],
+	  [36, "Earth Power"],
+	  [40, "Earthquake"],
+	  [44, "Fissure"]
+    ],
+    "tm_moves": ["Rock Slide", "Dig", "Earthquake", "Take Down", "Body Slam", "Swords Dance", "Toxic", "Mimic", "Bide", "Rest", "Double Team", "Vacuum-Cut", "Wide Slash", "Spin Slash", "Rage"],
+    "evolutions": [
+      {
+        "to": "Dugtrio-A",
+        "min_level": 26
       }
     ]
   },
@@ -2186,7 +2541,48 @@
 	  [48, "Earthquake"],
 	  [54, "Fissure"]
     ],
-    "tm_moves": []
+    "tm_moves": ["Cut", "Tri Attack", "Rock Slide", "Dig", "Fissure", "Earthquake", "Hyper Beam", "Take Down", "Double-Edge", "Body Slam", "Swords Dance", "Toxic", "Mimic", "Bide", "Rest", "Double Team", "Vacuum-Cut", "Wide Slash", "Spin Slash", "Rage"]
+  },
+  {
+    "id": "051A",
+    "name": "Dugtrio-A",
+    "base_stats": {
+      "HP": 35,
+      "Attack": 100,
+      "Defense": 60,
+      "Special_Attack": 50,
+      "Special_Defense": 70,
+      "Speed": 110
+    },
+    "types": ["Ground", "Steel"],
+    "ev_yield": {
+	  "Attack": 2
+    },
+    "exp_yield": 149,
+    "gender_ratio": 0.5,
+	"recruit_rate": 50,
+    "experience_group": "Medium Fast",
+	"weight": 66.6,
+    "description": "The three of them get along very well. Through their formidable teamwork, they defeat powerful opponents.",
+    "level_up_moves": [
+      [0, "Sand Tomb"],
+	  [0, "Tri Attack"],
+	  [0, "Night Slash"],
+	  [1, "Metal Claw"],
+      [1, "Sand Attack"],
+      [4, "Growl"],
+      [8, "Astonish"],
+	  [12, "Mud Slap"],
+	  [16, "Bulldoze"],
+	  [20, "Sucker Punch"],
+	  [24, "Iron Head"],
+	  [28, "Sandstorm"],
+	  [32, "Dig"],
+	  [36, "Earth Power"],
+	  [40, "Earthquake"],
+	  [44, "Fissure"]
+    ],
+    "tm_moves": ["Tri Attack", "Rock Slide", "Dig", "Earthquake", "Hyper Beam", "Double-Edge", "Take Down", "Body Slam", "Swords Dance", "Toxic", "Mimic", "Bide", "Rest", "Double Team", "Vacuum-Cut", "Wide Slash", "Spin Slash", "Rage"]
   },
   {
     "id": "52",
@@ -2224,13 +2620,96 @@
 	  [40, "Nasty Plot"],
 	  [44, "Play Rough"]
     ],
-    "tm_moves": [],
+    "tm_moves": ["Flash", "Cut", "Thunder Wave", "Dream Eater", "Skull Bash", "Swift", "Metronome", "Dig", "Thunderbolt", "Thunder", "Bubble Beam", "Water Gun", "Ice Beam", "Blizzard", "Take Down", "Double-Edge", "Body Slam", "Toxic", "Mimic", "Bide", "Rest", "Double Team", "Vacuum-Cut", "Wide Slash", "Spin Slash", "Rage"],
     "evolutions": [
       {
         "to": "Persian",
         "min_level": 28
       }
     ]
+  },
+  {
+    "id": "052A",
+    "name": "Meowth-A",
+    "base_stats": {
+      "HP": 40,
+      "Attack": 35,
+      "Defense": 35,
+      "Special_Attack": 50,
+      "Special_Defense": 40,
+      "Speed": 90
+    },
+    "types": ["Dark"],
+    "ev_yield": {
+	  "Speed": 1
+    },
+    "exp_yield": 58,
+    "gender_ratio": 0.5,
+	"recruit_rate": 250,
+    "experience_group": "Medium Fast",
+	"weight": 4.2,
+    "description": "Deeply proud and keenly smart, this Pokémon moves with cunning during battle and relentlessly attacks enemies' weak points.",
+    "level_up_moves": [
+      [1, "Growl"],
+      [1, "Feint"],
+      [4, "Fake Out"],
+      [8, "Tackle"],
+      [12, "Pay Day"],
+	  [16, "Bite"],
+	  [20, "Taunt"],
+	  [24, "Assurance"],
+	  [29, "Fury Swipes"],
+	  [32, "Screech"],
+	  [36, "Night Slash"],
+	  [40, "Nasty Plot"],
+	  [44, "Play Rough"]
+    ],
+    "tm_moves": ["Thunder Wave", "Dream Eater", "Swift", "Metronome", "Dig", "Thunder", "Thunderbolt", "Pay Day", "Double-Edge", "Take Down", "Body Slam", "Toxic", "Mimic", "Bide", "Rest", "Double Team", "Vacuum-Cut", "Wide Slash", "Spin Slash", "Rage"],
+    "evolutions": [
+      {
+        "to": "Persian-A",
+        "min_level": 28
+      }
+    ]
+  },
+  {
+    "id": "052G",
+    "name": "Meowth-G",
+    "base_stats": {
+      "HP": 50,
+      "Attack": 65,
+      "Defense": 55,
+      "Special_Attack": 40,
+      "Special_Defense": 40,
+      "Speed": 40
+    },
+    "types": ["Steel"],
+    "ev_yield": {
+	  "Attack": 1
+    },
+    "exp_yield": 58,
+    "gender_ratio": 0.5,
+	"recruit_rate": 250,
+    "experience_group": "Medium Fast",
+	"weight": 7.5,
+    "description": "Its unkempt beard is a vestige from living in cold climes. It fights dauntlessly using its steel claws.",
+    "level_up_moves": [
+      [1, "Growl"],
+      [1, "Feint"],
+      [4, "Hone Claws"],
+      [8, "Tackle"],
+      [12, "Pay Day"],
+	  [16, "Metal Claw"],
+	  [20, "Taunt"],
+	  [24, "Swagger"],
+	  [29, "Fury Swipes"],
+	  [32, "Screech"],
+	  [36, "Slash"],
+	  [40, "Metal Sound"],
+	  [44, "Thrash"]
+    ],
+    "tm_moves": ["Thunder Wave", "Swift", "Metronome", "Dig", "Thunder", "Thunderbolt", "Pay Day", "Double-Edge", "Take Down", "Body Slam", "Swords Dance", "Toxic", "Mimic", "Bide", "Rest", "Double Team", "Vacuum-Cut", "Wide Slash", "Spin Slash", "Rage"],
+    "evolutions": []
   },
   {
     "id": "53",
@@ -2269,7 +2748,47 @@
 	  [48, "Nasty Plot"],
 	  [54, "Play Rough"]
     ],
-    "tm_moves": []
+    "tm_moves": ["Flash", "Cut", "Thunder Wave", "Dream Eater", "Skull Bash", "Swift", "Metronome", "Dig", "Thunderbolt", "Thunder", "Hyper Beam", "Bubble Beam", "Water Gun", "Ice Beam", "Blizzard", "Take Down", "Double-Edge", "Body Slam", "Toxic", "Mimic", "Bide", "Rest", "Double Team", "Vacuum-Cut", "Wide Slash", "Spin Slash", "Rage"]
+  },
+  {
+    "id": "053A",
+    "name": "Persian-A",
+    "base_stats": {
+      "HP": 65,
+      "Attack": 60,
+      "Defense": 60,
+      "Special_Attack": 75,
+      "Special_Defense": 65,
+      "Speed": 115
+    },
+    "types": ["Dark"],
+    "ev_yield": {
+	  "Speed": 2
+    },
+    "exp_yield": 154,
+    "gender_ratio": 0.5,
+	"recruit_rate": 90,
+    "experience_group": "Medium Fast",
+	"weight": 33.0,
+    "description": "This Pokémon is one tough opponent. Not only does it have formidable physical abilities, but it's also not above fighting dirty.",
+    "level_up_moves": [
+      [0, "Power Gem"],
+	  [0, "Quash"],
+	  [1, "Growl"],
+      [1, "Fake Out"],
+      [4, "Feint"],
+      [8, "Tackle"],
+      [12, "Pay Day"],
+	  [16, "Bite"],
+	  [20, "Taunt"],
+	  [24, "Assurance"],
+	  [31, "Fury Swipes"],
+	  [36, "Screech"],
+	  [42, "Slash"],
+	  [48, "Nasty Plot"],
+	  [54, "Play Rough"]
+    ],
+    "tm_moves": ["Thunder Wave", "Dream Eater", "Swift", "Metronome", "Dig", "Thunder", "Thunderbolt", "Pay Day", "Hyper Beam", "Double-Edge", "Take Down", "Body Slam", "Toxic", "Mimic", "Bide", "Rest", "Double Team", "Vacuum-Cut", "Wide Slash", "Spin Slash", "Rage"]
   },
   {
     "id": "54",
@@ -2308,7 +2827,7 @@
 	  [34, "Amnesia"],
 	  [39, "Wonder Room"]
     ],
-    "tm_moves": [],
+    "tm_moves": ["Flash", "Strength", "Surf", "Tri Attack", "Skull Bash", "Swift", "Metronome", "Psychic", "Dig", "Counter", "Seismic Toss","Submission", "Pay Day", "Bubble Beam", "Water Gun", "Ice Beam", "Blizzard", "Take Down", "Double-Edge", "Body Slam", "Mega Punch", "Mega Kick", "Toxic", "Mimic", "Bide", "Rest", "Double Team", "Vacuum-Cut", "Wide Slash", "Spin Slash", "Rage"],
     "evolutions": [
       {
         "to": "Golduck",
@@ -2355,7 +2874,7 @@
 	  [40, "Hydro Pump"],
 	  [45, "Wonder Room"]
     ],
-    "tm_moves": []
+    "tm_moves": ["Flash", "Strength", "Surf", "Tri Attack", "Skull Bash", "Swift", "Metronome", "Psychic", "Dig", "Counter", "Seismic Toss","Submission", "Pay Day", "Hyper Beam", "Bubble Beam", "Water Gun", "Ice Beam", "Blizzard", "Take Down", "Double-Edge", "Body Slam", "Mega Punch", "Mega Kick", "Toxic", "Mimic", "Bide", "Rest", "Double Team", "Vacuum-Cut", "Wide Slash", "Spin Slash", "Rage"]
   },
   {
     "id": "56",
@@ -2396,7 +2915,7 @@
 	  [44, "Outrage"],
 	  [48, "Final Gambit"]
     ],
-    "tm_moves": [],
+    "tm_moves": ["Strength", "Rock Slide", "Skull Bash", "Swift", "Metronome", "Dig", "Earthquake", "Thunderbolt", "Thunder", "Counter", "Seismic Toss","Submission", "Pay Day", "Take Down", "Double-Edge", "Body Slam", "Mega Punch", "Mega Kick", "Toxic", "Mimic", "Bide", "Rest", "Double Team", "Vacuum-Cut", "Wide Slash", "Spin Slash", "Rage"],
     "evolutions": [
       {
         "to": "Primeape",
@@ -2445,7 +2964,7 @@
 	  [53, "Outrage"],
 	  [57, "Final Gambit"]
     ],
-    "tm_moves": []
+    "tm_moves": ["Strength", "Rock Slide", "Skull Bash", "Swift", "Metronome", "Dig", "Earthquake", "Thunderbolt", "Thunder", "Counter", "Seismic Toss","Submission", "Pay Day", "Hyper Beam", "Take Down", "Double-Edge", "Body Slam", "Mega Punch", "Mega Kick", "Toxic", "Mimic", "Bide", "Rest", "Double Team", "Vacuum-Cut", "Wide Slash", "Spin Slash", "Rage"]
   },
   {
     "id": "58",
@@ -2486,10 +3005,56 @@
 	  [52, "Reversal"],
 	  [56, "Flare Blitz"]
     ],
-    "tm_moves": [],
+    "tm_moves": ["Strength", "Skull Bash", "Swift", "Fire Blast", "Reflect", "Dig", "Dragon Rage", "Take Down", "Double-Edge", "Body Slam", "Toxic", "Mimic", "Bide", "Rest", "Double Team", "Vacuum-Cut", "Wide Slash", "Spin Slash", "Rage"],
     "evolutions": [
       {
         "to": "Arcanine",
+        "item": "Fire Stone"
+      }
+    ]
+  },
+  {
+    "id": "058H",
+    "name": "Growlithe-H",
+    "base_stats": {
+      "HP": 60,
+      "Attack": 75,
+      "Defense": 45,
+      "Special_Attack": 65,
+      "Special_Defense": 50,
+      "Speed": 55
+    },
+    "types": ["Fire", "Rock"],
+    "ev_yield": {
+	  "Attack": 1
+    },
+    "exp_yield": 70,
+    "gender_ratio": 0.75,
+	"recruit_rate": 190,
+    "experience_group": "Slow",
+	"weight": 22.7,
+    "description": "Extremely loyal, it will fearlessly bark at any opponent to protect its owner from harm.",
+    "level_up_moves": [
+      [1, "Leer"],
+      [1, "Ember"],
+      [4, "Howl"],
+      [8, "Bite"],
+	  [12, "Flame Wheel"],
+	  [16, "Helping Hand"],
+	  [24, "Fire Fang"],
+	  [28, "Retaliate"],
+	  [32, "Crunch"],
+	  [36, "Take Down"],
+	  [40, "Flamethrower"],
+	  [44, "Roar"],
+	  [48, "Rock Slide"],
+	  [52, "Reversal"],
+	  [56, "Flare Blitz"]
+    ],
+    "tm_moves": ["Rock Slide", "Swift", "Fire Blast", "Dig", "Double-Edge", "Take Down", "Body Slam", "Toxic", "Mimic", "Bide", "Rest", "Double Team", "Vacuum-Cut", "Wide Slash", "Spin Slash", "Rage"],
+    "evolutions": [
+      {
+        "to": "Arcanine-H",
         "item": "Fire Stone"
       }
     ]
@@ -2535,7 +3100,52 @@
 	  [52, "Reversal"],
 	  [56, "Flare Blitz"]
     ],
-    "tm_moves": []
+    "tm_moves": ["Strength", "Skull Bash", "Swift", "Fire Blast", "Reflect", "Teleport", "Dig", "Dragon Rage", "Solar Beam", "Hyper Beam", "Take Down", "Double-Edge", "Body Slam", "Toxic", "Mimic", "Bide", "Rest", "Double Team", "Vacuum-Cut", "Wide Slash", "Spin Slash", "Rage"]
+  },
+  {
+    "id": "059H",
+    "name": "Arcanine-H",
+    "base_stats": {
+      "HP": 95,
+      "Attack": 115,
+      "Defense": 80,
+      "Special_Attack": 95,
+      "Special_Defense": 80,
+      "Speed": 90
+    },
+    "types": ["Fire", "Rock"],
+    "ev_yield": {
+	  "Attack": 2
+    },
+    "exp_yield": 194,
+    "gender_ratio": 0.75,
+	"recruit_rate": 75,
+    "experience_group": "Slow",
+	"weight": 168.0,
+    "description": "Snaps at its foes with fangs cloaked in blazing flame. Despite its bulk, it deftly feints every which way, leading opponents on a deceptively merry chase as it all but dances around them.",
+    "level_up_moves": [
+      [0, "Extreme Speed"],
+	  [0, "Fire Fang"],
+	  [0, "Rock Throw"],
+	  [1, "Leer"],
+      [1, "Ember"],
+      [4, "Howl"],
+	  [5, "Flamethrower"],
+      [8, "Bite"],
+	  [12, "Flame Wheel"],
+	  [16, "Helping Hand"],
+	  [20, "Agility"],
+	  [24, "Fire Fang"],
+	  [28, "Retaliate"],
+	  [32, "Crunch"],
+	  [36, "Take Down"],
+	  [44, "Roar"],
+	  [48, "Play Rough"],
+	  [52, "Reversal"],
+	  [56, "Flare Blitz"],
+	  [64, "Raging Fury"]
+    ],
+    "tm_moves": ["Rock Slide", "Swift", "Fire Blast", "Dig", "Solar Beam", "Hyper Beam", "Double-Edge", "Take Down", "Body Slam", "Toxic", "Mimic", "Bide", "Rest", "Double Team", "Vacuum-Cut", "Wide Slash", "Spin Slash", "Rage"]
   },
   {
     "id": "60",
@@ -2571,7 +3181,7 @@
 	  [48, "Belly Drum"],
 	  [54, "Double-Edge"]
     ],
-    "tm_moves": [],
+    "tm_moves": ["Surf", "Psywave", "Skull Bash", "Swift", "Psychic", "Dig", "Fissure", "Bubble Beam", "Water Gun", "Ice Beam", "Blizzard", "Take Down", "Double-Edge", "Body Slam", "Toxic", "Mimic", "Bide", "Rest", "Double Team", "Vacuum-Cut", "Wide Slash", "Spin Slash", "Rage"],
     "evolutions": [
       {
         "to": "Poliwhirl",
@@ -2613,7 +3223,7 @@
 	  [56, "Belly Drum"],
 	  [64, "Double-Edge"]
     ],
-    "tm_moves": [],
+    "tm_moves": ["Strength", "Surf", "Psywave", "Skull Bash", "Swift", "Metronome", "Psychic", "Dig", "Fissure", "Earthquake", "Counter", "Seismic Toss","Submission", "Bubble Beam", "Water Gun", "Ice Beam", "Blizzard", "Take Down", "Double-Edge", "Body Slam", "Mega Punch",  "Mega Kick", "Toxic", "Mimic", "Bide", "Rest", "Double Team", "Vacuum-Cut", "Wide Slash", "Spin Slash", "Rage"],
     "evolutions": [
       {
         "to": "Poliwrath",
@@ -2657,7 +3267,7 @@
 	  [56, "Belly Drum"],
 	  [64, "Double-Edge"]
     ],
-    "tm_moves": []
+    "tm_moves": ["Strength", "Surf", "Rock Slide", "Psywave", "Skull Bash", "Swift", "Metronome", "Psychic", "Dig", "Earthquake", "Counter", "Seismic Toss","Submission", "Hyper Beam", "Bubble Beam", "Water Gun", "Ice Beam", "Blizzard", "Take Down", "Double-Edge", "Body Slam", "Mega Punch", "Mega Kick", "Toxic", "Mimic", "Bide", "Rest", "Double Team", "Vacuum-Cut", "Wide Slash", "Spin Slash", "Rage"]
   },
   {
     "id": "63",
@@ -2681,10 +3291,9 @@
 	"weight": 19.5,
     "description": "This Pokémon uses its psychic powers while it sleeps. The contents of Abra's dreams affect the powers that the Pokémon wields.",
     "level_up_moves": [
-      [1, "Teleport"],
-      [1, "Confusion"]
+      [1, "Teleport"]
     ],
-    "tm_moves": [],
+    "tm_moves": ["Flash", "Tri Attack", "Psywave", "Thunder Wave", "Dream Eater", "Skull Bash", "Swift", "Metronome", "Reflect", "Teleport", "Psychic", "Counter", "Seismic Toss","Submission", "Take Down", "Double-Edge", "Body Slam", "Mega Punch", "Mega Kick", "Toxic", "Mimic", "Bide", "Rest", "Double Team", "Vacuum-Cut", "Wide Slash", "Spin Slash", "Rage"],
     "evolutions": [
       {
         "to": "Kadabra",
@@ -2729,7 +3338,7 @@
 	  [45, "Future Sight"],
 	  [50, "Calm Mind"]
     ],
-    "tm_moves": [],
+    "tm_moves": ["Flash", "Tri Attack", "Psywave", "Thunder Wave", "Dream Eater", "Skull Bash", "Swift", "Metronome", "Reflect", "Teleport", "Psychic", "Dig", "Counter", "Seismic Toss","Submission", "Take Down", "Double-Edge", "Body Slam", "Mega Punch", "Mega Kick", "Toxic", "Mimic", "Bide", "Rest", "Double Team", "Vacuum-Cut", "Wide Slash", "Spin Slash", "Rage"],
     "evolutions": [
       {
         "to": "Alakazam",
@@ -2773,7 +3382,7 @@
 	  [45, "Future Sight"],
 	  [50, "Calm Mind"]
     ],
-    "tm_moves": []
+    "tm_moves": ["Flash", "Tri Attack", "Psywave", "Thunder Wave", "Dream Eater", "Skull Bash", "Swift", "Metronome", "Reflect", "Teleport", "Psychic", "Dig", "Counter", "Seismic Toss","Submission", "Hyper Beam", "Take Down", "Double-Edge", "Body Slam", "Mega Punch", "Mega Kick", "Toxic", "Mimic", "Bide", "Rest", "Double Team", "Vacuum-Cut", "Wide Slash", "Spin Slash", "Rage"]
   },
   {
     "id": "66",
@@ -2813,7 +3422,7 @@
 	  [48, "Cross Chop"],
 	  [52, "Double-Edge"]
     ],
-    "tm_moves": [],
+    "tm_moves": ["Strength", "Rock Slide", "Skull Bash", "Fire Blast", "Metronome", "Dig", "Earthquake", "Counter", "Seismic Toss","Submission", "Take Down", "Double-Edge", "Body Slam", "Mega Punch", "Mega Kick", "Toxic", "Mimic", "Bide", "Rest", "Double Team", "Vacuum-Cut", "Wide Slash", "Spin Slash", "Rage"],
     "evolutions": [
       {
         "to": "Machoke",
@@ -2859,7 +3468,7 @@
 	  [60, "Cross Chop"],
 	  [66, "Double-Edge"]
     ],
-    "tm_moves": [],
+    "tm_moves": ["Strength", "Rock Slide", "Skull Bash", "Fire Blast", "Metronome", "Dig", "Earthquake", "Counter", "Seismic Toss","Submission", "Take Down", "Double-Edge", "Body Slam", "Mega Punch", "Mega Kick", "Toxic", "Mimic", "Bide", "Rest", "Double Team", "Vacuum-Cut", "Wide Slash", "Spin Slash", "Rage"],
     "evolutions": [
       {
         "to": "Machamp",
@@ -2906,7 +3515,7 @@
 	  [60, "Cross Chop"],
 	  [66, "Double-Edge"]
     ],
-    "tm_moves": []
+    "tm_moves": ["Strength", "Rock Slide", "Skull Bash", "Fire Blast", "Metronome", "Dig", "Earthquake", "Counter", "Seismic Toss","Submission", "Hyper Beam", "Take Down", "Double-Edge", "Body Slam", "Mega Punch", "Mega Kick", "Toxic", "Mimic", "Bide", "Rest", "Double Team", "Vacuum-Cut", "Wide Slash", "Spin Slash", "Rage"]
   },
 {
     "id": "69",
@@ -2945,7 +3554,7 @@
 	  [47, "Slam"],
 	  [53, "Power Whip"]
     ],
-    "tm_moves": [],
+    "tm_moves": ["Flash", "Cut", "Reflect", "Solar Beam", "Mega Drain", "Take Down", "Double-Edge", "Swords Dance", "Toxic", "Mimic", "Bide", "Rest", "Double Team", "Vacuum-Cut", "Wide Slash", "Spin Slash", "Rage"],
     "evolutions": [
       {
         "to": "Weepinbell",
@@ -2990,7 +3599,7 @@
 	  [54, "Slam"],
 	  [58, "Power Whip"]
     ],
-    "tm_moves": [],
+    "tm_moves": ["Flash", "Cut", "Swift", "Reflect", "Solar Beam", "Mega Drain", "Take Down", "Double-Edge", "Body Slam", "Swords Dance", "Toxic", "Mimic", "Bide", "Rest", "Double Team", "Vacuum-Cut", "Wide Slash", "Spin Slash", "Rage"],
     "evolutions": [
       {
         "to": "Victreebell",
@@ -3040,7 +3649,7 @@
 	  [54, "Slam"],
 	  [58, "Power Whip"]
     ],
-    "tm_moves": []
+    "tm_moves": ["Flash", "Cut", "Swift", "Reflect", "Solar Beam", "Mega Drain", "Hyper Beam", "Take Down", "Double-Edge", "Body Slam", "Swords Dance", "Toxic", "Mimic", "Bide", "Rest", "Double Team", "Vacuum-Cut", "Wide Slash", "Spin Slash", "Rage"]
   },
   {
     "id": "72",
@@ -3079,7 +3688,7 @@
 	  [44, "Sludge Wave"],
 	  [48, "Hydro Pump"]
     ],
-    "tm_moves": [],
+    "tm_moves": ["Surf", "Cut", "Skull Bash", "Swift", "Reflect", "Mega Drain", "Bubble Beam", "Water Gun", "Ice Beam", "Blizzard", "Take Down", "Double-Edge", "Swords Dance", "Toxic", "Mimic", "Bide", "Rest", "Double Team", "Vacuum-Cut", "Wide Slash", "Spin Slash", "Rage"],
     "evolutions": [
       {
         "to": "Tentacruel",
@@ -3125,7 +3734,7 @@
 	  [52, "Sludge Wave"],
 	  [58, "Hydro Pump"]
     ],
-    "tm_moves": []
+    "tm_moves": ["Surf", "Cut", "Skull Bash", "Swift", "Reflect", "Mega Drain", "Hyper Beam", "Bubble Beam", "Water Gun", "Ice Beam", "Blizzard", "Take Down", "Double-Edge", "Swords Dance", "Toxic", "Mimic", "Bide", "Rest", "Double Team", "Vacuum-Cut", "Wide Slash", "Spin Slash", "Rage"]
   },
   {
     "id": "74",
@@ -3163,10 +3772,56 @@
 	  [40, "Double-Edge"],
 	  [42, "Stone Edge"]
     ],
-    "tm_moves": [],
+    "tm_moves": ["Strength", "Rock Slide", "Explosion", "Fire Blast", "Self-Destruct", "Metronome", "Dig", "Fissure", "Earthquake", "Counter", "Seismic Toss","Submission", "Take Down", "Double-Edge", "Body Slam", "Mega Punch", "Toxic", "Mimic", "Bide", "Rest", "Double Team", "Vacuum-Cut", "Wide Slash", "Spin Slash", "Rage"],
     "evolutions": [
       {
         "to": "Graveler",
+        "min_level": 25
+      }
+    ]
+  },
+  {
+    "id": "074A",
+    "name": "Geodude-A",
+    "base_stats": {
+      "HP": 40,
+      "Attack": 80,
+      "Defense": 100,
+      "Special_Attack": 30,
+      "Special_Defense": 30,
+      "Speed": 20
+    },
+    "types": ["Rock", "Electric"],
+    "ev_yield": {
+	  "Defense": 1
+    },
+    "exp_yield": 60,
+    "gender_ratio": 0.5,
+	"recruit_rate": 250,
+    "experience_group": "Medium Slow",
+	"weight": 20.3,
+    "description": "Its body is a magnetic stone. Iron sand attaches firmly to the portions of its body that are particularly magnetic.",
+    "level_up_moves": [
+      [1, "Tackle"],
+      [1, "Defense Curl"],
+	  [4, "Charge"],
+      [6, "Rock Polish"],
+      [10, "Rollout"],
+	  [12, "Spark"],
+	  [16, "Rock Throw"],
+	  [18, "Smack Down"],
+	  [22, "Thunder Punch"],
+	  [24, "Self-Destruct"],
+	  [30, "Rock Blast"],
+	  [34, "Discharge"],
+	  [36, "Explosion"],
+	  [40, "Double-Edge"],
+	  [42, "Stone Edge"]
+    ],
+    "tm_moves": ["Rock Slide", "Explosion", "Thunder Wave", "Fire Blast", "Self-Destruct", "Dig", "Earthquake", "Thunder", "Thunderbolt", "Seismic Toss", "Counter", "Double-Edge", "Take Down", "Body Slam", "Toxic", "Mimic", "Bide", "Rest", "Double Team", "Vacuum-Cut", "Wide Slash", "Spin Slash", "Rage"],
+    "evolutions": [
+      {
+        "to": "Graveler-A",
         "min_level": 25
       }
     ]
@@ -3207,10 +3862,56 @@
 	  [50, "Double-Edge"],
 	  [54, "Stone Edge"]
     ],
-    "tm_moves": [],
+    "tm_moves": ["Strength", "Rock Slide", "Explosion", "Fire Blast", "Self-Destruct", "Metronome", "Dig", "Fissure", "Earthquake", "Counter", "Seismic Toss","Submission", "Take Down", "Double-Edge", "Body Slam", "Mega Punch", "Toxic", "Mimic", "Bide", "Rest", "Double Team", "Vacuum-Cut", "Wide Slash", "Spin Slash", "Rage"],
     "evolutions": [
       {
         "to": "Golem",
+        "item": "Link Cable"
+      }
+    ]
+  },
+  {
+    "id": "075A",
+    "name": "Graveler-A",
+    "base_stats": {
+      "HP": 55,
+      "Attack": 95,
+      "Defense": 115,
+      "Special_Attack": 45,
+      "Special_Defense": 45,
+      "Speed": 35
+    },
+    "types": ["Rock", "Electric"],
+    "ev_yield": {
+	  "Defense": 2
+    },
+    "exp_yield": 137,
+    "gender_ratio": 0.5,
+	"recruit_rate": 120,
+    "experience_group": "Medium Slow",
+	"weight": 110.0,
+    "description": "Graveler's entire body is electrically charged due to the stones it likes to eat. It is a very quick-tempered Pokémon.",
+    "level_up_moves": [
+      [1, "Tackle"],
+      [1, "Defense Curl"],
+      [1, "Rock Polish"],
+	  [1, "Charge"],
+      [10, "Rollout"],
+	  [12, "Spark"],
+	  [16, "Rock Throw"],
+	  [18, "Smack Down"],
+	  [22, "Thunder Punch"],
+	  [24, "Self-Destruct"],
+	  [34, "Rock Blast"],
+	  [40, "Discharge"],
+	  [44, "Explosion"],
+	  [50, "Double-Edge"],
+	  [54, "Stone Edge"]
+    ],
+    "tm_moves": ["Rock Slide", "Explosion", "Thunder Wave", "Fire Blast", "Self-Destruct", "Metronome", "Dig", "Earthquake", "Thunder", "Thunderbolt", "Seismic Toss", "Counter", "Double-Edge", "Take Down", "Body Slam", "Toxic", "Mimic", "Bide", "Rest", "Double Team", "Vacuum-Cut", "Wide Slash", "Spin Slash", "Rage"],
+    "evolutions": [
+      {
+        "to": "Golem-A",
         "item": "Link Cable"
       }
     ]
@@ -3252,7 +3953,48 @@
 	  [50, "Double-Edge"],
 	  [54, "Stone Edge"]
     ],
-    "tm_moves": []
+    "tm_moves": ["Strength", "Rock Slide", "Explosion", "Fire Blast", "Self-Destruct", "Metronome", "Dig", "Fissure", "Earthquake", "Counter", "Seismic Toss","Submission", "Hyper Beam", "Take Down", "Double-Edge", "Body Slam", "Mega Punch", "Mega Kick", "Toxic", "Mimic", "Bide", "Rest", "Double Team", "Vacuum-Cut", "Wide Slash", "Spin Slash", "Rage"]
+  },
+  {
+    "id": "076A",
+    "name": "Golem-A",
+    "base_stats": {
+      "HP": 80,
+      "Attack": 120,
+      "Defense": 130,
+      "Special_Attack": 55,
+      "Special_Defense": 65,
+      "Speed": 45
+    },
+    "types": ["Rock", "Electric"],
+    "ev_yield": {
+	  "Defense": 3
+    },
+    "exp_yield": 223,
+    "gender_ratio": 0.5,
+	"recruit_rate": 45,
+    "experience_group": "Medium Slow",
+	"weight": 316.0,
+    "description": "It shoots large rocks that are charged with electricity. Tremendous electric shocks are flung out across the whole area of impact.",
+    "level_up_moves": [
+      [0, "Heavy Slam"],
+	  [1, "Tackle"],
+      [1, "Defense Curl"],
+      [1, "Rock Polish"],
+	  [1, "Charge"],
+      [10, "Rollout"],
+	  [12, "Spark"],
+	  [16, "Rock Throw"],
+	  [18, "Smack Down"],
+	  [22, "Thunder Punch"],
+	  [24, "Self-Destruct"],
+	  [34, "Rock Blast"],
+	  [40, "Discharge"],
+	  [44, "Explosion"],
+	  [50, "Double-Edge"],
+	  [54, "Stone Edge"]
+    ],
+    "tm_moves": ["Rock Slide", "Explosion", "Thunder Wave", "Fire Blast", "Self-Destruct", "Metronome", "Dig", "Earthquake", "Thunder", "Thunderbolt", "Seismic Toss", "Counter", "Hyper Beam", "Double-Edge", "Take Down", "Body Slam", "Toxic", "Mimic", "Bide", "Rest", "Double Team", "Vacuum-Cut", "Wide Slash", "Spin Slash", "Rage"]
   },
   {
     "id": "77",
@@ -3290,7 +4032,51 @@
 	  [50, "Fire Blast"],
 	  [55, "Flare Blitz"]
     ],
-    "tm_moves": [],
+    "tm_moves": ["Strength", "Skull Bash", "Swift", "Fire Blast", "Reflect", "Solar Beam", "Take Down", "Double-Edge", "Body Slam", "Guillotine", "Toxic", "Mimic", "Bide", "Rest", "Double Team", "Vacuum-Cut", "Wide Slash", "Spin Slash", "Rage"],
+    "evolutions": [
+      {
+        "to": "Rapidash",
+        "min_level": 40
+      }
+    ]
+  },
+  {
+    "id": "077G",
+    "name": "Ponyta-G",
+    "base_stats": {
+      "HP": 50,
+      "Attack": 85,
+      "Defense": 55,
+      "Special_Attack": 65,
+      "Special_Defense": 65,
+      "Speed": 90
+    },
+    "types": ["Psychic"],
+    "ev_yield": {
+	  "Speed": 1
+    },
+    "exp_yield": 82,
+    "gender_ratio": 0.5,
+	"recruit_rate": 190,
+    "experience_group": "Medium Fast",
+	"weight": 24.0,
+    "description": "This Pokémon will look into your eyes and read the contents of your heart. If it finds evil there, it promptly hides away.",
+    "level_up_moves": [
+      [1, "Tackle"],
+      [1, "Growl"],
+      [5, "Tail Whip"],
+      [10, "Confusion"],
+	  [15, "Fairy Wind"],
+	  [20, "Agility"],
+	  [25, "Psybeam"],
+	  [30, "Stomp"],
+	  [35, "Heal Pulse"],
+	  [41, "Take Down"],
+	  [45, "Dazzling Gleam"],
+	  [50, "Psychic"],
+	  [55, "Healing Wish"]
+    ],
+    "tm_moves": ["Swift", "Psychic", "Body Slam", "Guillotine", "Toxic", "Mimic", "Bide", "Rest", "Double Team", "Vacuum-Cut", "Wide Slash", "Spin Slash", "Rage"],
     "evolutions": [
       {
         "to": "Rapidash",
@@ -3338,7 +4124,48 @@
 	  [56, "Fire Blast"],
 	  [63, "Flare Blitz"]
     ],
-    "tm_moves": []
+    "tm_moves": ["Strength", "Skull Bash", "Swift", "Fire Blast", "Reflect", "Solar Beam", "Pay Day", "Hyper Beam", "Take Down", "Double-Edge", "Body Slam", "Guillotine", "Swords Dance", "Toxic", "Mimic", "Bide", "Rest", "Double Team", "Vacuum-Cut", "Wide Slash", "Spin Slash", "Rage"]
+  },
+  {
+    "id": "078G",
+    "name": "Rapidash-G",
+    "base_stats": {
+      "HP": 65,
+      "Attack": 100,
+      "Defense": 70,
+      "Special_Attack": 80,
+      "Special_Defense": 80,
+      "Speed": 105
+    },
+    "types": ["Psychic", "Fairy"],
+    "ev_yield": {
+	  "Speed": 2
+    },
+    "exp_yield": 175,
+    "gender_ratio": 0.5,
+	"recruit_rate": 60,
+    "experience_group": "Medium Fast",
+	"weight": 80.0,
+    "description": "Brave and prideful, this Pokémon dashes airily through forests, its steps aided by the psychic power stored in the fur on its fetlocks.",
+    "level_up_moves": [
+      [0, "Psycho Cut"],
+	  [0, "Megahorn"],
+	  [0, "Quick Attack"],
+	  [1, "Tackle"],
+      [1, "Growl"],
+      [1, "Tail Whip"],
+      [1, "Confusion"],
+	  [15, "Fairy Wind"],
+	  [20, "Agility"],
+	  [25, "Psybeam"],
+	  [30, "Stomp"],
+	  [35, "Heal Pulse"],
+	  [43, "Take Down"],
+	  [49, "Dazzling Gleam"],
+	  [56, "Psychic"],
+	  [63, "Healing Wish"]
+    ],
+    "tm_moves": ["Swift", "Psychic", "Pay Day", "Hyper Beam", "Body Slam", "Guillotine", "Swords Dance", "Toxic", "Mimic", "Bide", "Rest", "Double Team", "Vacuum-Cut", "Wide Slash", "Spin Slash", "Rage"]
   },
   {
     "id": "79",
@@ -3380,11 +4207,59 @@
 	  [42, "Rain Dance"],
 	  [45, "Heal Pulse"]
     ],
-    "tm_moves": [],
+    "tm_moves": ["Flash", "Strength", "Surf", "Tri Attack", "Psywave", "Thunder Wave", "Dream Eater", "Skull Bash", "Swift", "Fire Blast", "Reflect", "Teleport", "Psychic", "Dig", "Fissure", "Earthquake", "Pay Day", "Bubble Beam", "Water Gun", "Ice Beam", "Blizzard", "Take Down", "Double-Edge", "Body Slam", "Toxic", "Mimic", "Bide", "Rest", "Double Team", "Vacuum-Cut", "Wide Slash", "Spin Slash", "Rage"],
     "evolutions": [
       {
         "to": "Slowbro",
         "min_level": 37
+      }
+    ]
+  },
+  {
+    "id": "079G",
+    "name": "Slowpoke-G",
+    "base_stats": {
+      "HP": 90,
+      "Attack": 65,
+      "Defense": 65,
+      "Special_Attack": 40,
+      "Special_Defense": 40,
+      "Speed": 15
+    },
+    "types": ["Psychic"],
+    "ev_yield": {
+	  "HP": 1
+    },
+    "exp_yield": 63,
+    "gender_ratio": 0.5,
+	"recruit_rate": 190,
+    "experience_group": "Medium Fast",
+	"weight": 36.0,
+    "description": "It gives off a stimulating scent because of chemicals that have seeped into its body from the spice that it eats as its staple food.",
+    "level_up_moves": [
+      [1, "Tackle"],
+      [1, "Curse"],
+      [3, "Growl"],
+      [6, "Acid"],
+	  [9, "Yawn"],
+	  [12, "Confusion"],
+	  [15, "Disable"],
+	  [18, "Water Pulse"],
+	  [21, "Headbutt"],
+	  [24, "Zen Headbutt"],
+	  [27, "Amnesia"],
+	  [30, "Surf"],
+	  [33, "Recover"],
+	  [36, "Psychic"],
+	  [39, "Psych Up"],
+	  [42, "Rain Dance"],
+	  [45, "Heal Pulse"]
+    ],
+    "tm_moves": ["Surf", "Rock Slide", "Thunder Wave", "Dream Eater", "Swift", "Fire Blast", "Psychic", "Dig", "Earthquake", "Pay Day", "Blizzard", "Ice Beam", "Body Slam", "Toxic", "Mimic", "Bide", "Rest", "Double Team", "Vacuum-Cut", "Wide Slash", "Spin Slash", "Rage"],
+    "evolutions": [
+      {
+        "to": "Slowbro-G",
+        "item": "Unusual Cuff"
       }
     ]
   },
@@ -3430,7 +4305,51 @@
 	  [42, "Rain Dance"],
 	  [45, "Heal Pulse"]
     ],
-    "tm_moves": []
+    "tm_moves": ["Rock Slide", "Flash", "Strength", "Surf", "Tri Attack", "Psywave", "Thunder Wave", "Dream Eater", "Skull Bash", "Swift", "Fire Blast", "Metronome", "Reflect", "Teleport", "Psychic", "Dig", "Fissure", "Earthquake", "Counter", "Seismic Toss","Submission", "Pay Day", "Hyper Beam", "Bubble Beam", "Water Gun", "Ice Beam", "Blizzard", "Take Down", "Double-Edge", "Body Slam", "Mega Punch", "Mega Kick", "Toxic", "Mimic", "Bide", "Rest", "Double Team", "Vacuum-Cut", "Wide Slash", "Spin Slash", "Rage"]
+  },
+  {
+    "id": "080G",
+    "name": "Slowbro-G",
+    "base_stats": {
+      "HP": 95,
+      "Attack": 100,
+      "Defense": 95,
+      "Special_Attack": 100,
+      "Special_Defense": 70,
+      "Speed": 30
+    },
+    "types": ["Poison", "Psychic"],
+    "ev_yield": {
+	  "Attack": 2
+    },
+    "exp_yield": 172,
+    "gender_ratio": 0.5,
+	"recruit_rate": 75,
+    "experience_group": "Medium Fast",
+	"weight": 70.5,
+    "description": "A Shellder bite set off a chemical reaction with the spices inside Slowbro's body, causing Slowbro to become a Poison-type Pokémon.",
+    "level_up_moves": [
+      [0, "Shell Side Arm"],
+	  [0, "Withdraw"],
+      [1, "Tackle"],
+      [1, "Curse"],
+      [3, "Growl"],
+      [6, "Acid"],
+	  [9, "Yawn"],
+	  [12, "Confusion"],
+	  [15, "Disable"],
+	  [18, "Water Pulse"],
+	  [21, "Headbutt"],
+	  [24, "Zen Headbutt"],
+	  [27, "Amnesia"],
+	  [30, "Surf"],
+	  [33, "Recover"],
+	  [36, "Psychic"],
+	  [39, "Psych Up"],
+	  [42, "Rain Dance"],
+	  [45, "Heal Pulse"]
+    ],
+    "tm_moves": ["Surf", "Thunder Wave", "Dream Eater", "Swift", "Fire Blast", "Metronome", "Psychic", "Dig", "Earthquake", "Pay Day", "Hyper Beam", "Blizzard", "Ice Beam", "Double-Edge", "Take Down", "Body Slam", "Mega Kick", "Toxic", "Mimic", "Bide", "Rest", "Double Team", "Vacuum-Cut", "Wide Slash", "Spin Slash", "Rage"]
   },
   {
     "id": "81",
@@ -3470,7 +4389,7 @@
 	  [48, "Lock On"],
 	  [52, "Zap Cannon"]
     ],
-    "tm_moves": [],
+    "tm_moves": ["Flash", "Explosion", "Thunder Wave", "Swift", "Reflect", "Teleport", "Thunderbolt", "Thunder", "Take Down", "Double-Edge", "Toxic", "Mimic", "Bide", "Rest", "Double Team", "Vacuum-Cut", "Wide Slash", "Spin Slash", "Rage"],
     "evolutions": [
       {
         "to": "Magneton",
@@ -3518,7 +4437,7 @@
 	  [48, "Lock-On"],
 	  [52, "Zap Cannon"]
     ],
-    "tm_moves": []
+    "tm_moves": ["Flash", "Tri Attack", "Explosion", "Thunder Wave", "Swift", "Reflect", "Teleport", "Thunderbolt", "Thunder", "Hyper Beam", "Take Down", "Double-Edge", "Toxic", "Mimic", "Bide", "Rest", "Double Team", "Vacuum-Cut", "Wide Slash", "Spin Slash", "Rage"]
   },
   {
     "id": "83",
@@ -3558,7 +4477,47 @@
 	  [60, "Agility"],
 	  [65, "Brave Bird"]
     ],
-    "tm_moves": []
+    "tm_moves": ["Fly", "Cut", "Sky Attack", "Skull Bash", "Swift", "Reflect", "Take Down", "Double-Edge", "Body Slam", "Razor Wind", "Swords Dance", "Whirlwind", "Toxic", "Mimic", "Bide", "Rest", "Double Team", "Vacuum-Cut", "Wide Slash", "Spin Slash", "Rage"]
+  },
+  {
+    "id": "083G",
+    "name": "Farfetch'd-G",
+    "base_stats": {
+      "HP": 52,
+      "Attack": 95,
+      "Defense": 55,
+      "Special_Attack": 58,
+      "Special_Defense": 62,
+      "Speed": 55
+    },
+    "types": ["Fighting"],
+    "ev_yield": {
+	  "Attack": 1
+    },
+    "exp_yield": 132,
+    "gender_ratio": 0.5,
+	"recruit_rate": 45,
+    "experience_group": "Medium Fast",
+	"weight": 42.0,
+    "description": "Wielding a thick, heavy leek has strengthened its body. In battle, it bets everything on a single destructive blow.",
+    "level_up_moves": [
+      [1, "Peck"],
+      [1, "Sand Attack"],
+      [5, "Leer"],
+      [10, "Fury Cutter"],
+	  [15, "Rock Smash"],
+	  [20, "Brutal Swing"],
+	  [25, "Protect"],
+	  [30, "Knock Off"],
+	  [35, "Defog"],
+	  [40, "Brick Break"],
+	  [45, "Swords Dance"],
+	  [50, "Slam"],
+	  [55, "Leaf Blade"],
+	  [60, "Final Gambit"],
+	  [65, "Brave Bird"]
+    ],
+    "tm_moves": ["Fly", "Sky Attack", "Swift", "Counter", "Double-Edge", "Body Slam", "Swords Dance", "Razor Wind", "Toxic", "Mimic", "Bide", "Rest", "Double Team", "Vacuum-Cut", "Wide Slash", "Spin Slash", "Rage"]
   },
   {
     "id": "84",
@@ -3596,7 +4555,7 @@
 	  [39, "Endeavor"],
 	  [43, "Thrash"]
     ],
-    "tm_moves": [],
+    "tm_moves": ["Fly", "Tri Attack", "Sky Attack", "Skull Bash", "Swift", "Reflect", "Take Down", "Double-Edge", "Body Slam", "Swords Dance", "Whirlwind", "Toxic", "Mimic", "Bide", "Rest", "Double Team", "Vacuum-Cut", "Wide Slash", "Spin Slash", "Rage"],
     "evolutions": [
       {
         "to": "Dodrio",
@@ -3641,7 +4600,7 @@
 	  [43, "Endeavor"],
 	  [50, "Thrash"]
     ],
-    "tm_moves": []
+    "tm_moves": ["Fly", "Tri Attack", "Sky Attack", "Skull Bash", "Swift", "Reflect", "Hyper Beam", "Take Down", "Double-Edge", "Body Slam", "Swords Dance", "Whirlwind", "Toxic", "Mimic", "Bide", "Rest", "Double Team", "Vacuum-Cut", "Wide Slash", "Spin Slash", "Rage"]
   },
   {
     "id": "86",
@@ -3683,7 +4642,7 @@
 	  [51, "Safeguard"],
 	  [53, "Snowscape"]
     ],
-    "tm_moves": [],
+    "tm_moves": ["Strength", "Surf", "Skull Bash", "Swift", "Pay Day", "Bubble Beam", "Water Gun", "Ice Beam", "Blizzard", "Take Down", "Double-Edge", "Body Slam", "Guillotine", "Toxic", "Mimic", "Bide", "Rest", "Double Team", "Vacuum-Cut", "Wide Slash", "Spin Slash", "Rage"],
     "evolutions": [
       {
         "to": "Dewgong",
@@ -3731,7 +4690,7 @@
 	  [51, "Safeguard"],
 	  [53, "Snowscape"]
     ],
-    "tm_moves": []
+    "tm_moves": ["Strength", "Surf", "Skull Bash", "Pay Day", "Hyper Beam", "Bubble Beam", "Water Gun", "Ice Beam", "Blizzard", "Take Down", "Double-Edge", "Body Slam", "Guillotine", "Toxic", "Mimic", "Bide", "Rest", "Double Team", "Vacuum-Cut", "Wide Slash", "Spin Slash", "Rage"]
   },
   {
     "id": "88",
@@ -3772,10 +4731,57 @@
 	  [46, "Belch"],
 	  [48, "Memento"]
     ],
-    "tm_moves": [],
+    "tm_moves": ["Strength", "Rock Slide", "Explosion", "Swift", "Fire Blast", "Self-Destruct", "Metronome", "Dig", "Thunderbolt", "Thunder", "Mega Drain", "Take Down", "Double-Edge", "Body Slam", "Toxic", "Mimic", "Bide", "Rest", "Double Team", "Vacuum-Cut", "Wide Slash", "Spin Slash", "Rage"],
     "evolutions": [
       {
         "to": "Muk",
+        "min_level": 38
+      }
+    ]
+  },
+  {
+    "id": "088A",
+    "name": "Grimer-A",
+    "base_stats": {
+      "HP": 80,
+      "Attack": 80,
+      "Defense": 50,
+      "Special_Attack": 40,
+      "Special_Defense": 50,
+      "Speed": 25
+    },
+    "types": ["Poison", "Dark"],
+    "ev_yield": {
+	  "HP": 1
+    },
+    "exp_yield": 65,
+    "gender_ratio": 0.5,
+	"recruit_rate": 190,
+    "experience_group": "Medium Fast",
+	"weight": 42.0,
+    "description": "It has a passion for trash above all else, speedily digesting it and creating brilliant crystals of sparkling poison.",
+    "level_up_moves": [
+      [1, "Tackle"],
+      [1, "Harden"],
+      [4, "Poison Gas"],
+      [7, "Bite"],
+	  [12, "Disable"],
+	  [15, "Acid Spray"],
+	  [18, "Poison Fang"],
+	  [21, "Minimize"],
+	  [26, "Toxic"],
+	  [29, "Knock Off"],
+	  [32, "Crunch"],
+	  [37, "Screech"],
+	  [40, "Gunk Shot"],
+	  [43, "Acid Armor"],
+	  [46, "Belch"],
+	  [48, "Memento"]
+    ],
+    "tm_moves": ["Rock Slide", "Explosion", "Swift", "Fire Blast", "Self-Destruct", "Metronome", "Dig", "Thunder", "Thunderbolt", "Mega Drain", "Hyper Beam", "Take Down", "Body Slam", "Toxic", "Mimic", "Bide", "Rest", "Double Team", "Vacuum-Cut", "Wide Slash", "Spin Slash", "Rage"],
+    "evolutions": [
+      {
+        "to": "Muk-A",
         "min_level": 38
       }
     ]
@@ -3820,7 +4826,49 @@
 	  [52, "Belch"],
 	  [57, "Memento"]
     ],
-    "tm_moves": []
+    "tm_moves": ["Mega Drain", "Strength", "Rock Slide", "Explosion", "Swift", "Fire Blast", "Self-Destruct", "Metronome", "Dig", "Thunderbolt", "Thunder", "Mega Drain", "Hyper Beam", "Take Down", "Double-Edge", "Body Slam", "Toxic", "Mimic", "Bide", "Rest", "Double Team", "Vacuum-Cut", "Wide Slash", "Spin Slash", "Rage"]
+  },
+  {
+    "id": "089A",
+    "name": "Muk-A",
+    "base_stats": {
+      "HP": 105,
+      "Attack": 105,
+      "Defense": 75,
+      "Special_Attack": 65,
+      "Special_Defense": 100,
+      "Speed": 50
+    },
+    "types": ["Poison", "Dark"],
+    "ev_yield": {
+	  "HP": 1,
+	  "Attack": 1
+    },
+    "exp_yield": 175,
+    "gender_ratio": 0.5,
+	"recruit_rate": 75,
+    "experience_group": "Medium Fast",
+	"weight": 30.0,
+    "description": "There are over a hundred kinds of poison inside its body. Chemical reactions between different poisons are the source of its vitality.",
+    "level_up_moves": [
+      [1, "Tackle"],
+      [1, "Harden"],
+      [1, "Poison Gas"],
+      [1, "Bite"],
+	  [12, "Disable"],
+	  [15, "Acid Spray"],
+	  [18, "Poison Fang"],
+	  [21, "Minimize"],
+	  [26, "Toxic"],
+	  [29, "Knock Off"],
+	  [32, "Crunch"],
+	  [37, "Screech"],
+	  [40, "Gunk Shot"],
+	  [46, "Acid Armor"],
+	  [52, "Belch"],
+	  [57, "Memento"]
+    ],
+    "tm_moves": ["Rock Slide", "Explosion", "Swift", "Fire Blast", "Self-Destruct", "Dig", "Thunder", "Thunderbolt", "Hyper Beam", "Take Down", "Body Slam", "Toxic", "Mimic", "Bide", "Rest", "Double Team", "Vacuum-Cut", "Wide Slash", "Spin Slash", "Rage"]
   },
   {
     "id": "90",
@@ -3859,7 +4907,7 @@
 	  [44, "Shell Smash"],
 	  [48, "Hydro Pump"]
     ],
-    "tm_moves": [],
+    "tm_moves": ["Surf", "Tri Attack", "Explosion", "Swift", "Self-Destruct", "Reflect", "Teleport", "Bubble Beam", "Water Gun", "Ice Beam", "Blizzard", "Take Down", "Double-Edge", "Toxic", "Mimic", "Bide", "Rest", "Double Team", "Vacuum-Cut", "Wide Slash", "Spin Slash", "Rage"],
     "evolutions": [
       {
         "to": "Cloyster",
@@ -3906,7 +4954,7 @@
 	  [44, "Shell Smash"],
 	  [48, "Hydro Pump"]
     ],
-    "tm_moves": []
+    "tm_moves": ["Surf", "Tri Attack", "Explosion", "Swift", "Self-Destruct", "Reflect", "Teleport", "Hyper Beam", "Bubble Beam", "Water Gun", "Ice Beam", "Blizzard", "Take Down", "Double-Edge", "Body Slam", "Toxic", "Mimic", "Bide", "Rest", "Double Team", "Vacuum-Cut", "Wide Slash", "Spin Slash", "Rage"]
   },
   {
     "id": "92",
@@ -3945,7 +4993,7 @@
 	  [44, "Destiny Bond"],
 	  [48, "Dream Eater"]
     ],
-    "tm_moves": [],
+    "tm_moves": ["Explosion", "Psywave", "Dream Eater", "Self-Destruct", "Psychic", "Thunderbolt", "Thunder", "Mega Drain", "Toxic", "Mimic", "Bide", "Rest", "Double Team", "Vacuum-Cut", "Wide Slash", "Spin Slash", "Rage"],
     "evolutions": [
       {
         "to": "Haunter",
@@ -3991,7 +5039,7 @@
 	  [54, "Destiny Bond"],
 	  [60, "Dream Eater"]
     ],
-    "tm_moves": [],
+    "tm_moves": ["Explosion", "Psywave", "Dream Eater", "Self-Destruct", "Metronome", "Psychic", "Thunderbolt", "Thunder", "Mega Drain", "Toxic", "Mimic", "Bide", "Rest", "Double Team", "Vacuum-Cut", "Wide Slash", "Spin Slash", "Rage"],
     "evolutions": [
       {
         "to": "Gengar",
@@ -4039,7 +5087,7 @@
 	  [54, "Destiny Bond"],
 	  [60, "Dream Eater"]
     ],
-    "tm_moves": []
+    "tm_moves": ["Strength", "Explosion", "Psywave", "Thunder Wave", "Dream Eater", "Skull Bash", "Self-Destruct", "Metronome", "Psychic", "Thunderbolt", "Thunder", "Mega Drain", "Counter", "Seismic Toss","Submission", "Hyper Beam", "Take Down", "Double-Edge", "Body Slam", "Mega Punch", "Mega Kick", "Toxic", "Mimic", "Bide", "Rest", "Double Team", "Vacuum-Cut", "Wide Slash", "Spin Slash", "Rage"]
   },
   {
     "id": "95",
@@ -4081,7 +5129,7 @@
 	  [52, "Stone Edge"],
 	  [56, "Double-Edge"]
     ],
-    "tm_moves": []
+    "tm_moves": ["Strength", "Rock Slide", "Explosion", "Skull Bash", "Self-Destruct", "Dig", "Fissure", "Earthquake", "Take Down", "Double-Edge", "Body Slam", "Toxic", "Mimic", "Bide", "Rest", "Double Team", "Vacuum-Cut", "Wide Slash", "Spin Slash", "Rage"]
   },
   {
     "id": "96",
@@ -4120,7 +5168,7 @@
 	  [45, "Psyshock"],
 	  [49, "Future Sight"]
     ],
-    "tm_moves": [],
+    "tm_moves": ["Flash", "Tri Attack", "Psywave", "Thunder Wave", "Dream Eater", "Skull Bash", "Swift", "Metronome", "Reflect", "Teleport", "Psychic", "Counter", "Seismic Toss","Submission", "Take Down", "Double-Edge", "Body Slam", "Mega Punch", "Mega Kick", "Toxic", "Mimic", "Bide", "Rest", "Double Team", "Vacuum-Cut", "Wide Slash", "Spin Slash", "Rage"],
     "evolutions": [
       {
         "to": "Hypno",
@@ -4165,7 +5213,7 @@
 	  [51, "Psyshock"],
 	  [56, "Future Sight"]
     ],
-    "tm_moves": []
+    "tm_moves": ["Flash", "Tri Attack", "Psywave", "Thunder Wave", "Dream Eater", "Skull Bash", "Swift", "Metronome", "Reflect", "Teleport", "Psychic", "Counter", "Seismic Toss","Submission", "Hyper Beam", "Take Down", "Double-Edge", "Body Slam", "Mega Punch", "Mega Kick", "Toxic", "Mimic", "Bide", "Rest", "Double Team", "Vacuum-Cut", "Wide Slash", "Spin Slash", "Rage"]
   },
   {
     "id": "98",
@@ -4204,7 +5252,7 @@
 	  [44, "Crabhammer"],
 	  [48, "Guillotine"]
     ],
-    "tm_moves": [],
+    "tm_moves": ["Strength", "Surf", "Cut", "Rock Slide", "Skull Bash", "Dig", "Bubble Beam", "Water Gun", "Ice Beam", "Blizzard", "Take Down", "Double-Edge", "Body Slam", "Swords Dance", "Toxic", "Mimic", "Bide", "Rest", "Double Team", "Vacuum-Cut", "Wide Slash", "Spin Slash", "Rage"],
     "evolutions": [
       {
         "to": "Kingler",
@@ -4251,7 +5299,7 @@
 	  [54, "Crab Hammer"],
 	  [60, "Guillotine"]
     ],
-    "tm_moves": []
+    "tm_moves": ["Strength", "Surf", "Cut", "Rock Slide", "Dig", "Hyper Beam", "Bubble Beam", "Water Gun", "Ice Beam", "Blizzard", "Take Down", "Double-Edge", "Body Slam", "Swords Dance", "Toxic", "Mimic", "Bide", "Rest", "Double Team", "Vacuum-Cut", "Wide Slash", "Spin Slash", "Rage"]
   },
   {
     "id": "100",
@@ -4293,11 +5341,59 @@
 	  [46, "Gyro Ball"],
 	  [50, "Mirror Coat"]
     ],
-    "tm_moves": [],
+    "tm_moves": ["Flash", "Explosion", "Thunder Wave", "Swift", "Self-Destruct", "Reflect", "Teleport", "Thunderbolt", "Thunder", "Take Down", "Double-Edge", "Toxic", "Mimic", "Bide", "Rest", "Double Team", "Vacuum-Cut", "Wide Slash", "Spin Slash", "Rage"],
     "evolutions": [
       {
         "to": "Electrode",
         "min_level": 30
+      }
+    ]
+  },
+  {
+    "id": "100H",
+    "name": "Voltorb-H",
+    "base_stats": {
+      "HP": 40,
+      "Attack": 30,
+      "Defense": 50,
+      "Special_Attack": 55,
+      "Special_Defense": 55,
+      "Speed": 100
+    },
+    "types": ["Electric", "Grass"],
+    "ev_yield": {
+	  "Speed": 1
+    },
+    "exp_yield": 66,
+    "gender_ratio": null,
+	"recruit_rate": 190,
+    "experience_group": "Medium Fast",
+	"weight": 13.0,
+    "description": "An enigmatic Pokémon that happens to bear a resemblance to a Poké Ball. When excited, it discharges the electric current it has stored in its belly, then lets out a great, uproarious laugh.",
+    "level_up_moves": [
+      [1, "Charge"],
+      [1, "Tackle"],
+      [4, "Thunder Shock"],
+      [6, "Stun Spore"],
+	  [9, "Bullet Seed"],
+	  [11, "Rollout"],
+	  [13, "Screech"],
+	  [16, "Charge Beam"],
+	  [20, "Swift"],
+	  [22, "Electro Ball"],
+	  [26, "Self-Destruct"],
+	  [29, "Energy Ball"],
+	  [34, "Seed Bomb"],
+	  [37, "Discharge"],
+	  [41, "Explosion"],
+	  [46, "Gyro Ball"],
+	  [50, "Grassy Terrain"]
+    ],
+    "tm_moves": ["Thunder Wave", "Swift", "Reflect", "Thunder", "Thunderbolt", "Solar Beam", "Double-Edge", "Take Down", "Toxic", "Mimic", "Bide", "Rest", "Double Team", "Vacuum-Cut", "Wide Slash", "Spin Slash", "Rage"],
+    "evolutions": [
+      {
+        "to": "Electrode-H",
+        "item": "Leaf Stone"
       }
     ]
   },
@@ -4342,7 +5438,50 @@
 	  [54, "Gyro Ball"],
 	  [58, "Mirror Coat"]
     ],
-    "tm_moves": []
+    "tm_moves": ["Flash", "Explosion", "Thunder Wave", "Skull Bash", "Swift", "Self-Destruct", "Reflect", "Teleport", "Thunderbolt", "Thunder", "Hyper Beam", "Take Down", "Double-Edge", "Toxic", "Mimic", "Bide", "Rest", "Double Team", "Vacuum-Cut", "Wide Slash", "Spin Slash", "Rage"]
+  },
+  {
+    "id": "101H",
+    "name": "Electrode-H",
+    "base_stats": {
+      "HP": 60,
+      "Attack": 50,
+      "Defense": 70,
+      "Special_Attack": 80,
+      "Special_Defense": 80,
+      "Speed": 150
+    },
+    "types": ["Electric", "Grass"],
+    "ev_yield": {
+	  "Speed": 2
+    },
+    "exp_yield": 172,
+    "gender_ratio": null,
+	"recruit_rate": 60,
+    "experience_group": "Medium Fast",
+	"weight": 71.0,
+    "description": "The tissue on the surface of its body is curiously similar in composition to an Apricorn. When irritated, this Pokémon lets loose an electric current equal to 20 lightning bolts.",
+    "level_up_moves": [
+      [0, "Chloroblast"],
+	  [1, "Charge"],
+      [1, "Tackle"],
+      [4, "Thunder Shock"],
+      [6, "Stun Spore"],
+	  [9, "Bullet Seed"],
+	  [11, "Rollout"],
+	  [13, "Screech"],
+	  [16, "Charge Beam"],
+	  [20, "Swift"],
+	  [22, "Electro Ball"],
+	  [26, "Self-Destruct"],
+	  [29, "Energy Ball"],
+	  [34, "Seed Bomb"],
+	  [37, "Discharge"],
+	  [41, "Explosion"],
+	  [46, "Gyro Ball"],
+	  [50, "Grassy Terrain"]
+    ],
+    "tm_moves": ["Thunder Wave", "Swift", "Reflect", "Thunder", "Thunderbolt", "Solar Beam", "Hyper Beam", "Double-Edge", "Take Down", "Flash", "Explosion", "Thunder Wave", "Skull Bash", "Swift", "Self-Destruct", "Reflect", "Teleport", "Thunderbolt", "Thunder", "Hyper Beam", "Take Down", "Double-Edge", "Toxic", "Mimic", "Bide", "Rest", "Double Team", "Vacuum-Cut", "Wide Slash", "Spin Slash", "Rage"]
   },
   {
     "id": "102",
@@ -4380,12 +5519,10 @@
 	  [50, "Worry Seed"],
 	  [55, "Solar Beam"]
     ],
-    "tm_moves": [],
+    "tm_moves": ["Flash", "Strength", "Explosion", "Psywave", "Dream Eater", "Egg Bomb", "Self-Destruct", "Reflect", "Teleport", "Psychic", "Solar Beam", "Mega Drain", "Take Down", "Double-Edge", "Swords Dance", "Toxic", "Mimic", "Bide", "Rest", "Double Team", "Vacuum-Cut", "Wide Slash", "Spin Slash", "Rage"],
     "evolutions": [
-      {
-        "to": "Exeggutor",
-        "item": "Leaf Stone"
-      }
+      { "to": "Exeggutor", "item": "Leaf Stone" },
+      { "to": "Exeggutor-A", "item": "Leaf Stone" }
     ]
   },
   {
@@ -4430,7 +5567,51 @@
 	  [50, "Worry Seed"],
 	  [55, "Solar Beam"]
     ],
-    "tm_moves": []
+    "tm_moves": ["Flash", "Strength", "Explosion", "Psywave", "Dream Eater", "Egg Bomb", "Self-Destruct", "Reflect", "Teleport", "Psychic", "Earthquake", "Solar Beam", "Mega Drain", "Hyper Beam", "Take Down", "Double-Edge", "Body Slam", "Swords Dance", "Toxic", "Mimic", "Bide", "Rest", "Double Team", "Vacuum-Cut", "Wide Slash", "Spin Slash", "Rage"]
+  },
+  {
+    "id": "103A",
+    "name": "Exeggutor-A",
+    "base_stats": {
+      "HP": 95,
+      "Attack": 105,
+      "Defense": 85,
+      "Special_Attack": 125,
+      "Special_Defense": 75,
+      "Speed": 45
+    },
+    "types": ["Grass", "Dragon"],
+    "ev_yield": {
+	  "Special_Attack": 2
+    },
+    "exp_yield": 186,
+    "gender_ratio": 0.5,
+	"recruit_rate": 45,
+    "experience_group": "Slow",
+	"weight": 415.6,
+    "description": "It swings its long neck like a whip and smacks its head into opponents. This makes Exeggutor itself a little dizzy too.",
+    "level_up_moves": [
+      [0, "Dragon Hammer"],
+	  [0, "Growth"],
+	  [0, "Leaf Storm"],
+	  [0, "Seed Bomb"],
+	  [0, "Psyshock"],
+	  [0, "Wood Hammer"],
+	  [1, "Absorb"],
+      [1, "Hypnosis"],
+      [5, "Reflect"],
+      [10, "Leech Seed"],
+	  [15, "Mega Drain"],
+	  [20, "Confusion"],
+	  [25, "Synthesis"],
+	  [30, "Bullet Seed"],
+	  [35, "Giga Drain"],
+	  [40, "Extrasensory"],
+	  [45, "Uproar"],
+	  [50, "Worry Seed"],
+	  [55, "Solar Beam"]
+    ],
+    "tm_moves": ["Explosion", "Dream Eater", "Self-Destruct", "Reflect", "Teleport", "Psychic", "Earthquake", "Solar Beam", "Mega Drain", "Hyper Beam", "Double-Edge", "Take Down", "Body Slam", "Toxic", "Mimic", "Bide", "Rest", "Double Team", "Vacuum-Cut", "Wide Slash", "Spin Slash", "Rage"]
   },
   {
     "id": "104",
@@ -4468,12 +5649,10 @@
 	  [44, "Thrash"],
 	  [48, "Double-Edge"]
     ],
-    "tm_moves": [],
+    "tm_moves": ["Strength", "Rock Slide", "Skull Bash", "Swift", "Fire Blast", "Dig", "Fissure", "Earthquake", "Mega Drain", "Counter", "Seismic Toss","Submission", "Bubble Beam", "Water Gun", "Ice Beam", "Blizzard", "Take Down", "Double-Edge", "Body Slam", "Mega Punch", "Swords Dance", "Mega Kick", "Toxic", "Mimic", "Bide", "Rest", "Double Team", "Vacuum-Cut", "Wide Slash", "Spin Slash", "Rage"],
     "evolutions": [
-      {
-        "to": "Marowak",
-        "min_level": 28
-      }
+      { "to": "Marowak", "level": 28 },
+      { "to": "Marowak-A", "level": 28 }
     ]
   },
   {
@@ -4512,7 +5691,48 @@
 	  [54, "Thrash"],
 	  [60, "Double-Edge"]
     ],
-    "tm_moves": []
+    "tm_moves": ["Strength", "Rock Slide", "Skull Bash", "Swift", "Fire Blast", "Dig", "Fissure", "Earthquake", "Thunderbolt", "Thunder", "Counter", "Seismic Toss","Submission", "Hyper Beam", "Bubble Beam", "Water Gun", "Ice Beam", "Blizzard", "Take Down", "Double-Edge", "Body Slam", "Mega Punch", "Swords Dance", "Mega Kick", "Toxic", "Mimic", "Bide", "Rest", "Double Team", "Vacuum-Cut", "Wide Slash", "Spin Slash", "Rage"]
+  },
+  {
+    "id": "105A",
+    "name": "Marowak-A",
+    "base_stats": {
+      "HP": 60,
+      "Attack": 80,
+      "Defense": 110,
+      "Special_Attack": 50,
+      "Special_Defense": 80,
+      "Speed": 45
+    },
+    "types": ["Fire", "Ghost"],
+    "ev_yield": {
+	  "Defense": 2
+    },
+    "exp_yield": 149,
+    "gender_ratio": 0.5,
+	"recruit_rate": 75,
+    "experience_group": "Medium Fast",
+	"weight": 34.0,
+    "description": "The cursed flames that light up the bone carried by this Pokémon are said to cause both mental and physical pain that will never fade. ",
+    "level_up_moves": [
+      [0, "Shadow Bone"],
+	  [1, "Mud Slap"],
+      [1, "Growl"],
+      [1, "Tail Whip"],
+      [1, "False Swipe"],
+	  [8, "Headbutt"],
+	  [12, "Flame Wheel"],
+	  [16, "Retaliate"],
+	  [20, "Hex"],
+	  [24, "Stomping Tantrum"],
+	  [31, "Bone Rush"],
+	  [36, "Will-O-Wisp"],
+	  [42, "Endeavor"],
+	  [48, "Bonemerang"],
+	  [54, "Thrash"],
+	  [60, "Flare Blitz"]
+    ],
+    "tm_moves": ["Rock Slide", "Dream Eater", "Swift", "Fire Blast", "Dig", "Fissure", "Earthquake", "Thunder", "Seismic Toss", "Hyper Beam", "Blizzard", "Ice Beam", "Double-Edge", "Body Slam", "Mega Kick", "Swords Dance", "Mega Punch", "Toxic", "Mimic", "Bide", "Rest", "Double Team", "Vacuum-Cut", "Wide Slash", "Spin Slash", "Rage"]
   },
   {
     "id": "106",
@@ -4555,7 +5775,7 @@
 	  [44, "High Jump Kick"],
 	  [50, "Axe Kick"]
     ],
-    "tm_moves": []
+    "tm_moves": ["Strength", "Rock Slide", "Skull Bash", "Swift", "Metronome", "Earthquake", "Counter", "Seismic Toss","Submission", "Take Down", "Double-Edge", "Body Slam", "Mega Punch", "Swords Dance", "Mega Kick", "Toxic", "Mimic", "Bide", "Rest", "Double Team", "Vacuum-Cut", "Wide Slash", "Spin Slash", "Rage"]
   },
   {
     "id": "107",
@@ -4599,7 +5819,7 @@
 	  [40, "Counter"],
 	  [44, "Focus Punch"]
     ],
-    "tm_moves": []
+    "tm_moves": ["Strength", "Rock Slide", "Skull Bash", "Swift", "Metronome", "Earthquake", "Counter", "Seismic Toss","Submission", "Take Down", "Double-Edge", "Body Slam", "Mega Punch", "Swords Dance", "Mega Kick", "Toxic", "Mimic", "Bide", "Rest", "Double Team", "Vacuum-Cut", "Wide Slash", "Spin Slash", "Rage"]
   },
   {
     "id": "108",
@@ -4636,7 +5856,7 @@
 	  [54, "Power Whip"],
 	  [60, "Belly Drum"]
     ],
-    "tm_moves": []
+    "tm_moves": ["Strength", "Surf", "Cut", "Rock Slide", "Dream Eater", "Skull Bash", "Fire Blast", "Dig", "Fissure", "Earthquake", "Thunderbolt", "Thunder", "Solar Beam", "Counter", "Seismic Toss","Submission", "Hyper Beam", "Bubble Beam", "Water Gun", "Ice Beam", "Blizzard", "Take Down", "Double-Edge", "Body Slam", "Mega Punch", "Swords Dance", "Mega Kick", "Toxic", "Mimic", "Bide", "Rest", "Double Team", "Vacuum-Cut", "Wide Slash", "Spin Slash", "Rage"]
   },
   {
     "id": "109",
@@ -4676,12 +5896,10 @@
 	  [48, "Memento"],
 	  [52, "Destiny Bond"]
     ],
-    "tm_moves": [],
+    "tm_moves": ["Flash", "Explosion", "Fire Blast", "Self-Destruct", "Thunderbolt", "Thunder", "Take Down", "Double-Edge", "Body Slam", "Toxic", "Mimic", "Bide", "Rest", "Double Team", "Vacuum-Cut", "Wide Slash", "Spin Slash", "Rage"],
     "evolutions": [
-      {
-        "to": "Weezing",
-        "min_level": 35
-      }
+      { "to": "Weezing", "level": 35 },
+      { "to": "Weezing-G", "level": 35 }
     ]
   },
   {
@@ -4724,7 +5942,53 @@
 	  [56, "Memento"],
 	  [62, "Destiny Bond"]
     ],
-    "tm_moves": []
+    "tm_moves": ["Flash", "Explosion", "Fire Blast", "Self-Destruct", "Thunderbolt", "Thunder", "Hyper Beam", "Take Down", "Double-Edge", "Body Slam", "Toxic", "Mimic", "Bide", "Rest", "Double Team", "Vacuum-Cut", "Wide Slash", "Spin Slash", "Rage"]
+  },
+  {
+    "id": "110G",
+    "name": "Weezing-G",
+    "base_stats": {
+      "HP": 65,
+      "Attack": 90,
+      "Defense": 120,
+      "Special_Attack": 85,
+      "Special_Defense": 70,
+      "Speed": 60
+    },
+    "types": ["Poison", "Fairy"],
+    "ev_yield": {
+	  "Defense": 2
+    },
+    "exp_yield": 172,
+    "gender_ratio": 0.5,
+	"recruit_rate": 60,
+    "experience_group": "Medium Fast",
+	"weight": 16.0,
+    "description": "This Pokémon consumes particles that contaminate the air. Instead of leaving droppings, it expels clean air.",
+    "level_up_moves": [
+      [0, "Double Hit"],
+	  [0, "Strange Steam"],
+	  [0, "Defog"],
+	  [0, "Heat Wave"],
+	  [0, "Aromatic Mist"],
+	  [1, "Tackle"],
+      [1, "Smokescreen"],
+      [4, "Smog"],
+      [8, "Poison Gas"],
+	  [12, "Clear Smog"],
+	  [16, "Assurance"],
+	  [20, "Sludge"],
+	  [24, "Fairy Wind"],
+	  [28, "Self-Destruct"],
+	  [32, "Sludge Bomb"],
+	  [38, "Toxic"],
+	  [44, "Belch"],
+	  [50, "Explosion"],
+	  [56, "Memento"],
+	  [62, "Destiny Bond"],
+	  [68, "Misty Terrain"]
+    ],
+    "tm_moves": ["Fire Blast", "Self-Destruct", "Thunder", "Thunderbolt", "Hyper Beam", "Double-Edge", "Take Down", "Body Slam", "Toxic", "Mimic", "Bide", "Rest", "Double Team", "Vacuum-Cut", "Wide Slash", "Spin Slash", "Rage"]
   },
   {
     "id": "111",
@@ -4763,7 +6027,7 @@
 	  [55, "Megahorn"],
 	  [60, "Guillotine"]
     ],
-    "tm_moves": [],
+    "tm_moves": ["Strength", "Rock Slide", "Skull Bash", "Fire Blast", "Dig", "Fissure", "Earthquake", "Thunderbolt", "Thunder", "Counter","Hyper Beam", "Take Down", "Double-Edge", "Body Slam", "Guillotine", "Swords Dance", "Toxic", "Mimic", "Bide", "Rest", "Double Team", "Vacuum-Cut", "Wide Slash", "Spin Slash", "Rage"],
     "evolutions": [
       {
         "to": "Rhydon",
@@ -4809,7 +6073,7 @@
 	  [61, "Megahorn"],
 	  [68, "Guillotine"]
     ],
-    "tm_moves": []
+    "tm_moves": ["Strength", "Surf", "Cut", "Rock Slide", "Skull Bash", "Fire Blast", "Dig", "Fissure", "Earthquake", "Thunderbolt", "Thunder", "Counter", "Seismic Toss","Submission", "Pay Day", "Hyper Beam", "Bubble Beam", "Water Gun", "Ice Beam", "Blizzard", "Take Down", "Double-Edge", "Body Slam", "Guillotine", "Mega Punch", "Swords Dance", "Mega Kick", "Toxic", "Mimic", "Bide", "Rest", "Double Team", "Vacuum-Cut", "Wide Slash", "Spin Slash", "Rage"]
   },
   {
     "id": "113",
@@ -4854,7 +6118,7 @@
 	  [48, "Last Resort"],
 	  [52, "Healing Wish"]
     ],
-    "tm_moves": []
+    "tm_moves": ["Flash", "Strength", "Tri Attack", "Rock Slide", "Psywave", "Thunder Wave", "Dream Eater", "Recover", "Skull Bash", "Swift", "Fire Blast", "Egg Bomb", "Metronome", "Reflect", "Teleport", "Psychic", "Earthquake", "Thunderbolt", "Thunder", "Solar Beam", "Counter", "Seismic Toss","Submission", "Hyper Beam", "Bubble Beam", "Water Gun", "Ice Beam", "Blizzard", "Take Down", "Double-Edge", "Body Slam", "Mega Punch", "Mega Kick", "Toxic", "Mimic", "Bide", "Rest", "Double Team", "Vacuum-Cut", "Wide Slash", "Spin Slash", "Rage"]
   },
   {
     "id": "114",
@@ -4895,7 +6159,7 @@
 	  [52, "Ingrain"],
 	  [56, "Grassy Terrain"]
     ],
-    "tm_moves": []
+    "tm_moves": ["Flash", "Cut", "Skull Bash", "Reflect", "Solar Beam", "Hyper Beam", "Take Down", "Double-Edge", "Body Slam", "Swords Dance", "Toxic", "Mimic", "Bide", "Rest", "Double Team", "Vacuum-Cut", "Wide Slash", "Spin Slash", "Rage"]
   },
   {
     "id": "115",
@@ -4935,7 +6199,7 @@
 	  [48, "Outrage"],
 	  [52, "Last Resort"]
     ],
-    "tm_moves": []
+    "tm_moves": ["Strength", "Surf", "Cut", "Rock Slide", "Skull Bash", "Fire Blast", "Dig", "Fissure", "Earthquake", "Thunderbolt", "Thunder", "Solar Beam", "Counter", "Seismic Toss","Submission", "Hyper Beam", "Bubble Beam", "Water Gun", "Ice Beam", "Blizzard", "Take Down", "Double-Edge", "Body Slam", "Mega Punch", "Mega Kick", "Toxic", "Mimic", "Bide", "Rest", "Double Team", "Vacuum-Cut", "Wide Slash", "Spin Slash", "Rage"]
   },
   {
     "id": "116",
@@ -4973,7 +6237,7 @@
 	  [50, "Dragon Dance"],
 	  [55, "Rain Dance"]
     ],
-    "tm_moves": [],
+    "tm_moves": ["Surf", "Skull Bash", "Swift", "Dragon Rage", "Bubble Beam", "Water Gun", "Ice Beam", "Blizzard", "Take Down", "Double-Edge", "Razor Wind", "Toxic", "Mimic", "Bide", "Rest", "Double Team", "Vacuum-Cut", "Wide Slash", "Spin Slash", "Rage"],
     "evolutions": [
       {
         "to": "Seadra",
@@ -5018,7 +6282,7 @@
 	  [58, "Dragon Dance"],
 	  [65, "Rain Dance"]
     ],
-    "tm_moves": []
+    "tm_moves": ["Surf", "Skull Bash", "Swift", "Dragon Rage", "Hyper Beam", "Bubble Beam", "Water Gun", "Ice Beam", "Blizzard", "Take Down", "Double-Edge", "Toxic", "Mimic", "Bide", "Rest", "Double Team", "Vacuum-Cut", "Wide Slash", "Spin Slash", "Rage"]
   },
   {
     "id": "118",
@@ -5055,7 +6319,7 @@
 	  [45, "Megahorn"],
 	  [50, "Guillotine"]
     ],
-    "tm_moves": [],
+    "tm_moves": ["Surf", "Skull Bash", "Swift", "Bubble Beam", "Water Gun", "Ice Beam", "Blizzard", "Take Down", "Double-Edge", "Body Slam", "Guillotine", "Swords Dance", "Toxic", "Mimic", "Bide", "Rest", "Double Team", "Vacuum-Cut", "Wide Slash", "Spin Slash", "Rage"],
     "evolutions": [
       {
         "to": "Seaking",
@@ -5098,7 +6362,7 @@
 	  [51, "Megahorn"],
 	  [58, "Guillotine"]
     ],
-    "tm_moves": []
+    "tm_moves": ["Surf", "Skull Bash", "Swift", "Hyper Beam", "Bubble Beam", "Water Gun", "Ice Beam", "Blizzard", "Take Down", "Double-Edge", "Body Slam", "Guillotine", "Swords Dance", "Toxic", "Mimic", "Bide", "Rest", "Double Team", "Vacuum-Cut", "Wide Slash", "Spin Slash", "Rage"]
   },
   {
     "id": "120",
@@ -5139,7 +6403,7 @@
 	  [52, "Cosmic Power"],
 	  [56, "Hydro Pump"]
     ],
-    "tm_moves": [],
+    "tm_moves": ["Flash", "Surf", "Tri Attack", "Psywave", "Thunder Wave", "Skull Bash", "Swift", "Self-Destruct", "Reflect", "Teleport", "Psychic", "Thunderbolt", "Thunder", "Bubble Beam", "Water Gun", "Ice Beam", "Blizzard", "Take Down", "Double-Edge", "Toxic", "Mimic", "Bide", "Rest", "Double Team", "Vacuum-Cut", "Wide Slash", "Spin Slash", "Rage"],
     "evolutions": [
       {
         "to": "Starmie",
@@ -5186,7 +6450,7 @@
 	  [52, "Cosmic Power"],
 	  [56, "Hydro Pump"]
     ],
-    "tm_moves": []
+    "tm_moves": ["Flash", "Surf", "Tri Attack", "Psywave", "Thunder Wave", "Dream Eater", "Skull Bash", "Swift", "Self-Destruct", "Reflect", "Teleport", "Psychic", "Hyper Beam", "Bubble Beam", "Water Gun", "Ice Beam", "Blizzard", "Take Down", "Double-Edge", "Toxic", "Mimic", "Bide", "Rest", "Double Team", "Vacuum-Cut", "Wide Slash", "Spin Slash", "Rage"]
   },
   {
     "id": "122",
@@ -5231,7 +6495,57 @@
 	  [48, "Psychic"],
 	  [52, "Teeter Dance"]
     ],
-    "tm_moves": []
+    "tm_moves": ["Flash", "Psywave", "Thunder Wave", "Dream Eater", "Skull Bash", "Metronome", "Reflect", "Teleport", "Psychic", "Thunderbolt", "Thunder", "Solar Beam", "Counter", "Seismic Toss","Submission", "Hyper Beam", "Take Down", "Double-Edge", "Body Slam", "Mega Punch", "Mega Kick", "Toxic", "Mimic", "Bide", "Rest", "Double Team", "Vacuum-Cut", "Wide Slash", "Spin Slash", "Rage"]
+  },
+  {
+    "id": "122G",
+    "name": "Mr. Mime-G",
+    "base_stats": {
+      "HP": 50,
+      "Attack": 65,
+      "Defense": 65,
+      "Special_Attack": 90,
+      "Special_Defense": 90,
+      "Speed": 100
+    },
+    "types": ["Ice", "Psychic"],
+    "ev_yield": {
+	  "Speed": 2
+    },
+    "exp_yield": 161,
+    "gender_ratio": 1,
+	"recruit_rate": 45,
+    "experience_group": "Medium Fast",
+	"weight": 56.8,
+    "description": "Its talent is tap-dancing. It can also manipulate temperatures to create a floor of ice, which this Pokémon can kick up to use as a barrier.",
+    "level_up_moves": [
+	  [1, "Copycat"],
+	  [1, "Encore"],
+	  [1, "Protect"],
+	  [1, "Rapid Spin"],
+	  [1, "Recycle"],
+	  [1, "Mimic"],
+	  [1, "Light Screen"],
+	  [1, "Reflect"],
+	  [1, "Safeguard"],
+	  [1, "Dazzling Gleam"],
+	  [1, "Misty Terrain"],
+	  [1, "Tackle"],
+	  [1, "Baton Pass"],
+	  [1, "Ice Shard"],
+	  [12, "Confusion"],
+	  [16, "Ally Switch"],
+	  [20, "Icy Wind"],
+	  [24, "Double Kick"],
+	  [28, "Psybeam"],
+	  [32, "Hypnosis"],
+	  [36, "Mirror Coat"],
+	  [40, "Sucker Punch"],
+	  [44, "Freeze Dry"],
+	  [48, "Psychic"],
+	  [52, "Teeter Dance"]
+    ],
+    "tm_moves": ["Thunder Wave", "Dream Eater", "Metronome", "Reflect", "Psychic", "Thunder", "Thunderbolt", "Solar Beam", "Hyper Beam", "Blizzard", "Ice Beam", "Body Slam", "Mega Kick", "Mega Punch", "Toxic", "Mimic", "Bide", "Rest", "Double Team", "Vacuum-Cut", "Wide Slash", "Spin Slash", "Rage"]
   },
   {
     "id": "123",
@@ -5269,7 +6583,7 @@
 	  [40, "Cross Scissor"],
 	  [44, "Swords Dance"]
     ],
-    "tm_moves": []
+    "tm_moves": ["Cut", "Skull Bash", "Swift", "Counter", "Seismic Toss","Hyper Beam", "Take Down", "Double-Edge", "Razor Wind", "Swords Dance", "Toxic", "Mimic", "Bide", "Rest", "Double Team", "Vacuum-Cut", "Wide Slash", "Spin Slash", "Rage"]
   },
   {
     "id": "124",
@@ -5309,7 +6623,7 @@
 	  [52, "Perish Song"],
 	  [58, "Blizzard"]
     ],
-    "tm_moves": []
+    "tm_moves": ["Flash", "Psywave", "Dream Eater", "Skull Bash", "Metronome", "Reflect", "Teleport", "Psychic", "Counter", "Seismic Toss","Submission", "Hyper Beam", "Bubble Beam", "Water Gun", "Ice Beam", "Blizzard", "Take Down", "Double-Edge", "Body Slam", "Mega Punch", "Mega Kick", "Toxic", "Mimic", "Bide", "Rest", "Double Team", "Vacuum-Cut", "Wide Slash", "Spin Slash", "Rage"]
   },
   {
     "id": "125",
@@ -5349,7 +6663,7 @@
 	  [58, "Thunder"],
 	  [64, "Giga Impact"]
     ],
-    "tm_moves": []
+    "tm_moves": ["Flash", "Strength", "Psywave", "Thunder Wave", "Skull Bash", "Swift", "Metronome", "Reflect", "Teleport", "Psychic", "Thunderbolt", "Thunder", "Counter", "Seismic Toss","Submission", "Hyper Beam", "Take Down", "Double-Edge", "Body Slam", "Mega Punch", "Mega Kick", "Toxic", "Mimic", "Bide", "Rest", "Double Team", "Vacuum-Cut", "Wide Slash", "Spin Slash", "Rage"]
   },
   {
     "id": "126",
@@ -5389,7 +6703,7 @@
 	  [58, "Fire Blast"],
 	  [64, "Hyper Beam"]
     ],
-    "tm_moves": []
+    "tm_moves": ["Strength", "Psywave", "Skull Bash", "Fire Blast", "Metronome", "Teleport", "Psychic", "Counter", "Seismic Toss","Submission", "Hyper Beam", "Take Down", "Double-Edge", "Body Slam", "Mega Punch", "Mega Kick", "Toxic", "Mimic", "Bide", "Rest", "Double Team", "Vacuum-Cut", "Wide Slash", "Spin Slash", "Rage"]
   },
   {
     "id": "127",
@@ -5429,7 +6743,7 @@
 	  [48, "Guillotine"],
 	  [52, "Superpower"]
     ],
-    "tm_moves": []
+    "tm_moves": ["Strength", "Cut", "Rock Slide", "Dig", "Earthquake", "Seismic Toss", "Submission", "Hyper Beam", "Take Down", "Double-Edge", "Body Slam", "Swords Dance", "Toxic", "Mimic", "Bide", "Rest", "Double Team", "Vacuum-Cut", "Wide Slash", "Spin Slash", "Rage"]
   },
   {
     "id": "128",
@@ -5468,7 +6782,124 @@
 	  [55, "Double-Edge"],
 	  [60, "Giga Impact"]
     ],
-    "tm_moves": []
+    "tm_moves": ["Strength", "Surf", "Rock Slide", "Skull Bash", "Fire Blast", "Dig", "Fissure", "Earthquake", "Thunderbolt", "Thunder", "Solar Beam", "Hyper Beam", "Ice Beam", "Blizzard", "Take Down", "Double-Edge", "Body Slam", "Guillotine", "Toxic", "Mimic", "Bide", "Rest", "Double Team", "Vacuum-Cut", "Wide Slash", "Spin Slash", "Rage"]
+  },
+  {
+    "id": "128A",
+    "name": "Tauros-A",
+    "base_stats": {
+      "HP": 75,
+      "Attack": 110,
+      "Defense": 105,
+      "Special_Attack": 30,
+      "Special_Defense": 70,
+      "Speed": 100
+    },
+    "types": ["Fighting", "Water"],
+    "ev_yield": {
+	  "Attack": 2
+    },
+    "exp_yield": 172,
+    "gender_ratio": 1,
+	"recruit_rate": 45,
+    "experience_group": "Slow",
+	"weight": 110.0,
+    "description": "This Pokémon blasts water from holes on the tips of its horns—the high-pressure jets pierce right through Tauros’s enemies.",
+    "level_up_moves": [
+      [1, "Tackle"],
+      [1, "Tail Whip"],
+      [5, "Work Up"],
+      [10, "Double Kick"],
+	  [15, "Aqua Jet"],
+	  [20, "Headbutt"],
+	  [25, "Scary Face"],
+	  [30, "Zen Headbutt"],
+	  [35, "Raging Bull"],
+	  [40, "Rest"],
+	  [45, "Swagger"],
+	  [50, "Thrash"],
+	  [55, "Wave Crash"],
+	  [60, "Close Combat"]
+    ],
+    "tm_moves": ["Surf", "Rock Slide", "Dig", "Earthquake", "Hyper Beam", "Double-Edge", "Take Down", "Body Slam", "Toxic", "Mimic", "Bide", "Rest", "Double Team", "Vacuum-Cut", "Wide Slash", "Spin Slash", "Rage"]
+  },
+  {
+    "id": "128B",
+    "name": "Tauros-B",
+    "base_stats": {
+      "HP": 75,
+      "Attack": 110,
+      "Defense": 105,
+      "Special_Attack": 30,
+      "Special_Defense": 70,
+      "Speed": 100
+    },
+    "types": ["Fighting", "Fire"],
+    "ev_yield": {
+	  "Attack": 2
+    },
+    "exp_yield": 172,
+    "gender_ratio": 1,
+	"recruit_rate": 45,
+    "experience_group": "Slow",
+	"weight": 85.0,
+    "description": "When heated by fire energy, its horns can get hotter than 1,000 degrees Celsius. Those gored by them will suffer both wounds and burns.",
+    "level_up_moves": [
+      [1, "Tackle"],
+      [1, "Tail Whip"],
+      [5, "Work Up"],
+      [10, "Double Kick"],
+	  [15, "Flame Charge"],
+	  [20, "Headbutt"],
+	  [25, "Scary Face"],
+	  [30, "Zen Headbutt"],
+	  [35, "Raging Bull"],
+	  [40, "Rest"],
+	  [45, "Swagger"],
+	  [50, "Thrash"],
+	  [55, "Flare Blitz"],
+	  [60, "Close Combat"]
+    ],
+    "tm_moves": ["Rock Slide", "Fire Blast", "Dig", "Earthquake", "Hyper Beam", "Double-Edge", "Take Down", "Body Slam", "Toxic", "Mimic", "Bide", "Rest", "Double Team", "Vacuum-Cut", "Wide Slash", "Spin Slash", "Rage"]
+  },
+  {
+    "id": "128C",
+    "name": "Tauros-C",
+    "base_stats": {
+      "HP": 75,
+      "Attack": 110,
+      "Defense": 105,
+      "Special_Attack": 30,
+      "Special_Defense": 70,
+      "Speed": 100
+    },
+    "types": ["Fighting"],
+    "ev_yield": {
+	  "Attack": 2
+    },
+    "exp_yield": 172,
+    "gender_ratio": 1,
+	"recruit_rate": 45,
+    "experience_group": "Slow",
+	"weight": 115.0,
+    "description": "This Pokémon has a muscular body and excels at close-quarters combat. It uses its short horns to strike the opponent’s weak spots.",
+    "level_up_moves": [
+      [1, "Tackle"],
+      [1, "Tail Whip"],
+      [5, "Work Up"],
+      [10, "Double Kick"],
+	  [15, "Assurance"],
+	  [20, "Headbutt"],
+	  [25, "Scary Face"],
+	  [30, "Zen Headbutt"],
+	  [35, "Raging Bull"],
+	  [40, "Rest"],
+	  [45, "Swagger"],
+	  [50, "Thrash"],
+	  [55, "Double-Edge"],
+	  [60, "Close Combat"]
+    ],
+    "tm_moves": ["Surf", "Rock Slide", "Dig", "Earthquake", "Hyper Beam", "Double-Edge", "Take Down", "Body Slam", "Toxic", "Mimic", "Bide", "Rest", "Double Team", "Vacuum-Cut", "Wide Slash", "Spin Slash", "Rage"]
   },
   {
     "id": "129",
@@ -5496,7 +6927,7 @@
       [15, "Tackle"],
       [25, "Flail"]
     ],
-    "tm_moves": [],
+    "tm_moves": ["Wide Slash"],
     "evolutions": [
       {
         "to": "Gyarados",
@@ -5546,7 +6977,7 @@
 	  [48, "Thrash"],
 	  [52, "Hyper Beam"]
     ],
-    "tm_moves": []
+    "tm_moves": ["Strength", "Surf", "Thunder Wave", "Skull Bash", "Fire Blast", "Reflect", "Earthquake", "Thunderbolt", "Thunder", "Dragon Rage", "Hyper Beam", "Bubble Beam", "Water Gun", "Ice Beam", "Blizzard", "Take Down", "Double-Edge", "Body Slam", "Guillotine", "Toxic", "Mimic", "Bide", "Rest", "Double Team", "Vacuum-Cut", "Wide Slash", "Spin Slash", "Rage"]
   },
   {
     "id": "131",
@@ -5586,7 +7017,7 @@
 	  [60, "Perish Song"],
 	  [65, "Sheer Cold"]
     ],
-    "tm_moves": []
+    "tm_moves": ["Strength", "Surf", "Psywave", "Dream Eater", "Skull Bash", "Reflect", "Psychic", "Earthquake", "Thunderbolt", "Thunder", "Dragon Rage", "Solar Beam", "Hyper Beam", "Bubble Beam", "Water Gun", "Ice Beam", "Blizzard", "Take Down", "Double-Edge", "Body Slam", "Guillotine", "Toxic", "Mimic", "Bide", "Rest", "Double Team", "Vacuum-Cut", "Wide Slash", "Spin Slash", "Rage"]
   },
   {
     "id": "132",
@@ -5617,7 +7048,7 @@
     "level_up_moves": [
       [1, "Transform"]
     ],
-    "tm_moves": []
+    "tm_moves": ["Wide Slash"]
   },
   {
     "id": "133",
@@ -5658,7 +7089,7 @@
 	  [50, "Double-Edge"],
 	  [55, "Last Resort"]
     ],
-    "tm_moves": [],
+    "tm_moves": ["Skull Bash", "Swift", "Reflect", "Dig", "Pay Day", "Take Down", "Double-Edge", "Body Slam", "Toxic", "Mimic", "Bide", "Rest", "Double Team", "Vacuum-Cut", "Wide Slash", "Spin Slash", "Rage"],
     "evolutions": [
       { "to": "Vaporeon", "item": "Water Stone" },
       { "to": "Jolteon", "item": "Thunder Stone" },
@@ -5710,7 +7141,7 @@
 	  [50, "Hydro Pump"],
 	  [55, "Last Resort"]
     ],
-    "tm_moves": []
+    "tm_moves": ["Strength", "Surf", "Skull Bash", "Swift", "Reflect", "Dig", "Pay Day", "Hyper Beam", "Bubble Beam", "Water Gun", "Ice Beam", "Blizzard", "Take Down", "Double-Edge", "Body Slam", "Toxic", "Mimic", "Bide", "Rest", "Double Team", "Vacuum-Cut", "Wide Slash", "Spin Slash", "Rage"]
   },
   {
     "id": "135",
@@ -5757,7 +7188,7 @@
 	  [50, "Thunder"],
 	  [55, "Last Resort"]
     ],
-    "tm_moves": []
+    "tm_moves": ["Flash", "Strength", "Thunder Wave", "Skull Bash", "Swift", "Reflect", "Dig", "Thunderbolt", "Thunder", "Pay Day", "Hyper Beam", "Take Down", "Double-Edge", "Body Slam", "Toxic", "Mimic", "Bide", "Rest", "Double Team", "Vacuum-Cut", "Wide Slash", "Spin Slash", "Rage"]
   },
   {
     "id": "136",
@@ -5804,7 +7235,7 @@
 	  [50, "Flare Blitz"],
 	  [55, "Last Resort"]
     ],
-    "tm_moves": []
+    "tm_moves": ["Strength", "Skull Bash", "Swift", "Fire Blast", "Reflect", "Dig", "Pay Day", "Hyper Beam", "Take Down", "Double-Edge", "Body Slam", "Swords Dance", "Toxic", "Mimic", "Bide", "Rest", "Double Team", "Vacuum-Cut", "Wide Slash", "Spin Slash", "Rage"]
   },
   {
     "id": "137",
@@ -5843,7 +7274,7 @@
 	  [55, "Lock-On"],
 	  [60, "Zap Cannon"]
     ],
-    "tm_moves": []
+    "tm_moves": ["Flash", "Tri Attack", "Psywave", "Thunder Wave", "Dream Eater", "Skull Bash", "Swift", "Self-Destruct", "Reflect", "Teleport", "Psychic", "Thunderbolt", "Thunder", "Solar Beam", "Hyper Beam", "Take Down", "Double-Edge", "Toxic", "Mimic", "Bide", "Rest", "Double Team", "Vacuum-Cut", "Wide Slash", "Spin Slash", "Rage"]
   },
   {
     "id": "138",
@@ -5882,7 +7313,7 @@
 	  [55, "Shell Smash"],
 	  [60, "Hydro Pump"]
     ],
-    "tm_moves": [],
+    "tm_moves": ["Surf", "Rock Slide", "Reflect", "Bubble Beam", "Water Gun", "Ice Beam", "Blizzard", "Take Down", "Double-Edge", "Body Slam", "Toxic", "Mimic", "Bide", "Rest", "Double Team", "Vacuum-Cut", "Wide Slash", "Spin Slash", "Rage"],
     "evolutions": [
       {
         "to": "Omastar",
@@ -5928,7 +7359,7 @@
 	  [63, "Shell Smash"],
 	  [70, "Hydro Pump"]
     ],
-    "tm_moves": []
+    "tm_moves": ["Surf", "Rock Slide", "Skull Bash", "Reflect", "Seismic Toss", "Submission", "Hyper Beam", "Bubble Beam", "Water Gun", "Ice Beam", "Blizzard", "Take Down", "Double-Edge", "Body Slam", "Guillotine", "Toxic", "Mimic", "Bide", "Rest", "Double Team", "Vacuum-Cut", "Wide Slash", "Spin Slash", "Rage"]
   },
   {
     "id": "140",
@@ -5967,7 +7398,7 @@
 	  [55, "Metal Sound"],
 	  [60, "Stone Edge"]
     ],
-    "tm_moves": [],
+    "tm_moves": ["Surf", "Rock Slide", "Reflect", "Dig", "Mega Drain", "Bubble Beam", "Water Gun", "Ice Beam", "Blizzard", "Take Down", "Double-Edge", "Body Slam", "Toxic", "Mimic", "Bide", "Rest", "Double Team", "Vacuum-Cut", "Wide Slash", "Spin Slash", "Rage"],
     "evolutions": [
       {
         "to": "Kabutops",
@@ -6013,7 +7444,7 @@
 	  [55, "Metal Sound"],
 	  [60, "Stone Edge"]
     ],
-    "tm_moves": []
+    "tm_moves": ["Surf", "Cut", "Rock Slide", "Skull Bash", "Reflect", "Dig", "Mega Drain", "Seismic Toss", "Submission", "Hyper Beam", "Bubble Beam", "Water Gun", "Ice Beam", "Blizzard", "Take Down", "Double-Edge", "Body Slam", "Razor Wind", "Swords Dance", "Mega Kick", "Toxic", "Mimic", "Bide", "Rest", "Double Team", "Vacuum-Cut", "Wide Slash", "Spin Slash", "Rage"]
   },
   {
     "id": "142",
@@ -6052,7 +7483,7 @@
 	  [55, "Hyper Beam"],
 	  [60, "Giga Impact"]
     ],
-    "tm_moves": []
+    "tm_moves": ["Strength", "Fly", "Rock Slide", "Sky Attack", "Swift", "Fire Blast", "Reflect", "Earthquake", "Dragon Rage", "Take Down", "Double-Edge", "Razor Wind", "Whirlwind", "Toxic", "Mimic", "Bide", "Rest", "Double Team", "Vacuum-Cut", "Wide Slash", "Spin Slash", "Rage"]
   },
   {
     "id": "143",
@@ -6102,7 +7533,7 @@
 	  [52, "Belch"],
 	  [56, "Giga Impact"]
     ],
-    "tm_moves": []
+    "tm_moves": ["Strength", "Surf", "Rock Slide", "Psywave", "Skull Bash", "Fire Blast", "Self-Destruct", "Metronome", "Reflect", "Dig", "Fissure", "Earthquake", "Thunderbolt", "Thunder", "Solar Beam", "Counter", "Seismic Toss","Submission", "Pay Day", "Hyper Beam", "Bubble Beam", "Water Gun", "Ice Beam", "Blizzard", "Take Down", "Double-Edge", "Body Slam", "Mega Punch", "Whirlwind", "Mega Kick", "Toxic", "Mimic", "Bide", "Rest", "Double Team", "Vacuum-Cut", "Wide Slash", "Spin Slash", "Rage"]
   },
   {
     "id": "144",
@@ -6144,7 +7575,48 @@
 	  [65, "Blizzard"],
 	  [70, "Sheer Cold"]
     ],
-    "tm_moves": []
+    "tm_moves": ["Fly", "Sky Attack", "Swift", "Reflect", "Hyper Beam", "Bubble Beam", "Water Gun", "Ice Beam", "Blizzard", "Take Down", "Double-Edge", "Razor Wind", "Whirlwind", "Toxic", "Mimic", "Bide", "Rest", "Double Team", "Vacuum-Cut", "Wide Slash", "Spin Slash", "Rage"]
+  },
+  {
+    "id": "144G",
+    "name": "Articuno-G",
+    "base_stats": {
+      "HP": 90,
+      "Attack": 85,
+      "Defense": 85,
+      "Special_Attack": 125,
+      "Special_Defense": 100,
+      "Speed": 95
+    },
+    "types": ["Psychic", "Flying"],
+    "ev_yield": {
+	  "Special_Attack": 10
+    },
+    "exp_yield": 261,
+    "gender_ratio": null,
+	"recruit_rate": 3,
+    "experience_group": "Slow",
+	"legendary": true,
+	"weight": 50.9,
+    "description": "Its feather-like blades are composed of psychic energy and can shear through thick iron sheets as if they were paper.",
+    "level_up_moves": [
+      [1, "Gust"],
+      [5, "Confusion"],
+      [10, "Reflect"],
+	  [15, "Hypnosis"],
+	  [20, "Agility"],
+	  [25, "Ancient Power"],
+	  [30, "Tailwind"],
+	  [35, "Psycho Cut"],
+	  [40, "Recover"],
+	  [45, "Freezing Glare"],
+	  [50, "Dream Eater"],
+	  [55, "Hurricane"],
+	  [60, "Double Team"],
+	  [65, "Future Sight"],
+	  [70, "Trick Room"]
+    ],
+    "tm_moves": ["Fly", "Swift", "Reflect", "Psychic", "Hyper Beam", "Take Down", "Toxic", "Mimic", "Bide", "Rest", "Double Team", "Vacuum-Cut", "Wide Slash", "Spin Slash", "Rage"]
   },
   {
     "id": "145",
@@ -6189,6 +7661,48 @@
     "tm_moves": []
   },
   {
+    "id": "145G",
+    "name": "Zapdos-G",
+    "base_stats": {
+      "HP": 90,
+      "Attack": 125,
+      "Defense": 90,
+      "Special_Attack": 85,
+      "Special_Defense": 90,
+      "Speed": 100
+    },
+    "types": ["Fighting", "Flying"],
+    "ev_yield": {
+	  "Attack": 10
+    },
+    "exp_yield": 261,
+    "gender_ratio": null,
+	"recruit_rate": 3,
+    "experience_group": "Slow",
+	"legendary": true,
+	"weight": 58.2,
+    "description": "One kick from its powerful legs will pulverize a dump truck. Supposedly, this Pokémon runs through the mountains at over 300 km/h.",
+    "level_up_moves": [
+      [1, "Peck"],
+      [1, "Focus Energy"],
+      [5, "Rock Smash"],
+      [10, "Light Screen"],
+	  [15, "Pluck"],
+	  [20, "Agility"],
+	  [25, "Ancient Power"],
+	  [30, "Brick Break"],
+	  [35, "Drill Peck"],
+	  [40, "Quick Guard"],
+	  [45, "Thunderous Kick"],
+	  [50, "Bulk Up"],
+	  [55, "Counter"],
+	  [60, "Protect"],
+	  [65, "Close Combat"],
+	  [70, "Reversal"]
+    ],
+    "tm_moves": ["Fly", "Swift", "Hyper Beam", "Double-Edge", "Take Down", "Mega Kick", "Toxic", "Mimic", "Bide", "Rest", "Double Team", "Vacuum-Cut", "Wide Slash", "Spin Slash", "Rage"]
+  },
+  {
     "id": "146",
     "name": "Moltres",
     "base_stats": {
@@ -6228,7 +7742,49 @@
 	  [65, "Overheat"],
 	  [70, "Sky Attack"]
     ],
-    "tm_moves": []
+    "tm_moves": ["Fly", "Sky Attack", "Swift", "Fire Blast", "Reflect", "Solar Beam", "Hyper Beam", "Take Down", "Double-Edge", "Razor Wind", "Whirlwind", "Toxic", "Mimic", "Bide", "Rest", "Double Team", "Vacuum-Cut", "Wide Slash", "Spin Slash", "Rage"]
+  },
+  {
+    "id": "146G",
+    "name": "Moltres-G",
+    "base_stats": {
+      "HP": 90,
+      "Attack": 85,
+      "Defense": 90,
+      "Special_Attack": 100,
+      "Special_Defense": 125,
+      "Speed": 90
+    },
+    "types": ["Dark", "Flying"],
+    "ev_yield": {
+	  "Special_Defense": 10
+    },
+    "exp_yield": 261,
+    "gender_ratio": null,
+	"recruit_rate": 3,
+    "experience_group": "Slow",
+	"legendary": true,
+	"weight": 66.0,
+    "description": "This Pokémon's sinister, flame-like aura will consume the spirit of any creature it hits. Victims become burned-out shadows of themselves.",
+    "level_up_moves": [
+      [1, "Gust"],
+      [1, "Leer"],
+      [5, "Payback"],
+      [10, "Safeguard"],
+	  [15, "Wing Attack"],
+	  [20, "Agility"],
+	  [25, "Ancient Power"],
+	  [30, "Sucker Punch"],
+	  [35, "Air Slash"],
+	  [40, "After You"],
+	  [45, "Fiery Wrath"],
+	  [50, "Nasty Plot"],
+	  [55, "Hurricane"],
+	  [60, "Endure"],
+	  [65, "Memento"],
+	  [70, "Sky Attack"]
+    ],
+    "tm_moves": ["Fly", "Swift", "Hyper Beam", "Take Down", "Toxic", "Mimic", "Bide", "Rest", "Double Team", "Vacuum-Cut", "Wide Slash", "Spin Slash", "Rage"]
   },
   {
     "id": "147",
@@ -6267,7 +7823,7 @@
 	  [55, "Outrage"],
 	  [60, "Hyper Beam"]
     ],
-    "tm_moves": [],
+    "tm_moves": ["Surf", "Thunder Wave", "Skull Bash", "Swift", "Fire Blast", "Reflect", "Thunderbolt", "Thunder", "Dragon Rage", "Hyper Beam", "Bubble Beam", "Water Gun", "Ice Beam", "Blizzard", "Take Down", "Double-Edge", "Body Slam", "Toxic", "Mimic", "Bide", "Rest", "Double Team", "Vacuum-Cut", "Wide Slash", "Spin Slash", "Rage"],
     "evolutions": [
       {
         "to": "Dragonair",
@@ -6312,7 +7868,7 @@
 	  [67, "Outrage"],
 	  [74, "Hyper Beam"]
     ],
-    "tm_moves": [],
+    "tm_moves": ["Surf", "Thunder Wave", "Skull Bash", "Swift", "Fire Blast", "Reflect", "Thunderbolt", "Thunder", "Dragon Rage", "Hyper Beam", "Bubble Beam", "Water Gun", "Ice Beam", "Blizzard", "Take Down", "Double-Edge", "Body Slam", "Guillotine", "Toxic", "Mimic", "Bide", "Rest", "Double Team", "Vacuum-Cut", "Wide Slash", "Spin Slash", "Rage"],
     "evolutions": [
       {
         "to": "Dragonite",
@@ -6363,7 +7919,7 @@
 	  [67, "Outrage"],
 	  [74, "Hyper Beam"]
     ],
-    "tm_moves": []
+    "tm_moves": ["Strength", "Surf", "Fly", "Cut", "Rock Slide", "Thunder Wave", "Skull Bash", "Swift", "Fire Blast", "Metronome", "Reflect", "Earthquake", "Thunderbolt", "Thunder", "Dragon Rage", "Hyper Beam", "Bubble Beam", "Water Gun", "Ice Beam", "Blizzard", "Take Down", "Double-Edge", "Body Slam", "Guillotine", "Mega Punch", "Razor Wind", "Whirlwind", "Mega Kick", "Toxic", "Mimic", "Bide", "Rest", "Double Team", "Vacuum-Cut", "Wide Slash", "Spin Slash", "Rage"]
   },
   {
     "id": "150",
@@ -6405,7 +7961,7 @@
 	  [80, "Recover"],
 	  [88, "Future Sight"]
     ],
-    "tm_moves": []
+    "tm_moves": ["Flash", "Strength", "Tri Attack", "Rock Slide", "Psywave", "Thunder Wave", "Dream Eater", "Skull Bash", "Swift", "Fire Blast", "Self-Destruct", "Metronome", "Reflect", "Teleport", "Psychic", "Earthquake", "Thunderbolt", "Thunder", "Solar Beam", "Counter", "Seismic Toss","Submission", "Pay Day", "Hyper Beam", "Bubble Beam", "Water Gun", "Ice Beam", "Blizzard", "Take Down", "Double-Edge", "Body Slam", "Mega Punch", "Mega Kick", "Toxic", "Mimic", "Bide", "Rest", "Double Team", "Vacuum-Cut", "Wide Slash", "Spin Slash", "Rage"]
   },
   {
     "id": "151",
@@ -6443,6 +7999,6 @@
 	  [90, "Aura Sphere"],
 	  [99, "Psychic"]
     ],
-    "tm_moves": []
+    "tm_moves": ["Flash", "Strength", "Surf", "Fly", "Cut", "Tri Attack", "Rock Slide", "Explosion", "Psywave", "Thunder Wave", "Sky Attack", "Dream Eater", "Recover", "Skull Bash", "Swift", "Fire Blast", "Egg Bomb", "Self-Destruct", "Metronome", "Reflect", "Teleport", "Psychic", "Dig", "Fissure", "Earthquake", "Thunderbolt", "Thunder", "Dragon Rage", "Solar Beam", "Mega Drain", "Counter", "Seismic Toss","Submission", "Pay Day", "Hyper Beam", "Bubble Beam", "Water Gun", "Ice Beam", "Blizzard", "Take Down", "Double-Edge", "Body Slam", "Guillotine", "Mega Punch", "Razor Wind", "Swords Dance", "Whirlwind", "Mega Kick", "Toxic", "Mimic", "Bide", "Rest", "Double Team", "Vacuum-Cut", "Wide Slash", "Spin Slash", "Rage"]
   }
 ]
