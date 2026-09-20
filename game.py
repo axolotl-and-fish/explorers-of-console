@@ -9652,7 +9652,7 @@ class Game:
             return
 
         starters = [
-            "Bulbasaur", "Charmander", "Squirtle", "Pikachu", "Vulpix", "Vulpix-A"
+            "Bulbasaur", "Charmander", "Squirtle", "Pikachu", "Vulpix", "Vulpix-A",
             "Growlithe", "Growlithe-H", "Meowth", "Meowth-A", "Meowth-G", "Psyduck", "Machop", "Cubone", "Eevee"
         ]
         sel = state.get("selected_index", 0)
