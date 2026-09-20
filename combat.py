@@ -149,19 +149,18 @@ def calculate_damage(attacker: Pokemon, defender: Pokemon, move: dict, game=None
             power = power * 2
 
     #Reversal & Flail power scale based on user's remaining HP.
-    #TODO: May need to adjust this formula because this move might be too damaging too quickly lmao
     if move.get("name") in ("Reversal", "Flail"):
         max_hp = float(max(1.0, float(attacker.stats.get("HP", 1.0))))
         curr_hp = float(max(1.0, min(max_hp, attacker.current_hp)))
         if max_hp <= 1.0 or curr_hp <= 1.0:
-            power = 250
+            power = 200
         elif curr_hp >= max_hp:
             power = 5
         else:
             x = (max_hp - curr_hp) / (max_hp - 1.0)
             x = max(0.0, min(1.0, x))
-            power = int(5 + 245 * (x ** 2))
-            power = max(5, min(250, power))
+            power = int(5 + 195 * (x ** 2))
+            power = max(5, min(200, power))
 
     #Low Kick power scale based on target weight (no fancy formulae here, just simple if/else checks)
     if move.get("name") == "Low Kick":
