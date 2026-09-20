@@ -36,6 +36,15 @@ def calculate_damage(attacker: Pokemon, defender: Pokemon, move: dict, game=None
             raw_dmg *= 0.75
         return max(1, int(raw_dmg)), False, 1.0
 
+    #Dragon Rage: always deals exactly 40 damage
+    if move.get("name") == "Dragon Rage":
+        return 40, False, 1.0
+
+    #Psywave: deals damage equal to a random number between 1 and user's level x 1.5
+    if move.get("name") == "Psywave":
+        max_dmg = max(1, int(attacker.level * 1.5))
+        return random.randint(1, max_dmg), False, 1.0
+
     category = move.get("category", "Status")
     power = move.get("power", 0)
 
@@ -283,6 +292,10 @@ def calculate_damage(attacker: Pokemon, defender: Pokemon, move: dict, game=None
 
     #Reflect halves Physical damage
     if category == "Physical" and defender.status_effects.get("Reflect", 0) > 0 and move.get("name") != "Brick Break":
+        total_damage = total_damage * 0.5
+
+    #Skull Bash: user takes half damage from Physical moves while charging
+    if category == "Physical" and defender.charging_move and defender.charging_move.get("move", {}).get("name") == "Skull Bash":
         total_damage = total_damage * 0.5
 
     #2x damage against Digging targets for Earthquake & Bulldoze

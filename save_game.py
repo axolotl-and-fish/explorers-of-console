@@ -112,6 +112,8 @@ def serialize_pokemon(poke: Pokemon) -> dict:
         "protect_consecutive": getattr(poke, "protect_consecutive", 0),
         "echoed_voice_count": getattr(poke, "echoed_voice_count", 0),
         "damage_hit_turns": list(getattr(poke, "damage_hit_turns", [])),
+        "bide_damage": getattr(poke, "bide_damage", 0),
+        "bide_target_tile": list(poke.bide_target_tile) if getattr(poke, "bide_target_tile", None) else None,
         "last_move_failed_turn": getattr(poke, "last_move_failed_turn", None),
         "last_teammate_fainted_turn": getattr(poke, "last_teammate_fainted_turn", None),
         "last_hit_by_move": dict(poke.last_hit_by_move) if getattr(poke, "last_hit_by_move", None) else None,
@@ -213,6 +215,9 @@ def deserialize_pokemon(data: dict) -> Pokemon:
     poke.protect_consecutive = data.get("protect_consecutive", 0)
     poke.echoed_voice_count = data.get("echoed_voice_count", 0)
     poke.damage_hit_turns = list(data.get("damage_hit_turns", []))
+    poke.bide_damage = data.get("bide_damage", 0)
+    target_tile = data.get("bide_target_tile")
+    poke.bide_target_tile = tuple(target_tile) if target_tile else None
     poke.last_move_failed_turn = data.get("last_move_failed_turn")
     poke.last_teammate_fainted_turn = data.get("last_teammate_fainted_turn")
     poke.last_hit_by_move = dict(data["last_hit_by_move"]) if data.get("last_hit_by_move") else None

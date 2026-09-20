@@ -171,7 +171,12 @@ class Pokemon:
             "Rebound": 0,
             "Silenced": 0,
             "Invisible": 0,
+            "Enraged": 0,
+            "Biding": 0,
+            "Substitute": 0,
         }
+        self.bide_damage: int = 0
+        self.bide_target_tile: tuple[int, int] | None = None
         self.protect_consecutive: int = 0 #How many times have protection moves been used?
         self.last_used_move: str | None = None #Last move this mon used, for some move effects
         self.charging_move: dict | None = None #What move is this mon charging?
@@ -338,6 +343,17 @@ class Pokemon:
 
         if game is not None and getattr(game, "gravity", False):
             if move_name in ("Bounce", "Fly", "Flying Press", "Jump Kick", "High Jump Kick", "Magnet Rise", "Splash", "Telekinesis"):
+                return False
+
+        if self.status_effects.get("Biding", 0) > 0:
+            return False
+
+        if self.status_effects.get("Substitute", 0) > 0:
+            return False
+
+        if move_name == "Substitute":
+            max_hp = float(getattr(self, "max_hp", None) or self.stats.get("HP", 1))
+            if self.current_hp < 0.5 * max_hp:
                 return False
 
         if move_name == "Stockpile":
@@ -1226,6 +1242,15 @@ class Pokemon:
                 return
             self.status_effects["Puppet"] = duration if duration is not None else random.randint(5, 8)
             game.log_message(f"{self.name} became a puppet!")
+        elif status == "Enraged":
+            self.status_effects["Enraged"] = duration if duration is not None else 5
+            game.log_message(f"{self.name} became enraged!")
+        elif status == "Biding":
+            self.status_effects["Biding"] = duration if duration is not None else 3
+            game.log_message(f"{self.name} is storing energy!")
+        elif status == "Substitute":
+            self.status_effects["Substitute"] = duration if duration is not None else 10
+            game.log_message(f"{self.name} put in a substitute!")
 
     def cure_status(self, status: str, game, early: bool = False):
         """Cures a status effect from the Pokémon and prints the log message if it was active."""
@@ -1520,4 +1545,19 @@ class Pokemon:
                 self.status_effects["Invisible"] = 0
                 if game:
                     game.log_message(f"{self.name} reappeared.")
+        elif status == "Enraged":
+            if self.status_effects.get("Enraged", 0) > 0:
+                self.status_effects["Enraged"] = 0
+                if game:
+                    game.log_message(f"{self.name} calmed down.")
+        elif status == "Biding":
+            if self.status_effects.get("Biding", 0) > 0:
+                self.status_effects["Biding"] = 0
+                if game and hasattr(game, "handle_bide_unleash"):
+                    game.handle_bide_unleash(self)
+        elif status == "Substitute":
+            if self.status_effects.get("Substitute", 0) > 0:
+                self.status_effects["Substitute"] = 0
+                if game:
+                    game.log_message(f"{self.name}'s substitute faded.")
 

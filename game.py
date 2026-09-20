@@ -17,7 +17,7 @@ import input as game_input
 from pokemon import Pokemon  #type: ignore
 from message_log import MessageLog  #type: ignore
 from combat import calculate_damage
-from targeting import get_valid_targets, get_pokemon_position, get_room_tiles_at, get_confusion_targets, get_actual_target, is_ally_in_way_of_attack, is_ally_in_way_from_pos, has_clear_path
+from targeting import get_valid_targets, get_pokemon_position, get_room_tiles_at, get_confusion_targets, get_actual_target, is_ally_in_way_of_attack, is_ally_in_way_from_pos, has_clear_path, get_effective_move_range
 import items
 from end_screen import EndScreenController, generate_end_screen_report, dump_team_report_to_file
 
@@ -732,6 +732,12 @@ class Game:
             items.append(("Cowering", "negative"))
         if pokemon.status_effects.get("Silenced", 0) > 0:
             items.append(("Silenced", "negative"))
+        if pokemon.status_effects.get("Enraged", 0) > 0:
+            items.append(("Enraged", "positive"))
+        if pokemon.status_effects.get("Biding", 0) > 0:
+            items.append(("Biding", "neutral"))
+        if pokemon.status_effects.get("Substitute", 0) > 0:
+            items.append(("Substitute", "positive"))
         for res_t in ("Fire", "Water", "Electric", "Grass", "Ice", "Fighting", "Poison", "Ground", "Flying", "Psychic", "Bug", "Rock", "Ghost", "Dragon", "Dark", "Steel", "Fairy", "Normal", "All"):
             if pokemon.status_effects.get(f"{res_t} Resist"):
                 items.append((f"{res_t} Res", "positive"))
@@ -1233,7 +1239,7 @@ class Game:
 
     def enemy_can_see(self, enemy: Pokemon, team_member: Pokemon) -> bool:
         """Returns True if the enemy can see the team member"""
-        if team_member.status_effects.get("Invisible", 0) > 0:
+        if team_member.status_effects.get("Invisible", 0) > 0 or team_member.status_effects.get("Substitute", 0) > 0:
             return False
 
         ex, ey = get_pokemon_position(self, enemy)
@@ -1864,6 +1870,9 @@ class Game:
                 if self.process_charging_move(ally):
                     continue
 
+                if ally.status_effects.get("Biding", 0) > 0:
+                    continue
+
                 if ally.status_effects.get("Puppet", 0) > 0:
                     self.process_puppet_ai(ally)
                     continue
@@ -2153,6 +2162,9 @@ class Game:
                     break
 
                 if self.process_charging_move(enemy):
+                    continue
+
+                if enemy.status_effects.get("Biding", 0) > 0:
                     continue
 
                 if enemy.status_effects.get("Terrified", 0) > 0:
@@ -2860,7 +2872,7 @@ class Game:
             if int(p.current_hp) <= 0:
                 continue
             #All statuses that last a certain number of turns (and not semi-permanent statuses) go here
-            for status in ["Sleep", "Paralysis", "Frozen", "Flinch", "Petrified", "Confusion", "Leech Seed", "Protect", "Safeguard", "Focus Energy", "Light Screen", "Reflect", "Sand Tomb", "Whirlpool", "Perishing", "Counter", "Mirror Coat", "Endure", "Paused", "Ingrain", "Destiny Bond", "Encore", "Magnet Rise", "Telekinesis", "Resting", "Stuck", "Quick Guard", "Wide Guard", "Vital Throw", "Drowsy", "Decoy", "Landed", "Terrified", "Blind", "Mobile", "Puppet", "Hallucinating", "Snatch", "Cowering", "Rebound", "Silenced", "Invisible"]:
+            for status in ["Sleep", "Paralysis", "Frozen", "Flinch", "Petrified", "Confusion", "Leech Seed", "Protect", "Safeguard", "Focus Energy", "Light Screen", "Reflect", "Sand Tomb", "Whirlpool", "Perishing", "Counter", "Mirror Coat", "Endure", "Paused", "Ingrain", "Destiny Bond", "Encore", "Magnet Rise", "Telekinesis", "Resting", "Stuck", "Quick Guard", "Wide Guard", "Vital Throw", "Drowsy", "Decoy", "Landed", "Terrified", "Blind", "Mobile", "Puppet", "Hallucinating", "Snatch", "Cowering", "Rebound", "Silenced", "Invisible", "Enraged", "Biding", "Substitute"]:
                 val = p.status_effects.get(status, 0)
                 if status == "Petrified" and p in self.spawned_pokemon:
                     #Enemy petrification only wears off when attacked
@@ -2894,6 +2906,39 @@ class Game:
         #Replenish player actions for the next round
         self.replenish_player_actions()
         self.turn_in_progress = False
+
+    def handle_bide_unleash(self, p: Pokemon):
+        """Unleashes Bide stored damage upon status wearing off"""
+        bide_dmg = getattr(p, "bide_damage", 0)
+        target_tile = getattr(p, "bide_target_tile", None)
+        p.bide_damage = 0
+        p.bide_target_tile = None
+
+        self.log_message(f"{p.name} unleashed energy!")
+        if bide_dmg <= 0 or not target_tile:
+            self.log_message("The move failed!")
+            return
+
+        tx, ty = target_tile
+        target_mon = self.get_poke_at(tx, ty)
+        is_p_in_party = (p in self.party)
+        if not target_mon or int(getattr(target_mon, "current_hp", 0)) <= 0 or ((target_mon in self.party) == is_p_in_party):
+            self.log_message("The move failed!")
+            return
+
+        unleashed_dmg = bide_dmg * 2
+        target_mon.last_damage_source = f"{p.name}'s Bide"
+        target_mon.current_hp = float(int(target_mon.current_hp) - unleashed_dmg)
+        self.flash_damages[(tx, ty)] = (unleashed_dmg, 1.0)
+        self.trigger_damage_flash()
+
+        if int(target_mon.current_hp) <= 0:
+            self.handle_defeat(target_mon)
+            self.handle_enemy_defeat(target_mon, defeater=p)
+            if target_mon in self.spawned_pokemon:
+                self.spawned_pokemon.remove(target_mon)
+            elif target_mon in self.party:
+                self.remove_party_member(target_mon)
 
     def _prompt_nickname(self, species_name: str) -> str | None:
         """Prompts the user to enter their name."""
@@ -3333,7 +3378,13 @@ class Game:
 
             #Check PP and move-specific requirements
             if not self.player_pokemon.can_use_move(move, game=self):
-                if move["name"] == "Fake Out" and getattr(self.player_pokemon, "fake_out_used_this_floor", False):
+                if self.player_pokemon.status_effects.get("Biding", 0) > 0:
+                    self.log_message(f"{self.player_pokemon.name} is biding its time!")
+                elif self.player_pokemon.status_effects.get("Substitute", 0) > 0:
+                    self.log_message(f"{self.player_pokemon.name} can't use moves while a substitute!")
+                elif move["name"] == "Substitute" and self.player_pokemon.current_hp < 0.5 * self.player_pokemon.max_hp:
+                    self.log_message(f"{self.player_pokemon.name} doesn't have enough HP to use Substitute!")
+                elif move["name"] == "Fake Out" and getattr(self.player_pokemon, "fake_out_used_this_floor", False):
                     self.log_message(f"{self.player_pokemon.name} can't use Fake Out again this floor!")
                 elif move["name"] == "Stockpile" and self.player_pokemon.status_effects.get("Stockpile", 0) >= 3:
                     self.log_message(f"{self.player_pokemon.name} can't Stockpile any more!")
@@ -3372,7 +3423,7 @@ class Game:
                 self.log_message(f"{self.player_pokemon.name} used {move['name']}!")
                 self.log_message("The move failed!")
             else:
-                range_str = move.get("range", "Adjacent enemy")
+                range_str = get_effective_move_range(self.player_pokemon, move)
                 if range_str == "Enemy in front":
                     range_str = "Adjacent enemy"
                 is_multi = range_str.startswith("All ") or "room" in range_str.lower() or "floor" in range_str.lower()
@@ -3400,7 +3451,7 @@ class Game:
             return
 
         #Check range type
-        range_str = move.get("range", "Adjacent enemy")
+        range_str = get_effective_move_range(self.player_pokemon, move)
         if range_str == "Enemy in front":
             range_str = "Adjacent enemy"
 
@@ -3410,7 +3461,7 @@ class Game:
             self.log_message(f"Which direction to use {move['name']}? ([Esc] to cancel)")
             return
 
-        is_multi = range_str.startswith("All ")
+        is_multi = range_str.startswith("All ") or "room" in range_str.lower() or "floor" in range_str.lower()
 
         if is_multi:
             #Multi-target move hits all targets automatically
@@ -3511,11 +3562,16 @@ class Game:
             p.cure_status("Diving", self)
         if p.status_effects.get("Focusing"):
             p.cure_status("Focusing", self)
+
+        if move["name"] == "Fly" and getattr(self, "gravity", False):
+            self.log_message(f"{p.name}'s Fly was interrupted by Gravity!")
+            p.charging_move = None
+            return True
         
         #Get targets using the stored direction or target
         targets = []
-        from targeting import get_valid_targets, has_clear_path
-        range_str = move.get("range", "Adjacent enemy")
+        from targeting import get_valid_targets, has_clear_path, get_effective_move_range
+        range_str = get_effective_move_range(p, move)
 
         if range_str.startswith("Straight line piercing"):
             dx, dy = p.charging_move.get("direction", (0, 0))
@@ -3543,6 +3599,16 @@ class Game:
                     if found and found != p and int(found.current_hp) > 0 and found in valid_pokes:
                         targets = [found]
                         break
+        elif range_str.startswith("All ") or "room" in range_str.lower() or "floor" in range_str.lower():
+            targets = get_valid_targets(self, p, move)
+            if targets:
+                for target in targets:
+                    if int(target.current_hp) > 0 and int(p.current_hp) > 0:
+                        self.execute_single_move(p, target, move, free=True)
+            else:
+                self.log_message("The move failed!")
+            p.charging_move = None
+            return True
         elif move["name"] == "Focus Punch":
             target_tile = p.charging_move.get("target_tile")
             dx, dy = p.charging_move.get("direction", (0, 0))
@@ -3796,9 +3862,9 @@ class Game:
             #Determine target
             target_default = "attacker" if eff_type == "healing" else "defender"
             target_name = effect.get("target", target_default)
-            eff_target = attacker if target_name == "attacker" else defender
+            eff_target = attacker if target_name in ("attacker", "user") else defender
             
-            if target_name == "defender" and int(defender.current_hp) <= 0:
+            if target_name not in ("attacker", "user") and int(defender.current_hp) <= 0:
                 continue
                 
             if eff_target != attacker and getattr(eff_target, "napping", False):
@@ -4888,6 +4954,20 @@ class Game:
                 attacker.apply_status("Paused", self, duration=1)
             return
 
+        #Check airborne immunity
+        is_airborne = bool(defender.charging_move and defender.charging_move.get("move", {}).get("name") in ("Fly", "Bounce"))
+        if attacker != defender and is_airborne and move.get("name") not in ("Smack Down", "Gust", "Twister", "Thunder", "Hurricane", "Helping Hand", "Lock-On", "Mind Reader") and not has_lock_on and not is_toxic_poison:
+            attacker.last_move_failed_turn = self.turn_number
+            self.log_message(f"{defender.name} avoided the attack!")
+            tx, ty = get_pokemon_position(self, defender)
+            self.flash_damages[(tx, ty)] = ("/", "MISS")
+            self.trigger_damage_flash()
+            if move.get("name") in ("High Jump Kick", "Axe Kick"):
+                self.trigger_crash_damage(attacker)
+            if move.get("name") in ("Giga Impact", "Hyper Beam"):
+                attacker.apply_status("Paused", self, duration=1)
+            return
+
 
 
         #Check type immunities for specific status moves
@@ -4945,7 +5025,7 @@ class Game:
                     return
 
         #Handle charging move initialization
-        if (move.get("charge_turns") or move["name"] in ("Solar Beam", "Dig", "Dive", "Focus Punch", "Sky Attack")) and not free:
+        if (move.get("charge_turns") or move["name"] in ("Solar Beam", "Dig", "Dive", "Focus Punch", "Sky Attack", "Razor Wind", "Skull Bash", "Fly")) and not free:
             if move["name"] == "Solar Beam":
                 self.log_message(f"{attacker.name} took in sunlight!")
                 if self.weather in ("Sunny", "Harsh Sunlight"):
@@ -4971,9 +5051,18 @@ class Game:
                     attacker.apply_status("Focusing", self)
                 elif move["name"] == "Sky Attack":
                     self.log_message(f"{attacker.name} became cloaked in a harsh light!")
+                elif move["name"] == "Skull Bash":
+                    self.log_message(f"{attacker.name} tucked in its head!")
+                elif move["name"] == "Razor Wind":
+                    self.log_message(f"{attacker.name} whipped up a whirlwind!")
+                elif move["name"] == "Fly":
+                    if getattr(self, "gravity", False):
+                        self.log_message("Gravity prevents Fly from being used!")
+                        return
+                    self.log_message(f"{attacker.name} flew up high!")
 
                 ax, ay = get_pokemon_position(self, attacker)
-                tx, ty = get_pokemon_position(self, defender)
+                tx, ty = get_pokemon_position(self, defender) if defender else (ax, ay)
                 dx = max(-1, min(1, tx - ax))
                 dy = max(-1, min(1, ty - ay))
                 attacker.charging_move = {
@@ -5443,6 +5532,29 @@ class Game:
                 self.execute_single_move(attacker, targets[0], chosen, free=True)
             else:
                 self.execute_single_move(attacker, attacker, chosen, free=True)
+            return
+
+        #Bide custom handling
+        if move.get("name") == "Bide":
+            attacker.apply_status("Biding", self, duration=3)
+            attacker.bide_damage = 0
+            tx, ty = get_pokemon_position(self, defender) if defender else get_pokemon_position(self, attacker)
+            attacker.bide_target_tile = (tx, ty)
+            return
+
+        #Substitute custom handling
+        if move.get("name") == "Substitute":
+            max_hp = float(attacker.stats["HP"])
+            cost = float(int(0.5 * max_hp))
+            if attacker.current_hp < cost:
+                self.log_message(f"{attacker.name} doesn't have enough HP to make a substitute!")
+                return
+            attacker.current_hp = max(1.0, attacker.current_hp - cost)
+            self.log_message(f"{attacker.name} made a substitute!")
+            ax, ay = get_pokemon_position(self, attacker)
+            self.flash_damages[(ax, ay)] = (f"{int(cost)}", "\033[91m")
+            self.trigger_damage_flash()
+            attacker.apply_status("Substitute", self, duration=10)
             return
 
         #Belly Drum custom handling
@@ -6313,7 +6425,7 @@ class Game:
         #If it's a non-damaging status move, execute effects directly and return
         category = move.get("category", "Status")
         power = move.get("power")
-        if category == "Status" or power is None or power <= 0:
+        if category == "Status" or ((power is None or power <= 0) and move.get("name") not in ("Dragon Rage", "Psywave", "Night Shade", "Seismic Toss", "Sonic Boom")):
             if attacker.status_effects.get("Taunted"):
                 self.log_message(f"{attacker.name} cannot use status moves while Taunted!")
                 return
@@ -6463,6 +6575,11 @@ class Game:
                 if move.get("category") in ("Physical", "Special") and damage > 0:
                     defender.damage_hit_turns.append(self.turn_number)
                     defender.damaged_by_pokemons[attacker] = self.turn_number
+                    if defender.status_effects.get("Enraged", 0) > 0:
+                        defender.apply_stat_modifier("Attack", 1, self)
+
+                if damage > 0 and defender.status_effects.get("Biding", 0) > 0:
+                    defender.bide_damage = getattr(defender, "bide_damage", 0) + damage
 
                 if defender.napping:
                     defender.napping = False
@@ -6942,6 +7059,9 @@ class Game:
 
         attacker.last_used_move = move["name"]
         attacker.last_used_move_on_floor = move["name"]
+
+        if attacker.status_effects.get("Enraged", 0) > 0 and move.get("name") != "Rage":
+            attacker.cure_status("Enraged", self)
 
         if move.get("name") != "Echoed Voice":
             #Reset Echoed Voice chain counter
@@ -8066,6 +8186,18 @@ class Game:
                 if state["mode"] == "options":
                     option = state["context_menu"][state["context_index"]]
                     if option in ("Use", "Eat", "Use/Eat"):
+                        if self.player_pokemon.status_effects.get("Substitute", 0) > 0:
+                            self.log_message("You cannot use items while a substitute!")
+                            self.inventory_state = None
+                            self.render()
+                            return
+
+                        if self.player_pokemon.status_effects.get("Biding", 0) > 0:
+                            self.log_message(f"{self.player_pokemon.name} is biding its time!")
+                            self.inventory_state = None
+                            self.render()
+                            return
+
                         if self.player_pokemon.status_effects.get("Puppet", 0) > 0:
                             self.log_message(f"{self.player_pokemon.name} can't use items while a puppet!")
                             self.inventory_state = None
@@ -8141,6 +8273,16 @@ class Game:
                                 self.render()
                                 
                     elif option == "Throw":
+                        if self.player_pokemon.status_effects.get("Substitute", 0) > 0:
+                            self.log_message("You cannot use items while a substitute!")
+                            self.inventory_state = None
+                            self.render()
+                            return
+                        if self.player_pokemon.status_effects.get("Biding", 0) > 0:
+                            self.log_message(f"{self.player_pokemon.name} is biding its time!")
+                            self.inventory_state = None
+                            self.render()
+                            return
                         if self.player_pokemon.status_effects.get("Puppet", 0) > 0:
                             self.log_message(f"{self.player_pokemon.name} can't use items while a puppet!")
                             self.inventory_state = None
@@ -9866,6 +10008,8 @@ class Game:
                         fake_type = fake_p.get("types", ["Normal"])[0] if fake_p.get("types") else "Normal"
                         color = TYPE_COLORS.get(fake_type, "\033[37m")
                         row_chars.append(f"{color}{fake_p['name'][0]}\033[0m")
+                    elif self.player_pokemon.status_effects.get("Substitute", 0) > 0:
+                        row_chars.append("\033[94m?\033[0m")
                     elif self.player_pokemon.status_effects.get("Decoy", 0) > 0 and not getattr(self.player_pokemon, "is_leader", False):
                         row_chars.append("\033[92m?\033[0m")
                     else:
@@ -9878,6 +10022,8 @@ class Game:
                         fake_type = fake_p.get("types", ["Normal"])[0] if fake_p.get("types") else "Normal"
                         color = TYPE_COLORS.get(fake_type, "\033[37m")
                         row_chars.append(f"{color}{fake_p['name'][0]}\033[0m")
+                    elif ally.status_effects.get("Substitute", 0) > 0:
+                        row_chars.append("\033[94m?\033[0m")
                     elif ally.status_effects.get("Decoy", 0) > 0 and not getattr(ally, "is_leader", False):
                         row_chars.append("\033[92m?\033[0m")
                     else:
@@ -9896,6 +10042,8 @@ class Game:
                                 row_chars.append(f"{color}{fake_p['name'][0]}\033[0m")
                             else:
                                 row_chars.append(f"\033[91m{fake_p['name'][0]}\033[0m")
+                        elif poke.status_effects.get("Substitute", 0) > 0:
+                            row_chars.append("\033[94m?\033[0m")
                         elif poke.status_effects.get("Decoy", 0) > 0 and not getattr(poke, "is_leader", False):
                             row_chars.append("\033[92m?\033[0m")
                         else:
@@ -11603,6 +11751,20 @@ class Game:
 
             if self.process_charging_move(self.player_pokemon):
                 self.start_player_action()
+                self.on_turn_completed()
+                if self.message_log.has_pending():
+                    self.process_messages()
+                else:
+                    self.render()
+                continue
+
+            #Time passes automatically while the leader is biding
+            if self.player_pokemon.status_effects.get("Biding", 0) > 0:
+                if not self.suppress_animation_delay:
+                    import time
+                    time.sleep(0.3)
+                self.start_player_action()
+                self.log_message(f"{self.player_pokemon.name} is biding its time!")
                 self.on_turn_completed()
                 if self.message_log.has_pending():
                     self.process_messages()

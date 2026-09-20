@@ -17,6 +17,29 @@ def get_pokemon_position(game, pokemon: Pokemon) -> tuple[int, int]:
     return getattr(pokemon, "x", 0), getattr(pokemon, "y", 0)
 
 
+def get_effective_move_range(attacker: Pokemon | None, move: dict) -> str:
+    """Returns the effective range string of a move (now takes dynamic scaling for Dragon Rage into account)"""
+    range_str = move.get("range", "Adjacent enemy")
+    move_name = move.get("name", "")
+    if move_name == "Curse" and attacker:
+        user_types = getattr(attacker, "temp_types", None) or getattr(attacker, "types", attacker.species_data.get("types", []))
+        if "Ghost" in user_types:
+            range_str = "Adjacent enemy"
+        else:
+            range_str = "User"
+    elif move_name == "Dragon Rage" and attacker:
+        lvl = getattr(attacker, "level", 1)
+        if lvl < 25:
+            range_str = "Adjacent enemy"
+        elif lvl <= 50:
+            range_str = "All adjacent enemies"
+        else:
+            range_str = "All enemies in the room"
+    if range_str == "Enemy in front":
+        range_str = "Adjacent enemy"
+    return range_str
+
+
 def get_actual_target(game, attacker: Pokemon, target: Pokemon, move: dict) -> Pokemon:
     """Returns the actual target hit by a move.
 
@@ -24,7 +47,7 @@ def get_actual_target(game, attacker: Pokemon, target: Pokemon, move: dict) -> P
     check if any other Pokémon (enemy or ally) is in the way along the path.
     If so, returns the first intermediate Pokémon encountered.
     """
-    range_str = move.get("range", "Adjacent enemy")
+    range_str = get_effective_move_range(attacker, move)
     if range_str.startswith("Straight line"):
         return target
 
@@ -219,9 +242,7 @@ def is_ally_in_way_of_attack(game, attacker: Pokemon, target: Pokemon, move: dic
     if attacker not in game.party:
         return False
 
-    range_str = move.get("range", "Adjacent enemy")
-    if range_str == "Enemy in front":
-        range_str = "Adjacent enemy"
+    range_str = get_effective_move_range(attacker, move)
 
     #Room-wide/floor-wide, self or ally moves do not travel along a line to a target
     if range_str.startswith("All ") or "room" in range_str.lower() or "floor" in range_str.lower() or range_str == "User":
@@ -315,13 +336,7 @@ def get_valid_targets(game, attacker: Pokemon, move: dict) -> list[Pokemon]:
             return []
         return get_valid_targets(game, attacker, last_move)
 
-    range_str = move.get("range", "Adjacent enemy")
-    if move.get("name") == "Curse": #because curse is annoying and dumb and basically 2 moves in one it has to get special logic lmao
-        user_types = getattr(attacker, "temp_types", None) or getattr(attacker, "types", attacker.species_data.get("types", []))
-        if "Ghost" in user_types:
-            range_str = "Adjacent enemy"
-        else:
-            range_str = "User"
+    range_str = get_effective_move_range(attacker, move)
 
     ax, ay = get_pokemon_position(game, attacker)
 
@@ -365,16 +380,20 @@ def get_valid_targets(game, attacker: Pokemon, move: dict) -> list[Pokemon]:
         target_is_ally = target in game.party
         is_enemy = attacker_is_ally != target_is_ally
 
+        #Enemies ignore targets with active Substitute
+        if is_enemy and target.status_effects.get("Substitute", 0) > 0:
+            continue
+
         #Filter by relationship (skipped if attacker is confused or target is a decoy)
         if attacker.status_effects.get("Puppet", 0) > 0:
-            if range_str in ("Adjacent enemy", "Adjacent enemy or ally", "All adjacent enemies", "Enemy up to 2 tiles away", "Enemy up to 3 tiles away", "All enemies in room", "All enemies on floor", "Straight line", "Straight line up to 4 tiles", "Straight line piercing"):
+            if range_str in ("Adjacent enemy", "Adjacent enemy or ally", "All adjacent enemies", "Enemy up to 2 tiles away", "Enemy up to 3 tiles away", "All enemies in room", "All enemies in the room", "All enemies on floor", "Straight line", "Straight line up to 4 tiles", "Straight line piercing"):
                 if not target_is_ally or target is attacker:
                     continue
             elif range_str in ("All allies in room", "All allies on floor", "All allies in room, including user", "All allies on floor, including user"):
                 if not target_is_ally:
                     continue
         elif attacker.status_effects.get("Confusion", 0) <= 0 and target.status_effects.get("Decoy", 0) <= 0:
-            if range_str in ("Adjacent enemy", "All adjacent enemies", "Enemy up to 2 tiles away", "Enemy up to 3 tiles away", "All enemies in room", "All enemies on floor"):
+            if range_str in ("Adjacent enemy", "All adjacent enemies", "Enemy up to 2 tiles away", "Enemy up to 3 tiles away", "All enemies in room", "All enemies in the room", "All enemies on floor"):
                 if not is_enemy:
                     continue
             elif range_str in ("All allies in room", "All allies on floor", "All allies in room, including user", "All allies on floor, including user"):
@@ -438,15 +457,7 @@ def get_confusion_targets(game, attacker: Pokemon, move: dict) -> list[Pokemon]:
     """Selects targets for a confused attacker, which chooses attack directions at random"""
     import random
     from targeting import get_pokemon_position, has_clear_path, get_room_tiles_at
-    range_str = move.get("range", "Adjacent enemy")
-    if move.get("name") == "Curse": #ditto (not the pokémon)
-        user_types = getattr(attacker, "temp_types", None) or getattr(attacker, "types", attacker.species_data.get("types", []))
-        if "Ghost" in user_types:
-            range_str = "Adjacent enemy"
-        else:
-            range_str = "User"
-    if range_str == "Enemy in front":
-        range_str = "Adjacent enemy"
+    range_str = get_effective_move_range(attacker, move)
 
     ax, ay = get_pokemon_position(game, attacker)
     directions = [(dx, dy) for dx in [-1, 0, 1] for dy in [-1, 0, 1] if not (dx == 0 and dy == 0)]
