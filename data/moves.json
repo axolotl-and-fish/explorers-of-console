@@ -6399,5 +6399,38 @@
     "range": "User",
     "pp_cost": 5,
     "effects": []
+  },
+  {
+    "name": "Spin Slash",
+    "type": "typeless",
+    "description": "Damages all enemies around the user.",
+    "category": "Physical",
+    "power": 50,
+    "accuracy": null,
+    "range": "All adjacent enemies",
+    "pp_cost": 3,
+    "effects": []
+  },
+  {
+    "name": "Wide Slash",
+    "type": "typeless",
+    "description": "Damages an adjacent enemy and enemies on the two tiles next to it.",
+    "category": "Physical",
+    "power": 60,
+    "accuracy": 90,
+    "range": "Adjacent enemy",
+    "pp_cost": 3,
+    "effects": []
+  },
+  {
+    "name": "Vacuum Cut",
+    "type": "typeless",
+    "description": "Deals 20 damage to all enemies in the room.",
+    "category": "Special",
+    "power": null,
+    "accuracy": 100,
+    "range": "All enemies in the room",
+    "pp_cost": 5,
+    "effects": []
   }
 ]
