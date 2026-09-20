@@ -553,7 +553,7 @@ def apply_item_effect(item: dict, target, game, is_thrown: bool = False):
             if is_critical:
                 game.log_message("A critical hit!")
             src = f"{attacker.name}'s {name}" if attacker else name
-            game.apply_direct_damage(target, damage, attacker=attacker, damage_source=src)
+            game.apply_direct_damage(target, damage, attacker=attacker, damage_source=src, is_critical=is_critical, type_mult=type_mult)
         else:
             game.log_message("This message should never appear. If you see it, please contact C4!")
             
@@ -567,7 +567,7 @@ def apply_item_effect(item: dict, target, game, is_thrown: bool = False):
             if is_critical:
                 game.log_message("A critical hit!")
             src = f"{attacker.name}'s {name}" if attacker else name
-            game.apply_direct_damage(target, damage, attacker=attacker, damage_source=src)
+            game.apply_direct_damage(target, damage, attacker=attacker, damage_source=src, is_critical=is_critical, type_mult=type_mult)
         else:
             game.log_message("This message should never appear. If you see it, please contact C4!")
             
@@ -581,7 +581,7 @@ def apply_item_effect(item: dict, target, game, is_thrown: bool = False):
             if is_critical:
                 game.log_message("A critical hit!")
             src = f"{attacker.name}'s {name}" if attacker else name
-            game.apply_direct_damage(target, damage, attacker=attacker, damage_source=src)
+            game.apply_direct_damage(target, damage, attacker=attacker, damage_source=src, is_critical=is_critical, type_mult=type_mult)
         else:
             game.log_message("This message should never appear. If you see it, please contact C4!")
             
@@ -595,7 +595,7 @@ def apply_item_effect(item: dict, target, game, is_thrown: bool = False):
             if is_critical:
                 game.log_message("A critical hit!")
             src = f"{attacker.name}'s {name}" if attacker else name
-            game.apply_direct_damage(target, damage, attacker=attacker, damage_source=src)
+            game.apply_direct_damage(target, damage, attacker=attacker, damage_source=src, is_critical=is_critical, type_mult=type_mult)
         else:
             game.log_message("This message should never appear. If you see it, please contact C4!")
             
@@ -609,7 +609,7 @@ def apply_item_effect(item: dict, target, game, is_thrown: bool = False):
             if is_critical:
                 game.log_message("A critical hit!")
             src = f"{attacker.name}'s {name}" if attacker else name
-            game.apply_direct_damage(target, damage, attacker=attacker, damage_source=src)
+            game.apply_direct_damage(target, damage, attacker=attacker, damage_source=src, is_critical=is_critical, type_mult=type_mult)
         else:
             game.log_message("This message should never appear. If you see it, please contact C4!")
 
@@ -623,7 +623,7 @@ def apply_item_effect(item: dict, target, game, is_thrown: bool = False):
             if is_critical:
                 game.log_message("A critical hit!")
             src = f"{attacker.name}'s {name}" if attacker else name
-            game.apply_direct_damage(target, damage, attacker=attacker, damage_source=src)
+            game.apply_direct_damage(target, damage, attacker=attacker, damage_source=src, is_critical=is_critical, type_mult=type_mult)
         else:
             game.log_message("This message should never appear. If you see it, please contact C4!")
             

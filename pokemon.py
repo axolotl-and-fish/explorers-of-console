@@ -903,6 +903,23 @@ class Pokemon:
 
         current = self.stat_modifiers.get(stat, 0)
 
+        STAT_COLORS = {
+            "Attack": "\033[91m",           #Red
+            "Defense": "\033[92m",          #Green
+            "Special_Attack": "\033[35m",   #Purple
+            "Special Attack": "\033[35m",
+            "Sp. Attack": "\033[35m",
+            "Special_Defense": "\033[90m",  #Gray
+            "Special Defense": "\033[90m",
+            "Sp. Defense": "\033[90m",
+            "Speed": "\033[96m",            #Cyan
+            "Movement Speed": "\033[94m",   #Blue
+            "Movement_Speed": "\033[94m",
+            "movement_speed": "\033[94m",
+            "Evasion": "\033[93m",          #Yellow
+            "Accuracy": "\033[95m",         #Pink
+        }
+
         if stages < 0:
             if game and getattr(game, "weather", None) == "Mist":
                 game.log_message(f"Mist protected {self.name}'s stats!")
@@ -920,6 +937,14 @@ class Pokemon:
                 game.log_message(f"{self.name}'s {display_stat} fell sharply!")
             else:
                 game.log_message(f"{self.name}'s {display_stat} fell severely!")
+
+            if game:
+                from targeting import get_pokemon_position
+                pos = get_pokemon_position(game, self)
+                if pos:
+                    color = STAT_COLORS.get(stat, "\033[37m")
+                    game.flash_damages[pos] = ("↓", color)
+                    game.trigger_damage_flash()
         else:
             if current >= 6:
                 game.log_message(f"{self.name}'s {display_stat} cannot go any higher.")
@@ -933,6 +958,14 @@ class Pokemon:
                 game.log_message(f"{self.name}'s {display_stat} rose sharply!")
             else:
                 game.log_message(f"{self.name}'s {display_stat} rose drastically!")
+
+            if game:
+                from targeting import get_pokemon_position
+                pos = get_pokemon_position(game, self)
+                if pos:
+                    color = STAT_COLORS.get(stat, "\033[37m")
+                    game.flash_damages[pos] = ("↑", color)
+                    game.trigger_damage_flash()
 
     def change_movement_speed(self, new_stage: int, game, is_decay: bool = False):
         """Changes the Pokémon's movement speed stage (between -1 and 3) and sets the temporary turn duration. (-1 = slowed, 1 = 2x speed, 2 = 3x speed, 3 = 4x speed)"""
@@ -984,6 +1017,14 @@ class Pokemon:
         #Reset slow turn toggle on speed change for safety
         self.slow_turn_toggle = False
 
+        if game and not is_decay:
+            from targeting import get_pokemon_position
+            pos = get_pokemon_position(game, self)
+            if pos:
+                arrow = "↑" if new_stage > old_stage else "↓"
+                game.flash_damages[pos] = (arrow, "\033[94m")
+                game.trigger_damage_flash()
+
         #Print message to log
         if game:
             if new_stage == -1:
@@ -1008,6 +1049,37 @@ class Pokemon:
             if game:
                 game.suppress_target_logs = orig_suppress
 
+    def _trigger_status_popup(self, status: str, game):
+        """Displays a 3-letter pop-up for negative status effects."""
+        if not game:
+            return
+        status_popups = {
+            "Poison": ("PSN", "\033[35m"),       #purple
+            "Toxic": ("PSN", "\033[91m"),        #red
+            "Toxic Poison": ("PSN", "\033[91m"), #red (unused)
+            "Burn": ("BRN", "\033[91m"),         #red
+            "Confusion": ("???", "\033[93m"),    #yellow
+            "Confused": ("???", "\033[93m"),     #yellow
+            "Frozen": ("FRZ", "\033[94m"),       #blue
+            "Sleep": ("SLP", "\033[97m"),        #white
+            "Paralysis": ("PRZ", "\033[93m"),    #yellow (unused)
+            "Paralyzed": ("PRZ", "\033[93m"),    #yellow (unused)
+            "Flinch": ("!!!", "\033[97m"),       #white
+            "Leech Seed": ("LCH", "\033[92m"),   #green
+            "Terrified": ("!!!", "\033[92m"),    #green
+            "Petrified": ("***", "\033[90m"),    #gray
+            "Curse": ("CRS", "\033[95m"),        #pink (unused?)
+            "Cursed": ("CRS", "\033[95m"),       #pink
+        }
+        popup_info = status_popups.get(status)
+        if popup_info:
+            from targeting import get_pokemon_position
+            pos = get_pokemon_position(game, self)
+            if pos:
+                text, color = popup_info
+                game.flash_damages[pos] = (text, color)
+                game.trigger_damage_flash()
+
     def _apply_status_internal(self, status: str, game, duration: int | None = None):
         """Applies a negative status effect to the Pokémon and prints the log message."""
         import random
@@ -1016,17 +1088,17 @@ class Pokemon:
         
         #Type immunities for specific status effects
         p_types = self.types
-        if status in ("Poison", "Toxic") and any(t in p_types for t in ("Poison", "Steel")):
+        if status in ("Poison", "Toxic", "Toxic Poison") and any(t in p_types for t in ("Poison", "Steel")):
             return
         if status == "Burn" and "Fire" in p_types:
             return
-        if status == "Paralysis" and "Electric" in p_types:
+        if status in ("Paralysis", "Paralyzed") and "Electric" in p_types:
             return
         if status == "Frozen" and any(t in p_types for t in ("Fire", "Ice")):
             return
 
         #Check Safeguard protection
-        if status in ("Sleep", "Paralysis", "Poison", "Toxic", "Burn", "Frozen", "Flinch", "Petrified", "Confusion", "Leech Seed", "Fire Spin", "Slow", "Stuck", "Curse", "Drowsy", "Whirlpool", "Perishing", "Terrified", "Puppet", "Hallucinating", "Blind"):
+        if status in ("Sleep", "Paralysis", "Paralyzed", "Poison", "Toxic", "Toxic Poison", "Burn", "Frozen", "Flinch", "Petrified", "Confusion", "Leech Seed", "Fire Spin", "Slow", "Stuck", "Curse", "Cursed", "Drowsy", "Whirlpool", "Perishing", "Terrified", "Puppet", "Hallucinating", "Blind"):
             if self.status_effects.get("Safeguard", 0) > 0:
                 game.log_message(f"{self.name} is protected by Safeguard!")
                 return
@@ -1050,6 +1122,7 @@ class Pokemon:
                 return
             self.status_effects["Sleep"] = duration if duration is not None else random.randint(3, 6)
             game.log_message(f"{self.name} fell asleep!")
+            self._trigger_status_popup("Sleep", game)
             if self.charging_move:
                 c_move_name = self.charging_move.get("move", {}).get("name", "move")
                 game.log_message(f"{self.name}'s {c_move_name} was interrupted!")
@@ -1063,15 +1136,18 @@ class Pokemon:
                 return
             self.status_effects["Resting"] = 3
             game.log_message(f"{self.name} went to sleep!")
-        elif status == "Paralysis":
+        elif status in ("Paralysis", "Paralyzed"):
             self.status_effects["Paralysis"] = 5
             game.log_message(f"{self.name} became paralyzed!")
+            self._trigger_status_popup("Paralysis", game)
         elif status == "Poison":
             self.status_effects["Poison"] = True
             game.log_message(f"{self.name} was poisoned!")
-        elif status == "Toxic":
+            self._trigger_status_popup("Poison", game)
+        elif status in ("Toxic", "Toxic Poison"):
             self.status_effects["Toxic"] = True
             game.log_message(f"{self.name} was badly poisoned!")
+            self._trigger_status_popup("Toxic", game)
         elif status == "Burn":
             if self.status_effects.get("Frozen", 0) > 0:
                 #Can't burn a frozen target or frozen cures it, let's just ignore or thaw
@@ -1081,28 +1157,34 @@ class Pokemon:
                 return
             self.status_effects["Burn"] = True
             game.log_message(f"{self.name} sustained a burn!")
+            self._trigger_status_popup("Burn", game)
         elif status == "Frozen":
             self.status_effects["Frozen"] = duration if duration is not None else random.randint(3, 6)
             game.log_message(f"{self.name} was frozen solid!")
+            self._trigger_status_popup("Frozen", game)
             #Being frozen cures burn
             if self.status_effects.get("Burn"):
                 self.cure_status("Burn", game)
         elif status == "Flinch":
             self.status_effects["Flinch"] = 1
             game.log_message(f"{self.name} flinched!")
+            self._trigger_status_popup("Flinch", game)
         elif status == "Petrified":
             is_team = hasattr(game, "party") and self in game.party
             self.status_effects["Petrified"] = 20 if is_team else -1
             game.log_message(f"{self.name} became petrified!")
+            self._trigger_status_popup("Petrified", game)
         elif status == "Confusion":
             if self.status_effects.get("Confusion", 0) > 0:
                 game.log_message(f"{self.name} is already confused.")
                 return
             self.status_effects["Confusion"] = duration if duration is not None else random.randint(6, 10)
             game.log_message(f"{self.name} became confused!")
+            self._trigger_status_popup("Confusion", game)
         elif status == "Leech Seed":
             self.status_effects["Leech Seed"] = duration if duration is not None else random.randint(6, 9)
             game.log_message(f"{self.name} was seeded!")
+            self._trigger_status_popup("Leech Seed", game)
         elif status == "Sleepless":
             self.status_effects["Sleepless"] = True
             game.log_message(f"{self.name} became sleepless!")
@@ -1185,9 +1267,10 @@ class Pokemon:
         elif status == "Taunted":
             self.status_effects["Taunted"] = True
             game.log_message(f"{self.name} fell for the Taunt!")
-        elif status == "Curse":
+        elif status in ("Curse", "Cursed"):
             self.status_effects["Curse"] = True
             game.log_message(f"{self.name} was cursed!")
+            self._trigger_status_popup("Curse", game)
         elif status == "Decoy":
             self.status_effects["Decoy"] = duration if duration is not None else 6
             game.log_message(f"{self.name} became a Decoy!")
@@ -1263,6 +1346,7 @@ class Pokemon:
         elif status == "Terrified":
             self.status_effects["Terrified"] = duration if duration is not None else random.randint(10, 15)
             game.log_message(f"{self.name} became terrified!")
+            self._trigger_status_popup("Terrified", game)
         elif status == "Blind":
             self.status_effects["Blind"] = duration if duration is not None else 10
             game.log_message(f"{self.name} was blinded!")

@@ -228,7 +228,7 @@ class Game:
         self.targeting_targets: list[Pokemon] = [] #List of valid targets for the targeting mode cursor
         self.waiting_for_direction = False
         self.direction_move: dict | None = None
-        self.flash_damages: dict[tuple[int, int], tuple[int | str, float | str]] = {} #Pop-ups that appear when a Pokémon is damaged, healed or gains EXP
+        self.flash_damages: dict[tuple[int, int], tuple[int | str, float | str] | tuple[int | str, float | str, bool]] = {} #Pop-ups that appear when a Pokémon is damaged, healed or gains EXP
         self.moved_used_this_turn: set[Pokemon] = set()
         self.round_users_this_turn: set[Pokemon] = set()
         self.party_start_positions: dict[Pokemon, tuple[int, int]] = {}
@@ -2720,7 +2720,7 @@ class Game:
                 if target_poke and int(target_poke.current_hp) > 0:
                     self.log_message(f"{target_poke.name} took the Future Sight attack!")
                     damage, is_critical, type_mult = calculate_damage(attacker, target_poke, move, self)
-                    self.apply_direct_damage(target_poke, damage, attacker=attacker) #We need to damage this way because we're handling damage outside of the normal function
+                    self.apply_direct_damage(target_poke, damage, attacker=attacker, is_critical=is_critical, type_mult=type_mult) #We need to damage this way because we're handling damage outside of the normal function
                     if is_critical:
                         self.log_message("A critical hit!")
                     if type_mult >= 1.25:
@@ -3807,7 +3807,7 @@ class Game:
             self.log_message(f"{target.name} was caught in the explosion!")
 
             tx, ty = get_pokemon_position(self, target)
-            self.flash_damages[(tx, ty)] = (damage, type_mult)
+            self.flash_damages[(tx, ty)] = (damage, type_mult, is_crit)
             self.trigger_damage_flash()
 
             #Explosions wake-up sleeping Pokémon
@@ -4483,7 +4483,7 @@ class Game:
                 self.log_message(f"{defender.name} was hurt by Fire Spin!")
                 
                 tx, ty = get_pokemon_position(self, defender)
-                self.flash_damages[(tx, ty)] = (damage, type_mult)
+                self.flash_damages[(tx, ty)] = (damage, type_mult, is_critical)
                 self.trigger_damage_flash()
                 
                 if int(defender.current_hp) <= 0:
@@ -4540,7 +4540,7 @@ class Game:
             self.log_message(f"{defender.name} was hurt by Wrap!")
             
             tx, ty = get_pokemon_position(self, defender)
-            self.flash_damages[(tx, ty)] = (damage, type_mult)
+            self.flash_damages[(tx, ty)] = (damage, type_mult, is_critical)
             self.trigger_damage_flash()
             
             if int(defender.current_hp) <= 0:
@@ -4609,7 +4609,7 @@ class Game:
                 self.log_message(f"{defender.name} was hurt by Sand Tomb!")
                 
                 tx, ty = get_pokemon_position(self, defender)
-                self.flash_damages[(tx, ty)] = (damage, type_mult)
+                self.flash_damages[(tx, ty)] = (damage, type_mult, is_critical)
                 self.trigger_damage_flash()
                 
                 if int(defender.current_hp) <= 0:
@@ -4675,7 +4675,7 @@ class Game:
                 self.log_message(f"{defender.name} was hurt by Whirlpool!")
                 
                 tx, ty = get_pokemon_position(self, defender)
-                self.flash_damages[(tx, ty)] = (damage, type_mult)
+                self.flash_damages[(tx, ty)] = (damage, type_mult, is_critical)
                 self.trigger_damage_flash()
                 
                 if int(defender.current_hp) <= 0:
@@ -5233,7 +5233,7 @@ class Game:
             for tx, ty, target_poke in targets_chosen:
                 if target_poke and int(target_poke.current_hp) > 0:
                     damage, is_critical, type_mult = calculate_damage(attacker, target_poke, move, self, is_multi_target=is_multi_thrash)
-                    self.apply_direct_damage(target_poke, damage, attacker=attacker)
+                    self.apply_direct_damage(target_poke, damage, attacker=attacker, is_critical=is_critical, type_mult=type_mult)
                     if is_critical:
                         self.log_message("A critical hit!")
                     if type_mult >= 1.25:
@@ -5262,7 +5262,7 @@ class Game:
         #Circle Throw & Dragon Tail custom handling - they do damage twice, once before throwing, then again after throwing if the thrown guy hits something
         if move.get("name") == "Circle Throw" or move.get("name") == "Dragon Tail":
             damage, is_critical, type_mult = calculate_damage(attacker, defender, move, self)
-            self.apply_direct_damage(defender, damage, attacker=attacker)
+            self.apply_direct_damage(defender, damage, attacker=attacker, is_critical=is_critical, type_mult=type_mult)
             if is_critical:
                 self.log_message("A critical hit!")
             if type_mult >= 1.25:
@@ -5989,7 +5989,7 @@ class Game:
                     self.log_message("It had little effect...")
 
                 tx, ty = get_pokemon_position(self, defender)
-                self.flash_damages[(tx, ty)] = (damage, type_mult)
+                self.flash_damages[(tx, ty)] = (damage, type_mult, is_critical)
                 self.trigger_damage_flash()
 
                 if int(defender.current_hp) <= 0:
@@ -6353,7 +6353,7 @@ class Game:
                     self.log_message("It had little effect...")
 
                 tx, ty = get_pokemon_position(self, defender)
-                self.flash_damages[(tx, ty)] = (damage, type_mult)
+                self.flash_damages[(tx, ty)] = (damage, type_mult, is_critical)
                 self.trigger_damage_flash()
 
                 if int(defender.current_hp) <= 0:
@@ -6445,7 +6445,7 @@ class Game:
                     self.log_message("It had little effect...")
 
                 tx, ty = get_pokemon_position(self, defender)
-                self.flash_damages[(tx, ty)] = (damage, type_mult)
+                self.flash_damages[(tx, ty)] = (damage, type_mult, is_critical)
                 self.trigger_damage_flash()
 
                 if int(defender.current_hp) <= 0:
@@ -6693,14 +6693,14 @@ class Game:
                         attacker.current_hp = min(float(attacker.stats["HP"]), attacker.current_hp + heal_amount)
                         self.log_message(f"{attacker.name}'s HP was restored.")
                         tx, ty = get_pokemon_position(self, defender)
-                        self.flash_damages[(tx, ty)] = (damage, type_mult)
+                        self.flash_damages[(tx, ty)] = (damage, type_mult, is_critical)
                         ax, ay = get_pokemon_position(self, attacker)
                         self.flash_damages[(ax, ay)] = (f"{heal_amount}", "HEAL")
                         self.trigger_damage_flash()
 
                 if not is_drain_move and (move.get("category") in ("Physical", "Special") or damage > 0):
                     tx, ty = get_pokemon_position(self, defender)
-                    self.flash_damages[(tx, ty)] = (damage, type_mult)
+                    self.flash_damages[(tx, ty)] = (damage, type_mult, is_critical)
                     self.trigger_damage_flash()
 
                 #Handle recoil
@@ -8145,7 +8145,7 @@ class Game:
             else:
                 self.render()
 
-    def apply_direct_damage(self, target, damage: int, attacker=None, damage_source: str | None = None):
+    def apply_direct_damage(self, target, damage: int, attacker=None, damage_source: str | None = None, is_critical: bool = False, type_mult: float = 1.0):
         """Applies direct damage to a Pokémon, triggering damage flashes, logs, and checking defeat"""
         if damage_source:
             target.last_damage_source = damage_source
@@ -8170,7 +8170,7 @@ class Game:
             actual_dmg = int(min(target.current_hp, damage))
             target.current_hp = float(int(target.current_hp) - actual_dmg)
 
-            self.flash_damages[(tx, ty)] = (damage, 1.0)
+            self.flash_damages[(tx, ty)] = (damage, type_mult, is_critical)
             self.trigger_damage_flash()
 
             if int(target.current_hp) <= 0:
@@ -9652,8 +9652,8 @@ class Game:
             return
 
         starters = [
-            "Bulbasaur", "Charmander", "Squirtle", "Pikachu", "Vulpix",
-            "Growlithe", "Meowth", "Psyduck", "Machop", "Cubone", "Eevee"
+            "Bulbasaur", "Charmander", "Squirtle", "Pikachu", "Vulpix", "Vulpix-A"
+            "Growlithe", "Growlithe-H", "Meowth", "Meowth-A", "Meowth-G", "Psyduck", "Machop", "Cubone", "Eevee"
         ]
         sel = state.get("selected_index", 0)
 
@@ -9810,8 +9810,12 @@ class Game:
             ("Squirtle", "Water"),
             ("Pikachu", "Electric"),
             ("Vulpix", "Fire"),
+            ("Vulpix-A", "Ice"),
             ("Growlithe", "Fire"),
+            ("Growlithe-H", "Fire/Rock"),
             ("Meowth", "Normal"),
+            ("Meowth-A", "Dark"),
+            ("Meowth-G", "Steel"),
             ("Psyduck", "Water"),
             ("Machop", "Fighting"),
             ("Cubone", "Ground"),
@@ -10051,6 +10055,50 @@ class Game:
                 slot_str = str(slot_num) if slot_num < 10 else str(slot_num % 10) #Indices start at zero
                 ally_map[(ax, ay)] = (ally, slot_str)
 
+        #Precompute flash popup positions for strings >= 3 chars
+        flash_popups: dict[tuple[int, int], tuple[str, str]] = {}
+        for (fx, fy), flash_data in self.flash_damages.items():
+            dmg = flash_data[0]
+            mult = flash_data[1]
+            is_crit = flash_data[2] if len(flash_data) > 2 else False
+
+            if mult == "EXP":
+                color = "\033[94m"  #Blue
+            elif mult == "HEAL":
+                color = "\033[92m"  #Green
+            elif mult == "MISS":
+                color = "\033[90m"  #Gray
+            elif isinstance(mult, (int, float)) and mult >= 1.25:
+                color = "\033[91m"  #Red
+            elif isinstance(mult, (int, float)) and 0.25 < mult <= 0.75:
+                color = "\033[93m"  #Yellow
+            elif isinstance(mult, (int, float)) and mult == 0.25:
+                color = "\033[90m"  #Gray
+            elif isinstance(mult, str) and mult.startswith("\033["):
+                color = mult
+            else:
+                color = "\033[38;5;208m"  #Orange
+
+            if is_crit:
+                if color == "\033[91m":
+                    color = "\033[30;101m"  #Black on bright red
+                elif color == "\033[93m":
+                    color = "\033[30;103m"  #Black on bright yellow
+                elif color == "\033[90m":
+                    color = "\033[30;100m"  #Black on bright black/gray
+                elif color == "\033[38;5;208m":
+                    color = "\033[30;48;5;208m"  #Black on orange
+                else:
+                    color = f"\033[7m{color}"
+
+            dmg_str = str(dmg)
+            str_len = len(dmg_str)
+            if str_len >= 3:
+                start_x = max(0, min(self.floor.width - str_len, fx - (str_len - 1) // 2))
+            else:
+                start_x = fx
+            flash_popups[(start_x, fy)] = (dmg_str, color)
+
         output_rows = []
         shake_x, shake_y = getattr(self, "map_shake_offset", (0, 0))
         blanked_tiles: set[tuple[int, int]] = getattr(self, "collapse_blanked_tiles", set())
@@ -10077,24 +10125,8 @@ class Game:
                     row_chars.append(f"{anim['color']}{anim['char']}\033[0m")
                 elif getattr(self, "look_around_mode", False) and src_x == self.look_around_cursor[0] and src_y == self.look_around_cursor[1] and getattr(self, "look_around_cursor_visible", True):
                     row_chars.append("\033[93mX\033[0m")
-                elif (src_x, src_y) in self.flash_damages:
-                    dmg, mult = self.flash_damages[(src_x, src_y)]
-                    if mult == "EXP":
-                        color = "\033[94m"  #Blue
-                    elif mult == "HEAL":
-                        color = "\033[92m"  #Green
-                    elif mult == "MISS":
-                        color = "\033[90m"  #Gray
-                    elif isinstance(mult, (int, float)) and mult >= 1.25:
-                        color = "\033[91m"  #Red
-                    elif isinstance(mult, (int, float)) and 0.25 < mult <= 0.75:
-                        color = "\033[93m"  #Yellow
-                    elif isinstance(mult, (int, float)) and mult == 0.25:
-                        color = "\033[90m"  #Gray
-                    else:
-                        color = "\033[38;5;208m"  #Orange
-                    
-                    dmg_str = str(dmg)
+                elif (src_x, src_y) in flash_popups:
+                    dmg_str, color = flash_popups[(src_x, src_y)]
                     row_chars.append(f"{color}{dmg_str}\033[0m")
                     skip_x = len(dmg_str) - 1
                 elif self.targeting_mode and src_x == self.targeting_cursor[0] and src_y == self.targeting_cursor[1]:
