@@ -174,6 +174,9 @@ class Pokemon:
             "Enraged": 0,
             "Biding": 0,
             "Substitute": 0,
+            "Metal Burst": 0,
+            "Aurora Veil": 0,
+            "Trick Room": 0,
         }
         self.bide_damage: int = 0
         self.bide_target_tile: tuple[int, int] | None = None
@@ -356,6 +359,15 @@ class Pokemon:
             if self.current_hp < 0.5 * max_hp:
                 return False
 
+        if move_name == "Chloroblast":
+            max_hp = float(getattr(self, "max_hp", None) or self.stats.get("HP", 1))
+            if self.current_hp < 0.5 * max_hp:
+                return False
+
+        if move_name == "Aurora Veil":
+            if not (game and getattr(game, "weather", None) in ("Snow", "Hail")):
+                return False
+
         if move_name == "Stockpile":
             if self.status_effects.get("Stockpile", 0) >= 3:
                 return False
@@ -399,6 +411,17 @@ class Pokemon:
                 self.current_belly = max(0.0, self.current_belly - 0.5 * self.max_belly)
         elif move_name == "Struggle":
             pass
+        elif move_name == "Chloroblast":
+            max_hp = float(getattr(self, "max_hp", None) or self.stats.get("HP", 1))
+            cost = float(int(0.5 * max_hp))
+            self.current_hp = max(1.0, self.current_hp - cost)
+            self.current_pp -= move["pp_cost"]
+            if game:
+                game.log_message(f"{self.name} lost HP from using Chloroblast!")
+                from targeting import get_pokemon_position
+                ax, ay = get_pokemon_position(game, self)
+                game.flash_damages[(ax, ay)] = (f"{int(cost)}", "\033[91m")
+                game.trigger_damage_flash()
         else:
             self.current_pp -= move["pp_cost"]
 
@@ -894,19 +917,23 @@ class Pokemon:
             else:
                 game.log_message(f"{self.name}'s {display_stat} rose drastically!")
 
-    def change_movement_speed(self, new_stage: int, game):
+    def change_movement_speed(self, new_stage: int, game, is_decay: bool = False):
         """Changes the Pokémon's movement speed stage (between -1 and 3) and sets the temporary turn duration. (-1 = slowed, 1 = 2x speed, 2 = 3x speed, 3 = 4x speed)"""
         orig_suppress = getattr(game, "suppress_target_logs", False) if game else False
         if game and hasattr(game, "is_in_team_sight") and not game.is_in_team_sight(self):
             game.suppress_target_logs = True
         try:
-            self._change_movement_speed_internal(new_stage, game)
+            self._change_movement_speed_internal(new_stage, game, is_decay=is_decay)
         finally:
             if game:
                 game.suppress_target_logs = orig_suppress
 
-    def _change_movement_speed_internal(self, new_stage: int, game):
+    def _change_movement_speed_internal(self, new_stage: int, game, is_decay: bool = False):
         old_stage = self.movement_speed_stage
+
+        if self.status_effects.get("Trick Room", 0) > 0 and not is_decay:
+            delta = new_stage - old_stage
+            new_stage = old_stage - delta
 
         #Check boundary conditions when already at max/min speed
         if old_stage >= 3 and new_stage >= 3:
@@ -992,6 +1019,13 @@ class Pokemon:
             if game and getattr(game, "weather", None) == "Electric Terrain":
                 p_types = getattr(self, "temp_types", None) or self.species_data.get("types", [])
                 if "Flying" not in p_types:
+                    return
+
+        #Check Misty Terrain immunity for grounded Pokemon
+        if status in ("Sleep", "Resting", "Paralysis", "Poison", "Toxic", "Burn", "Frozen"):
+            if game and getattr(game, "weather", None) == "Misty Terrain":
+                from combat import is_pokemon_grounded
+                if is_pokemon_grounded(self, game):
                     return
 
         if status == "Sleep":
@@ -1251,6 +1285,15 @@ class Pokemon:
         elif status == "Substitute":
             self.status_effects["Substitute"] = duration if duration is not None else 10
             game.log_message(f"{self.name} put in a substitute!")
+        elif status == "Metal Burst":
+            self.status_effects["Metal Burst"] = duration if duration is not None else 99999
+            game.log_message(f"{self.name} readied Metal Burst!")
+        elif status == "Aurora Veil":
+            self.status_effects["Aurora Veil"] = duration if duration is not None else 20
+            game.log_message(f"{self.name} was protected by Aurora Veil!")
+        elif status == "Trick Room":
+            self.status_effects["Trick Room"] = duration if duration is not None else 99999
+            game.log_message(f"{self.name} is affected by Trick Room!")
 
     def cure_status(self, status: str, game, early: bool = False):
         """Cures a status effect from the Pokémon and prints the log message if it was active."""
@@ -1405,7 +1448,7 @@ class Pokemon:
                 game.log_message(f"{self.name}'s Safeguard wore off.")
         elif status == "Slow":
             if self.movement_speed_stage < 0:
-                self.change_movement_speed(0, game)
+                self.change_movement_speed(0, game, is_decay=True)
         elif status == "Laser Focus":
             if self.status_effects.get("Laser Focus"):
                 self.status_effects["Laser Focus"] = False
@@ -1560,4 +1603,19 @@ class Pokemon:
                 self.status_effects["Substitute"] = 0
                 if game:
                     game.log_message(f"{self.name}'s substitute faded.")
+        elif status == "Metal Burst":
+            if self.status_effects.get("Metal Burst", 0) > 0:
+                self.status_effects["Metal Burst"] = 0
+                if game:
+                    game.log_message(f"{self.name}'s Metal Burst ended.")
+        elif status == "Aurora Veil":
+            if self.status_effects.get("Aurora Veil", 0) > 0:
+                self.status_effects["Aurora Veil"] = 0
+                if game:
+                    game.log_message(f"{self.name}'s Aurora Veil wore off.")
+        elif status == "Trick Room":
+            if self.status_effects.get("Trick Room", 0) > 0:
+                self.status_effects["Trick Room"] = 0
+                if game:
+                    game.log_message(f"{self.name} is no longer affected by Trick Room.")
 

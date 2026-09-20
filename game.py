@@ -613,12 +613,24 @@ class Game:
             "Sandstorm": "A sandstorm kicked up!",
             "Clear": "The weather cleared up.",
             "Grassy Terrain": "Grass grew to cover the dungeon!",
-            "Electric Terrain": "An electric current runs across the dungeon!"
+            "Electric Terrain": "An electric current runs across the dungeon!",
+            "Misty Terrain": "Mist swirls around the floor!"
         }
+        if weather == "Misty Terrain" and duration <= 0:
+            import random
+            duration = random.randint(10, 20)
         self.weather = weather
         self.weather_turns_left = duration
         if weather in msg_map:
             self.log_message(msg_map[weather])
+        if weather == "Misty Terrain":
+            from combat import is_pokemon_grounded
+            all_pokes = list(getattr(self, "party", [])) + list(getattr(self, "spawned_pokemon", []))
+            for p in all_pokes:
+                if is_pokemon_grounded(p, self):
+                    for st in ("Sleep", "Resting", "Paralysis", "Poison", "Toxic", "Burn", "Frozen"):
+                        if p.status_effects.get(st):
+                            p.cure_status(st, self)
 
     def get_status_line(self, pokemon: Pokemon, max_len: int = 56) -> str:
         """Formats the status line of a Pokémon's party window, truncated to fit max_len"""
@@ -738,6 +750,12 @@ class Game:
             items.append(("Biding", "neutral"))
         if pokemon.status_effects.get("Substitute", 0) > 0:
             items.append(("Substitute", "positive"))
+        if pokemon.status_effects.get("Metal Burst", 0) > 0:
+            items.append(("Metal Burst", "positive"))
+        if pokemon.status_effects.get("Aurora Veil", 0) > 0:
+            items.append(("Aurora Veil", "positive"))
+        if pokemon.status_effects.get("Trick Room", 0) > 0:
+            items.append(("Trick Room", "special"))
         for res_t in ("Fire", "Water", "Electric", "Grass", "Ice", "Fighting", "Poison", "Ground", "Flying", "Psychic", "Bug", "Rock", "Ghost", "Dragon", "Dark", "Steel", "Fairy", "Normal", "All"):
             if pokemon.status_effects.get(f"{res_t} Resist"):
                 items.append((f"{res_t} Res", "positive"))
@@ -2742,9 +2760,9 @@ class Game:
                 if p.movement_speed_duration <= 0:
                     curr_stage = p.movement_speed_stage
                     if curr_stage > 0:
-                        p.change_movement_speed(curr_stage - 1, self)
+                        p.change_movement_speed(curr_stage - 1, self, is_decay=True)
                     elif curr_stage < 0:
-                        p.change_movement_speed(curr_stage + 1, self)
+                        p.change_movement_speed(curr_stage + 1, self, is_decay=True)
 
         #Rain cures Burn
         if self.weather == "Rain":
@@ -2872,7 +2890,7 @@ class Game:
             if int(p.current_hp) <= 0:
                 continue
             #All statuses that last a certain number of turns (and not semi-permanent statuses) go here
-            for status in ["Sleep", "Paralysis", "Frozen", "Flinch", "Petrified", "Confusion", "Leech Seed", "Protect", "Safeguard", "Focus Energy", "Light Screen", "Reflect", "Sand Tomb", "Whirlpool", "Perishing", "Counter", "Mirror Coat", "Endure", "Paused", "Ingrain", "Destiny Bond", "Encore", "Magnet Rise", "Telekinesis", "Resting", "Stuck", "Quick Guard", "Wide Guard", "Vital Throw", "Drowsy", "Decoy", "Landed", "Terrified", "Blind", "Mobile", "Puppet", "Hallucinating", "Snatch", "Cowering", "Rebound", "Silenced", "Invisible", "Enraged", "Biding", "Substitute"]:
+            for status in ["Sleep", "Paralysis", "Frozen", "Flinch", "Petrified", "Confusion", "Leech Seed", "Protect", "Safeguard", "Focus Energy", "Light Screen", "Reflect", "Sand Tomb", "Whirlpool", "Perishing", "Counter", "Mirror Coat", "Endure", "Paused", "Ingrain", "Destiny Bond", "Encore", "Magnet Rise", "Telekinesis", "Resting", "Stuck", "Quick Guard", "Wide Guard", "Vital Throw", "Drowsy", "Decoy", "Landed", "Terrified", "Blind", "Mobile", "Puppet", "Hallucinating", "Snatch", "Cowering", "Rebound", "Silenced", "Invisible", "Enraged", "Biding", "Substitute", "Aurora Veil"]:
                 val = p.status_effects.get(status, 0)
                 if status == "Petrified" and p in self.spawned_pokemon:
                     #Enemy petrification only wears off when attacked
@@ -3446,8 +3464,22 @@ class Game:
         #Get valid targets
         targets = get_valid_targets(self, self.player_pokemon, move)
 
-        if not targets and move.get("name") not in ("Future Sight",):
+        if not targets and move.get("name") not in ("Future Sight", "Rock Smash", "Flash"):
             self.log_message(f"There are no valid targets for {move['name']} right now.")
+            return
+
+        if move.get("name") == "Flash" and not targets:
+            try:
+                self.player_pokemon.use_move(move, game=self)
+                self.moved_used_this_turn.add(self.player_pokemon)
+            except ValueError as e:
+                self.log_message(f"Error! {str(e)}")
+                return
+            self.start_player_action()
+            self.floor_luminous = True
+            self.log_message(f"{self.player_pokemon.name} used Flash!")
+            self.log_message("The floor was illuminated!")
+            self.on_turn_completed()
             return
 
         #Check range type
@@ -3455,7 +3487,7 @@ class Game:
         if range_str == "Enemy in front":
             range_str = "Adjacent enemy"
 
-        if move.get("name") == "Future Sight":
+        if move.get("name") in ("Future Sight", "Rock Smash"):
             self.waiting_for_direction = True
             self.direction_move = move
             self.log_message(f"Which direction to use {move['name']}? ([Esc] to cancel)")
@@ -5863,6 +5895,31 @@ class Game:
                 self.log_message("The move failed!")
             return
 
+        #Trick Room custom handling
+        if move.get("name") == "Trick Room":
+            for p in list(self.party + self.spawned_pokemon):
+                p.apply_status("Trick Room", self, duration=99999)
+            self.log_message(f"{attacker.name} twisted the dimensions!")
+            return
+
+        #Rock Smash custom handling (for AI or direct execution)
+        if move.get("name") == "Rock Smash":
+            ax, ay = get_pokemon_position(self, attacker)
+            target_tile = getattr(self, "_rock_smash_target_tile", None)
+            if not target_tile:
+                dirs = [(-1,0), (1,0), (0,-1), (0,1), (-1,-1), (1,-1), (-1,1), (1,1)]
+                for dx, dy in dirs:
+                    tx, ty = ax + dx, ay + dy
+                    if 0 < tx < self.floor.width - 1 and 0 < ty < self.floor.height - 1 and self.floor.grid[ty][tx] == WALL_CHAR:
+                        target_tile = (tx, ty)
+                        break
+            if target_tile and 0 < target_tile[0] < self.floor.width - 1 and 0 < target_tile[1] < self.floor.height - 1 and self.floor.grid[target_tile[1]][target_tile[0]] == WALL_CHAR:
+                self.floor.grid[target_tile[1]][target_tile[0]] = FLOOR_CHAR
+                self.log_message(f"{attacker.name} shattered the wall!")
+            else:
+                self.log_message("The move failed!")
+            return
+
         #Swallow custom handling
         if move.get("name") == "Swallow":
             stacks = attacker.status_effects.get("Stockpile", 0)
@@ -6531,7 +6588,7 @@ class Game:
             defender.has_been_attacked_by_team = True
 
         if move.get("name") in ("Raging Bull", "Brick Break"):
-            for status in ("Light Screen", "Reflect"):
+            for status in ("Light Screen", "Reflect", "Aurora Veil"):
                 if defender.status_effects.get(status, 0) > 0:
                     defender.cure_status(status, self)
             if move.get("name") == "Raging Bull":
@@ -6706,6 +6763,32 @@ class Game:
                             self.spawned_pokemon.remove(attacker)
                         elif attacker in self.party:
                             self.remove_party_member(attacker)
+
+                #Handle Metal Burst damage reflection
+                if damage > 0 and defender.status_effects.get("Metal Burst", 0) > 0:
+                    defender.cure_status("Metal Burst", self)
+                    refl = damage
+                    dx, dy = get_pokemon_position(self, defender)
+                    all_candidates = list(self.spawned_pokemon) if defender in self.party else list(self.party)
+                    adj_enemies = []
+                    for enemy in all_candidates:
+                        if int(enemy.current_hp) > 0:
+                            ex, ey = get_pokemon_position(self, enemy)
+                            if max(abs(ex - dx), abs(ey - dy)) == 1:
+                                adj_enemies.append(enemy)
+                    for enemy in adj_enemies:
+                        enemy.last_damage_source = f"{defender.name}'s Metal Burst"
+                        enemy.current_hp = float(int(enemy.current_hp) - refl)
+                        self.log_message(f"{defender.name}'s Metal Burst reflected {refl} damage to {enemy.name}!")
+                        ex, ey = get_pokemon_position(self, enemy)
+                        self.flash_damages[(ex, ey)] = (refl, 1.0)
+                        self.trigger_damage_flash()
+                        if int(enemy.current_hp) <= 0:
+                            self.log_pokemon_defeat(enemy)
+                            if enemy in self.spawned_pokemon:
+                                self.spawned_pokemon.remove(enemy)
+                            elif enemy in self.party:
+                                self.remove_party_member(enemy)
 
                 if int(defender.current_hp) <= 0:
                     self.log_pokemon_defeat(defender)
@@ -7009,8 +7092,12 @@ class Game:
             self.start_player_action()
         if isinstance(targets, Pokemon):
             is_single = True
-            single_target: Pokemon = targets
+            single_target: Pokemon | None = targets
             target_list: list[Pokemon] = [get_actual_target(self, attacker, single_target, move)]
+        elif targets is None:
+            is_single = True
+            single_target = None
+            target_list = []
         else:
             is_single = False
             target_list = list(targets)
@@ -7140,6 +7227,10 @@ class Game:
             if int(defender.current_hp) > 0:
                 self._process_single_target_hit(attacker, defender, move, is_multi_target=is_multi, free=free)
 
+        if move.get("name") == "Flash":
+            self.floor_luminous = True
+            self.log_message("The floor was illuminated!")
+
         if move.get("name") == "Charge":
             attacker.apply_status("Charging", self, duration=1)
 
@@ -7161,6 +7252,26 @@ class Game:
                     room_pokes.append(p)
             for p in room_pokes:
                 p.apply_status("Sleepless", self)
+
+        if move.get("name") == "Rock Smash":
+            tile = getattr(self, "_rock_smash_target_tile", None)
+            if not tile and attacker is self.player_pokemon:
+                dx, dy = getattr(self, "player_facing", (0, 1))
+                ax, ay = get_pokemon_position(self, attacker)
+                tile = (ax + dx, ay + dy)
+            if tile:
+                tx, ty = tile
+                if 0 < tx < self.floor.width - 1 and 0 < ty < self.floor.height - 1:
+                    if self.floor.grid[ty][tx] == WALL_CHAR:
+                        self.floor.grid[ty][tx] = FLOOR_CHAR
+                        self.log_message("The wall was shattered!")
+                else:
+                    self.log_message("The move failed!")
+
+        if move.get("name") == "Trick Room":
+            for p in list(self.party + self.spawned_pokemon):
+                p.apply_status("Trick Room", self, duration=99999)
+            self.log_message("The dimensions seemed to be twisted!")
 
     def execute_single_move(self, attacker: Pokemon, defender: Pokemon, move: dict, free: bool = False):
         """Executes a single-target move, consuming PP and applying the move's effects to the target"""
@@ -12125,6 +12236,26 @@ class Game:
                                 self.on_turn_completed()
                         else:
                             self.log_message("You can't use Future Sight on a wall!")
+                        self.waiting_for_direction = False
+                        self.direction_move = None
+                        continue
+                    if self.direction_move.get("name") == "Rock Smash":
+                        if 0 < tx < self.floor.width - 1 and 0 < ty < self.floor.height - 1 and self.floor.grid[ty][tx] == WALL_CHAR:
+                            try:
+                                self.player_pokemon.use_move(self.direction_move, game=self)
+                                self.moved_used_this_turn.add(self.player_pokemon)
+                            except ValueError as e:
+                                self.log_message(f"Error! {str(e)}")
+                                self.waiting_for_direction = False
+                                self.direction_move = None
+                                continue
+
+                            self.floor.grid[ty][tx] = FLOOR_CHAR
+                            self.start_player_action()
+                            self.log_message(f"{self.player_pokemon.name} shattered the wall!")
+                            self.on_turn_completed()
+                        else:
+                            self.log_message("There is no wall to break there!")
                         self.waiting_for_direction = False
                         self.direction_move = None
                         continue

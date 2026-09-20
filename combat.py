@@ -12,6 +12,20 @@ from pokemon import Pokemon
 from type_chart import get_effectiveness_multiplier
 
 
+def is_pokemon_grounded(pokemon: Pokemon, game=None) -> bool:
+    """Returns True if the Pokémon is grounded (affected by terrain, Spikes, etc.)."""
+    if (game and getattr(game, "gravity", False)) or pokemon.status_effects.get("Landed", 0) > 0:
+        return True
+    if pokemon.status_effects.get("Magnet Rise", 0) > 0 or pokemon.status_effects.get("Telekinesis", 0) > 0:
+        return False
+    if pokemon.species_data.get("ability") == "Levitate" or getattr(pokemon, "is_floating", False):
+        return False
+    p_types = getattr(pokemon, "temp_types", None) or getattr(pokemon, "types", pokemon.species_data.get("types", []))
+    if "Flying" in p_types:
+        return False
+    return True
+
+
 def calculate_damage(attacker: Pokemon, defender: Pokemon, move: dict, game=None, is_multi_target: bool = False) -> tuple[int, bool, float]:
     """Calculates battle damage for a move used by attacker against defender.
     It's based on the main series damage calc, NOT Mystery Dungeon. (PMD's damage calc is not great for several reasons imo)
@@ -44,6 +58,15 @@ def calculate_damage(attacker: Pokemon, defender: Pokemon, move: dict, game=None
     if move.get("name") == "Psywave":
         max_dmg = max(1, int(attacker.level * 1.5))
         return random.randint(1, max_dmg), False, 1.0
+
+    #Shell Side Arm: dynamically compare Physical vs Special damage and choose the higher one
+    if move.get("name") == "Shell Side Arm" and not move.get("_evaluating_category"):
+        phys_move = {**move, "category": "Physical", "_evaluating_category": True}
+        spec_move = {**move, "category": "Special", "_evaluating_category": True}
+        dmg_phys, _, _ = calculate_damage(attacker, defender, phys_move, game, is_multi_target)
+        dmg_spec, _, _ = calculate_damage(attacker, defender, spec_move, game, is_multi_target)
+        chosen_cat = "Physical" if dmg_phys > dmg_spec else "Special"
+        move["category"] = chosen_cat
 
     category = move.get("category", "Status")
     power = move.get("power", 0)
@@ -255,8 +278,12 @@ def calculate_damage(attacker: Pokemon, defender: Pokemon, move: dict, game=None
     atk_speed = max(1, attacker.get_modified_stat("Speed", game))
     def_speed = max(1, defender.get_modified_stat("Speed", game))
     
-    if move.get("always_crit") or attacker.status_effects.get("Laser Focus") or defender.status_effects.get("Curse"):
+    if move.get("_evaluating_category"):
+        is_critical = False
+        crit_multiplier = 1.0
+    elif (move.get("always_crit") or move.get("guaranteed_crit") or attacker.status_effects.get("Laser Focus") or defender.status_effects.get("Curse")) and defender.species_data.get("ability") not in ("Battle Armor", "Shell Armor"):
         is_critical = True
+        crit_multiplier = 1.5
     else:
         crit_chance = 0.125 * (atk_speed / def_speed)
         if move.get("high_crit_ratio") or move.get("name") == "Razor Leaf":
@@ -264,12 +291,11 @@ def calculate_damage(attacker: Pokemon, defender: Pokemon, move: dict, game=None
         if attacker.status_effects.get("Focus Energy", 0) > 0:
             crit_chance *= 4
         is_critical = random.random() < crit_chance
-
-    crit_multiplier = 1.5 if is_critical else 1.0
+        crit_multiplier = 1.5 if is_critical else 1.0
 
     #Calculate type effectiveness multiplier
     target_types = getattr(defender, "types", defender.species_data.get("types", ["typeless"]))
-    is_grounded = bool((game and getattr(game, "gravity", False)) or defender.status_effects.get("Landed", 0) > 0)
+    is_grounded = is_pokemon_grounded(defender, game)
     if is_grounded:
         target_types = [t for t in target_types if t != "Flying"]
         if not target_types:
@@ -311,13 +337,25 @@ def calculate_damage(attacker: Pokemon, defender: Pokemon, move: dict, game=None
     if defender.status_effects.get("Minimized") and move.get("name") in minimized_double_moves:
         total_damage = total_damage * 2.0
 
+    #Aurora Veil reduces damage taken by 1/3 (taking 2/3 damage)
+    if defender.status_effects.get("Aurora Veil", 0) > 0 and move.get("name") not in ("Brick Break", "Raging Bull"):
+        total_damage = total_damage * (2.0 / 3.0)
+
+    #Misty Terrain halves Dragon-type move damage against grounded Pokémon
+    if game and getattr(game, "weather", None) == "Misty Terrain" and move.get("type") == "Dragon":
+        if is_pokemon_grounded(defender, game):
+            total_damage = total_damage * 0.5
+
     #Type resistance berries (Occa, Passho, Wacan, etc.) halve damage from matching move type or All types
     m_type = move.get("type", "Normal")
     if defender.status_effects.get("All Resist") or defender.status_effects.get(f"{m_type} Resist"):
         total_damage = total_damage * 0.5
 
-    #Apply damage variance (85%-100%) and round up
-    final_damage = math.ceil(total_damage * random.uniform(0.85, 1.0))
+    if move.get("_evaluating_category"):
+        final_damage = math.ceil(total_damage)
+    else:
+        #Apply damage variance (85%-100%) and round up
+        final_damage = math.ceil(total_damage * random.uniform(0.85, 1.0))
 
     #Whew, all done!
     return final_damage, is_critical, type_multiplier

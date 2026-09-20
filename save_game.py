@@ -386,6 +386,7 @@ def serialize_game_state(game) -> dict:
         "wonder_room_turns": getattr(game, "wonder_room_turns", 0),
         "future_sight_effects": future_sight_data,
         "gravity": getattr(game, "gravity", False),
+        "floor_luminous": getattr(game, "floor_luminous", False),
         "radar_active": getattr(game, "radar_active", False),
         "scanner_active": getattr(game, "scanner_active", False),
         "money": getattr(game, "money", 0),
@@ -443,6 +444,7 @@ def apply_game_state(game, state_dict: dict):
     game.weather_turns = weather_turns
     game.wonder_room_turns = state_dict.get("wonder_room_turns", 0)
     game.gravity = state_dict.get("gravity", False)
+    game.floor_luminous = state_dict.get("floor_luminous", False)
     game.radar_active = state_dict.get("radar_active", False)
     game.scanner_active = state_dict.get("scanner_active", False)
     game.money = state_dict.get("money", 0)

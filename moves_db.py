@@ -152,7 +152,7 @@ def load_moves_database(filepath: str | None = None) -> list[dict]:
                     raise ValueError(f"Field 'chance' in multi_hit effect must be a float between 0.0 and 1.0 in '{entry['name']}'")
             elif eff_type == "weather_change":
                 weather = eff.get("weather")
-                if weather not in ("Clear", "Sunny", "Rain", "Hail", "Sandstorm", "Grassy Terrain", "Electric Terrain"):
+                if weather not in ("Clear", "Sunny", "Rain", "Hail", "Sandstorm", "Grassy Terrain", "Electric Terrain", "Misty Terrain"):
                     raise ValueError(f"Invalid weather '{weather}' in weather_change effect at index {index} in '{entry['name']}'")
                 chance = eff.get("chance")
                 if not isinstance(chance, (int, float)) or not (0.0 <= chance <= 1.0):
