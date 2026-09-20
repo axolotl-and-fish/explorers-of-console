@@ -54,6 +54,10 @@ def calculate_damage(attacker: Pokemon, defender: Pokemon, move: dict, game=None
     if move.get("name") == "Dragon Rage":
         return 40, False, 1.0
 
+    #Vacuum Cut: always deals exactly 20 damage
+    if move.get("name") in ("Vacuum Cut", "Vacuum-Cut"):
+        return 20, False, 1.0
+
     #Psywave: deals damage equal to a random number between 1 and user's level x 1.5
     if move.get("name") == "Psywave":
         max_dmg = max(1, int(attacker.level * 1.5))

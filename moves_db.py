@@ -83,7 +83,7 @@ def load_moves_database(filepath: str | None = None) -> list[dict]:
         if "power" not in entry:
             raise ValueError(f"Missing required field 'power' in move '{entry['name']}'")
         power = entry["power"]
-        if category == "Status" or entry.get("name") in ("Fissure", "Sheer Cold", "Night Shade", "Guillotine", "Dragon Rage", "Psywave"):
+        if category == "Status" or entry.get("name") in ("Fissure", "Sheer Cold", "Night Shade", "Guillotine", "Dragon Rage", "Psywave", "Vacuum Cut", "Vacuum-Cut"):
             if power is not None:
                 raise ValueError(f"Status moves must have null power, got {power} in '{entry['name']}'")
         else:

@@ -39,6 +39,8 @@ def _get_move_data(move_name: str) -> dict:
         db = load_moves_database(db_path)
         for entry in db:
             _moves_cache[entry["name"].lower()] = entry
+            _moves_cache[entry["name"].lower().replace("-", " ")] = entry
+            _moves_cache[entry["name"].lower().replace(" ", "-")] = entry
 
     key = move_name.lower()
     if key not in _moves_cache:

@@ -4826,6 +4826,68 @@ class Game:
 
         return hit_targets
 
+    def get_wide_slash_targets(self, attacker: Pokemon, move: dict, primary_target: Pokemon) -> list[Pokemon]:
+        """Wide Slash has a completely unique range, so this logic gets the two tiles directly adjacent to an adjacent target for the move to use"""
+        ax, ay = get_pokemon_position(self, attacker)
+        tx, ty = get_pokemon_position(self, primary_target)
+        p_dx = tx - ax
+        p_dy = ty - ay
+
+        p_dx = 1 if p_dx > 0 else (-1 if p_dx < 0 else 0)
+        p_dy = 1 if p_dy > 0 else (-1 if p_dy < 0 else 0)
+        primary_dir = (p_dx, p_dy)
+
+        DIRECTIONS_CW = [
+            (0, -1),   #Up
+            (1, -1),   #Up-Right
+            (1, 0),    #Right
+            (1, 1),    #Down-Right
+            (0, 1),    #Down
+            (-1, 1),   #Down-Left
+            (-1, 0),   #Left
+            (-1, -1)   #Up-Left
+        ]
+
+        if primary_dir not in DIRECTIONS_CW:
+            return [primary_target] if primary_target and int(getattr(primary_target, "current_hp", 0)) > 0 else []
+
+        idx = DIRECTIONS_CW.index(primary_dir)
+        dirs_to_check = [
+            DIRECTIONS_CW[idx],              #Primary target direction
+            DIRECTIONS_CW[(idx - 1) % 8],    #Counterclockwise
+            DIRECTIONS_CW[(idx + 1) % 8]     #Clockwise
+        ]
+
+        cuts_corners = move.get("cuts_corners", False)
+        attacker_is_ally = attacker in self.party
+        is_puppet = attacker.status_effects.get("Puppet", 0) > 0
+        is_confused = attacker.status_effects.get("Confusion", 0) > 0
+
+        targets: list[Pokemon] = []
+        if primary_target and int(getattr(primary_target, "current_hp", 0)) > 0:
+            targets.append(primary_target)
+
+        for cdx, cdy in dirs_to_check:
+            nx = ax + cdx
+            ny = ay + cdy
+            if not (0 <= nx < self.floor.width and 0 <= ny < self.floor.height):
+                continue
+            if not has_clear_path(self.floor, ax, ay, nx, ny, cuts_corners):
+                continue
+            poke = self.get_poke_at(nx, ny)
+            if poke and poke is not attacker and int(getattr(poke, "current_hp", 0)) > 0:
+                if poke not in targets:
+                    if is_puppet:
+                        valid_rel = (poke in self.party)
+                    elif is_confused:
+                        valid_rel = True
+                    else:
+                        valid_rel = (attacker_is_ally != (poke in self.party))
+                    if valid_rel:
+                        targets.append(poke)
+
+        return targets
+
     def trigger_vital_throw_counter(self, attacker: Pokemon, defender: Pokemon, damage_taken: int):
         """Logic for Vital Throw: Throw attacker away when defender takes damage with Vital Throw active"""
         ax, ay = get_pokemon_position(self, attacker)
@@ -4933,7 +4995,7 @@ class Game:
         #Check Wide Guard immunity (blocks attacks that hit more than one teammate)
         if attacker != defender and defender.status_effects.get("Wide Guard", 0) > 0 and move.get("name") != "Feint":
             range_str = move.get("range", "")
-            is_multi_move = range_str.startswith("All ") or "room" in range_str.lower() or "floor" in range_str.lower() or range_str == "Straight line piercing"
+            is_multi_move = range_str.startswith("All ") or "room" in range_str.lower() or "floor" in range_str.lower() or range_str == "Straight line piercing" or move.get("name") in ("Wide Slash", "Wide-Slash")
             if is_multi_move:
                 attacker.last_move_failed_turn = self.turn_number
                 self.log_message(f"{defender.name}'s Wide Guard blocked the attack!")
@@ -6471,7 +6533,7 @@ class Game:
         #If it's a non-damaging status move, execute effects directly and return
         category = move.get("category", "Status")
         power = move.get("power")
-        if category == "Status" or ((power is None or power <= 0) and move.get("name") not in ("Dragon Rage", "Psywave", "Night Shade", "Seismic Toss", "Sonic Boom")):
+        if category == "Status" or ((power is None or power <= 0) and move.get("name") not in ("Dragon Rage", "Psywave", "Night Shade", "Seismic Toss", "Sonic Boom", "Vacuum Cut", "Vacuum-Cut")):
             if attacker.status_effects.get("Taunted"):
                 self.log_message(f"{attacker.name} cannot use status moves while Taunted!")
                 return
@@ -7102,6 +7164,10 @@ class Game:
                 if opp_target and opp_target is not attacker:
                     target_list = [opp_target]
                     self.log_message(f"{attacker.name}'s attack went the wrong way!")
+
+        if move.get("name") in ("Wide Slash", "Wide-Slash") and target_list:
+            target_list = self.get_wide_slash_targets(attacker, move, target_list[0])
+            is_single = len(target_list) <= 1
 
         if move.get("category") == "Status" and self.is_snatchable_move(move):
             ax, ay = get_pokemon_position(self, attacker)
