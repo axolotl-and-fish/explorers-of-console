@@ -13,7 +13,7 @@ from type_chart import get_effectiveness_multiplier
 
 
 def is_pokemon_grounded(pokemon: Pokemon, game=None) -> bool:
-    """Returns True if the Pokémon is grounded (affected by terrain, Spikes, etc.)."""
+    """Returns True if the Pokémon is grounded (affected by terrain, etc)."""
     if (game and getattr(game, "gravity", False)) or pokemon.status_effects.get("Landed", 0) > 0:
         return True
     if pokemon.status_effects.get("Magnet Rise", 0) > 0 or pokemon.status_effects.get("Telekinesis", 0) > 0:
@@ -59,7 +59,7 @@ def calculate_damage(attacker: Pokemon, defender: Pokemon, move: dict, game=None
         max_dmg = max(1, int(attacker.level * 1.5))
         return random.randint(1, max_dmg), False, 1.0
 
-    #Shell Side Arm: dynamically compare Physical vs Special damage and choose the higher one
+    #Shell Side Arm: evaluate Physical vs Special damage and choose the higher one
     if move.get("name") == "Shell Side Arm" and not move.get("_evaluating_category"):
         phys_move = {**move, "category": "Physical", "_evaluating_category": True}
         spec_move = {**move, "category": "Special", "_evaluating_category": True}
@@ -337,7 +337,7 @@ def calculate_damage(attacker: Pokemon, defender: Pokemon, move: dict, game=None
     if defender.status_effects.get("Minimized") and move.get("name") in minimized_double_moves:
         total_damage = total_damage * 2.0
 
-    #Aurora Veil reduces damage taken by 1/3 (taking 2/3 damage)
+    #Aurora Veil reduces damage taken by 1/3
     if defender.status_effects.get("Aurora Veil", 0) > 0 and move.get("name") not in ("Brick Break", "Raging Bull"):
         total_damage = total_damage * (2.0 / 3.0)
 

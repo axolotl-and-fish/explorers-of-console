@@ -16,6 +16,7 @@ import base64
 import hashlib
 import uuid
 import datetime
+from typing import Any
 from dungeon import DungeonFloor, Room
 from pokemon import Pokemon  # type: ignore
 from message_log import MessageLog, wrap_text  # type: ignore
@@ -88,7 +89,7 @@ def serialize_pokemon(poke: Pokemon) -> dict:
         "imprisoned_moves": list(getattr(poke, "imprisoned_moves", [])),
         "last_used_move": getattr(poke, "last_used_move", None),
         "last_used_move_on_floor": getattr(poke, "last_used_move_on_floor", None),
-        "charging_move": dict(poke.charging_move) if getattr(poke, "charging_move", None) else None,
+        "charging_move": dict(poke.charging_move) if poke.charging_move is not None else None,
         "seen_moves": list(getattr(poke, "seen_moves", [])),
         "x": getattr(poke, "x", 0),
         "y": getattr(poke, "y", 0),
@@ -96,9 +97,9 @@ def serialize_pokemon(poke: Pokemon) -> dict:
         "last_dy": getattr(poke, "last_dy", 0),
         "napping": getattr(poke, "napping", False),
         "just_woke_up": getattr(poke, "just_woke_up", False),
-        "target_exit": list(poke.target_exit) if getattr(poke, "target_exit", None) else None,
+        "target_exit": list(poke.target_exit) if poke.target_exit is not None else None,
         "is_leader": getattr(poke, "is_leader", False),
-        "held_item": dict(poke.held_item) if getattr(poke, "held_item", None) else None,
+        "held_item": dict(poke.held_item) if poke.held_item is not None else None,
         "ability": getattr(poke, "ability", None),
         "tactic": getattr(poke, "tactic", None),
         "last_damage_source": getattr(poke, "last_damage_source", None),
@@ -108,27 +109,27 @@ def serialize_pokemon(poke: Pokemon) -> dict:
         "cannot_be_revived": getattr(poke, "cannot_be_revived", False),
         "swapped_this_turn": getattr(poke, "swapped_this_turn", False),
         "has_notified_can_evolve": getattr(poke, "has_notified_can_evolve", False),
-        "temp_types": list(poke.temp_types) if getattr(poke, "temp_types", None) else None,
+        "temp_types": list(poke.temp_types) if poke.temp_types is not None else None,
         "protect_consecutive": getattr(poke, "protect_consecutive", 0),
         "echoed_voice_count": getattr(poke, "echoed_voice_count", 0),
         "damage_hit_turns": list(getattr(poke, "damage_hit_turns", [])),
         "bide_damage": getattr(poke, "bide_damage", 0),
-        "bide_target_tile": list(poke.bide_target_tile) if getattr(poke, "bide_target_tile", None) else None,
+        "bide_target_tile": list(poke.bide_target_tile) if poke.bide_target_tile is not None else None,
         "last_move_failed_turn": getattr(poke, "last_move_failed_turn", None),
         "last_teammate_fainted_turn": getattr(poke, "last_teammate_fainted_turn", None),
-        "last_hit_by_move": dict(poke.last_hit_by_move) if getattr(poke, "last_hit_by_move", None) else None,
+        "last_hit_by_move": dict(poke.last_hit_by_move) if poke.last_hit_by_move is not None else None,
         "damaged_by_pokemons": damaged_by,
-        "mimic_original_state": dict(poke.mimic_original_state) if getattr(poke, "mimic_original_state", None) else None,
-        "transform_original_state": dict(poke.transform_original_state) if getattr(poke, "transform_original_state", None) else None,
+        "mimic_original_state": dict(poke.mimic_original_state) if poke.mimic_original_state is not None else None,
+        "transform_original_state": dict(poke.transform_original_state) if poke.transform_original_state is not None else None,
         "is_transformed": getattr(poke, "is_transformed", False),
         "original_species_name": getattr(poke, "original_species_name", None),
         "original_name": getattr(poke, "original_name", None),
-        "original_stats": dict(poke.original_stats) if getattr(poke, "original_stats", None) else None,
-        "original_moves": list(poke.original_moves) if getattr(poke, "original_moves", None) else None,
+        "original_stats": dict(poke.original_stats) if poke.original_stats is not None else None,
+        "original_moves": list(poke.original_moves) if poke.original_moves is not None else None,
     }
 
 
-def deserialize_pokemon(data: dict) -> Pokemon:
+def deserialize_pokemon(data: dict) -> Pokemon | None:
     """Restores the game state from a loaded save file."""
     if not data:
         return None
@@ -499,8 +500,10 @@ def apply_game_state(game, state_dict: dict):
     party_list = []
     for p_data in state_dict.get("party", []):
         poke = deserialize_pokemon(p_data)
-        party_list.append(poke)
-        poke_map[poke.id] = poke
+        if poke is not None:
+            party_list.append(poke)
+            if poke.id:
+                poke_map[poke.id] = poke
 
     game.party = party_list
 
@@ -525,8 +528,10 @@ def apply_game_state(game, state_dict: dict):
     spawned_list = []
     for p_data in state_dict.get("spawned_pokemon", []):
         poke = deserialize_pokemon(p_data)
-        spawned_list.append(poke)
-        poke_map[poke.id] = poke
+        if poke is not None:
+            spawned_list.append(poke)
+            if poke.id:
+                poke_map[poke.id] = poke
     game.spawned_pokemon = spawned_list
 
     #Restore damaged_by_pokemons references
@@ -553,7 +558,8 @@ def apply_game_state(game, state_dict: dict):
         elif serialized_poke:
             restored_poke = deserialize_pokemon(serialized_poke)
             entry["pokemon"] = restored_poke
-            poke_map[restored_poke.id] = restored_poke
+            if restored_poke and restored_poke.id:
+                poke_map[restored_poke.id] = restored_poke
         else:
             entry["pokemon"] = None
         history_list.append(entry)
@@ -734,7 +740,7 @@ def load_game_from_file(filepath: str, game=None) -> tuple[bool, str, object]:
 def list_save_files() -> list[dict]:
     """Lists all available .pecsav save files in save_data directory - used for the Load Game screen"""
     save_dir = get_save_dir()
-    files = []
+    files: list[dict[str, Any]] = []
     if not os.path.exists(save_dir):
         return files
 
@@ -769,7 +775,7 @@ def list_save_files() -> list[dict]:
                 "is_valid": valid,
             })
 
-    files.sort(key=lambda x: x["mtime"], reverse=True)
+    files.sort(key=lambda x: float(x["mtime"]), reverse=True)
     return files
 
 

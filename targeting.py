@@ -456,7 +456,7 @@ def get_valid_targets(game, attacker: Pokemon, move: dict) -> list[Pokemon]:
 def get_confusion_targets(game, attacker: Pokemon, move: dict) -> list[Pokemon]:
     """Selects targets for a confused attacker, which chooses attack directions at random"""
     import random
-    from targeting import get_pokemon_position, has_clear_path, get_room_tiles_at
+    from targeting import get_pokemon_position, has_clear_path
     range_str = get_effective_move_range(attacker, move)
 
     ax, ay = get_pokemon_position(game, attacker)

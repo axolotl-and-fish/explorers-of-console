@@ -218,7 +218,7 @@ def apply_item_effect(item: dict, target, game, is_thrown: bool = False):
         tx, ty = get_pokemon_position(game, target)
         game.flash_damages[(tx, ty)] = ("1", "\033[91m")
         game.trigger_damage_flash()
-        game.log_message(f"Ouch, that's prickly!")
+        game.log_message("Ouch, that's prickly!")
         if target.current_hp <= 0 and hasattr(game, "remove_party_member"):
             game.remove_party_member(target)
 
@@ -274,7 +274,7 @@ def apply_item_effect(item: dict, target, game, is_thrown: bool = False):
         if is_paralyzed:
             target.cure_status("Paralysis", game)
         else:
-            game.log_message(f"But nothing happened.")
+            game.log_message("But nothing happened.")
 
     elif name == "Chesto Berry":
         #Check if asleep. If not, give Sleepless instead
@@ -528,7 +528,7 @@ def apply_item_effect(item: dict, target, game, is_thrown: bool = False):
             src = f"{attacker.name}'s {name}" if attacker else name
             game.apply_direct_damage(target, dmg, attacker=attacker, damage_source=src)
         else:
-            game.log_message(f"This message should never appear. If you see it, please contact C4!")
+            game.log_message("This message should never appear. If you see it, please contact C4!")
 
     elif name == "Gravelerock":
         if is_thrown:
@@ -540,7 +540,7 @@ def apply_item_effect(item: dict, target, game, is_thrown: bool = False):
             src = f"{attacker.name}'s {name}" if attacker else name
             game.apply_direct_damage(target, dmg, attacker=attacker, damage_source=src)
         else:
-            game.log_message(f"This message should never appear. If you see it, please contact C4!")
+            game.log_message("This message should never appear. If you see it, please contact C4!")
 
     #Variable-damage throwing items
     elif name == "Iron Thorn":
@@ -555,7 +555,7 @@ def apply_item_effect(item: dict, target, game, is_thrown: bool = False):
             src = f"{attacker.name}'s {name}" if attacker else name
             game.apply_direct_damage(target, damage, attacker=attacker, damage_source=src)
         else:
-            game.log_message(f"This message should never appear. If you see it, please contact C4!")
+            game.log_message("This message should never appear. If you see it, please contact C4!")
             
     elif name == "Stick":
         if is_thrown:
@@ -569,7 +569,7 @@ def apply_item_effect(item: dict, target, game, is_thrown: bool = False):
             src = f"{attacker.name}'s {name}" if attacker else name
             game.apply_direct_damage(target, damage, attacker=attacker, damage_source=src)
         else:
-            game.log_message(f"This message should never appear. If you see it, please contact C4!")
+            game.log_message("This message should never appear. If you see it, please contact C4!")
             
     elif name == "Silver Spike":
         if is_thrown:
@@ -583,7 +583,7 @@ def apply_item_effect(item: dict, target, game, is_thrown: bool = False):
             src = f"{attacker.name}'s {name}" if attacker else name
             game.apply_direct_damage(target, damage, attacker=attacker, damage_source=src)
         else:
-            game.log_message(f"This message should never appear. If you see it, please contact C4!")
+            game.log_message("This message should never appear. If you see it, please contact C4!")
             
     elif name == "Gold Fang":
         if is_thrown:
@@ -597,7 +597,7 @@ def apply_item_effect(item: dict, target, game, is_thrown: bool = False):
             src = f"{attacker.name}'s {name}" if attacker else name
             game.apply_direct_damage(target, damage, attacker=attacker, damage_source=src)
         else:
-            game.log_message(f"This message should never appear. If you see it, please contact C4!")
+            game.log_message("This message should never appear. If you see it, please contact C4!")
             
     elif name == "Cacnea Spike":
         if is_thrown:
@@ -611,7 +611,7 @@ def apply_item_effect(item: dict, target, game, is_thrown: bool = False):
             src = f"{attacker.name}'s {name}" if attacker else name
             game.apply_direct_damage(target, damage, attacker=attacker, damage_source=src)
         else:
-            game.log_message(f"This message should never appear. If you see it, please contact C4!")
+            game.log_message("This message should never appear. If you see it, please contact C4!")
 
     elif name == "Corsola Twig":
         if is_thrown:
@@ -625,7 +625,7 @@ def apply_item_effect(item: dict, target, game, is_thrown: bool = False):
             src = f"{attacker.name}'s {name}" if attacker else name
             game.apply_direct_damage(target, damage, attacker=attacker, damage_source=src)
         else:
-            game.log_message(f"This message should never appear. If you see it, please contact C4!")
+            game.log_message("This message should never appear. If you see it, please contact C4!")
             
     elif name == "Pomeg Berry":
         target.gain_evs({"HP": 10}, game=game)

@@ -205,7 +205,7 @@ class HighScoreController:
         visible_lines = lines[self.scroll_offset : self.scroll_offset + viewport_height]
         if getattr(self.game, "compatibility_mode", False):
             import re
-            return [re.sub(r'\x1b\[[0-9;]*m', '', l) for l in visible_lines]
+            return [re.sub(r'\x1b\[[0-9;]*m', '', line) for line in visible_lines]
         return list(visible_lines)
 
     def handle_input(self, action: str):

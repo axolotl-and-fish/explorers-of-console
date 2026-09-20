@@ -70,7 +70,6 @@ def load_pokemon_database(filepath: str | None = None) -> list[dict]:
 
     with open(filepath, "r", encoding="utf-8") as f:
         content = f.read()
-    import re
     try:
         data = json.loads(content)
     except json.JSONDecodeError as e:

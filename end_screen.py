@@ -12,7 +12,6 @@ import os
 import re
 import math
 import time
-import sys
 import datetime
 from items import ITEMS_DB
 import input as game_input

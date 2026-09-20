@@ -4,7 +4,6 @@ pokemon.py
 This class defines all the information about a Pokémon, including its stats, level, moves, status effects, and everything else that makes a Pokémon an individual.
 """
 
-import os
 import random
 from pokemon_db import load_pokemon_database, VALID_STATS
 
@@ -196,6 +195,24 @@ class Pokemon:
         self.last_move_failed_turn: int | None = None #Turn when move missed or failed (for Stomping Tantrum)
         self.last_teammate_fainted_turn: int | None = None #Turn when teammate fainted (for Retaliate)
         self.damaged_by_pokemons: dict[Pokemon, int] = {} #Map of attacker -> turn_number when damaged (for Revenge)
+        self.id: str | None = None
+        self.held_item: dict | None = None
+        self.ability: str | None = None
+        self.tactic: str | None = None
+        self.is_transformed: bool = False
+        self.original_species_name: str | None = None
+        self.original_name: str | None = None
+        self.original_stats: dict[str, int] | None = None
+        self.original_moves: list[dict] | None = None
+        self._max_hp: float | None = None
+
+    @property
+    def max_hp(self) -> float:
+        return float(getattr(self, "_max_hp", None) or (self.stats.get("HP", 1) if hasattr(self, "stats") and self.stats else 1))
+
+    @max_hp.setter
+    def max_hp(self, val: float) -> None:
+        self._max_hp = float(val)
 
     def learn_level_up_moves(self, game=None, old_level=None):
         """Pokémon spawn knowing the last 4 moves they know via level-up, so this populates known moves based on current level from level_up_moves database"""
@@ -417,7 +434,7 @@ class Pokemon:
             self.current_hp = max(1.0, self.current_hp - cost)
             self.current_pp -= move["pp_cost"]
             if game:
-                game.log_message(f"{self.name} lost HP from using Chloroblast!")
+                game.log_message(f"{self.name} was hit by recoil!")
                 from targeting import get_pokemon_position
                 ax, ay = get_pokemon_position(game, self)
                 game.flash_damages[(ax, ay)] = (f"{int(cost)}", "\033[91m")
@@ -774,7 +791,7 @@ class Pokemon:
                         base_shares[chosen_recipient] += remainder
 
                     #Apply finishing blow bonus (+25%) and non-attacker penalty (-25%)
-                    attackers = getattr(opponent, "team_attackers", set())
+                    attackers: set = getattr(opponent, "team_attackers", set())
                     final_shares: dict = {}
                     for p in team_members:
                         b_share = base_shares[p]

@@ -19,7 +19,7 @@ from message_log import MessageLog  #type: ignore
 from combat import calculate_damage
 from targeting import get_valid_targets, get_pokemon_position, get_room_tiles_at, get_confusion_targets, get_actual_target, is_ally_in_way_of_attack, is_ally_in_way_from_pos, has_clear_path, get_effective_move_range
 import items
-from end_screen import EndScreenController, generate_end_screen_report, dump_team_report_to_file
+from end_screen import EndScreenController
 
 PLAYER_CHAR = "@" #Appearance of the currently-controlled character (the team leader)
 
@@ -188,6 +188,7 @@ class Game:
         self.title_screen_state: dict | None = None
         self.starter_select_state: dict | None = None
         self.high_scores_state: dict | None = None
+        self.load_game_state: dict | None = None
 
         #Statistics used for the game end summary
         import time
@@ -209,7 +210,7 @@ class Game:
                 player_species = "Bulbasaur"
 
         if player_species is not None:
-            self.player_pokemon = Pokemon(player_species, level=2, nickname=player_nickname)
+            self.player_pokemon: Pokemon = Pokemon(player_species, level=2, nickname=player_nickname)
             self.player_pokemon.is_leader = True
             self.party = [self.player_pokemon]
 
@@ -217,7 +218,7 @@ class Game:
             self.register_encountered_species(starter_sp)
             self.add_to_team_history(self.player_pokemon, is_starter=True)
         else:
-            self.player_pokemon = None
+            self.player_pokemon = None  # type: ignore[assignment]
             self.party = []
 
         self.spawned_pokemon: list[Pokemon] = []
@@ -614,7 +615,7 @@ class Game:
             "Clear": "The weather cleared up.",
             "Grassy Terrain": "Grass grew to cover the dungeon!",
             "Electric Terrain": "An electric current runs across the dungeon!",
-            "Misty Terrain": "Mist swirls around the floor!"
+            "Misty Terrain": "Mist swirls around the dungeon!"
         }
         if weather == "Misty Terrain" and duration <= 0:
             import random
@@ -981,7 +982,6 @@ class Game:
     def log_message(self, text: str, important: bool = False):
         """Logs a message with the current turn number, and updates the message log.
         If >5 messages are added in a single turn, displays the [MORE] prompt and pauses the turn until dismissed."""
-        import sys
         if getattr(self, "suppress_target_logs", False):
             return
 
@@ -1443,7 +1443,7 @@ class Game:
         This will be improved in the future.
         """
         if move.get("name") == "Copycat" or any(e.get("effect_type") == "copycat" for e in move.get("effects", [])):
-            if not getattr(self, "last_move_used_successfully", None):
+            if self.last_move_used_successfully is None:
                 return False
             last_move, last_attacker = self.last_move_used_successfully
             BLACKLIST_COPIABLE = {"Assist", "Copycat", "Sketch", "Mimic", "Mirror Move", "Metronome", "Struggle", "Sleep Talk", "Snore"}
@@ -2431,7 +2431,7 @@ class Game:
 
     def get_target_floor_width(self, floor_number: int | None = None) -> int:
         """Returns the target width for a dungeon floor based on the floor number for generation."""
-        if getattr(self, "floor_width_override", None) is not None:
+        if self.floor_width_override is not None:
             return self.floor_width_override
         if floor_number is None:
             floor_number = getattr(self, "floor_number", 1)
@@ -2945,23 +2945,12 @@ class Game:
             return
 
         unleashed_dmg = bide_dmg * 2
-        target_mon.last_damage_source = f"{p.name}'s Bide"
-        target_mon.current_hp = float(int(target_mon.current_hp) - unleashed_dmg)
-        self.flash_damages[(tx, ty)] = (unleashed_dmg, 1.0)
-        self.trigger_damage_flash()
-
-        if int(target_mon.current_hp) <= 0:
-            self.handle_defeat(target_mon)
-            self.handle_enemy_defeat(target_mon, defeater=p)
-            if target_mon in self.spawned_pokemon:
-                self.spawned_pokemon.remove(target_mon)
-            elif target_mon in self.party:
-                self.remove_party_member(target_mon)
+        self.apply_direct_damage(target_mon, unleashed_dmg, attacker=p, damage_source=f"{p.name}'s Bide")
 
     def _prompt_nickname(self, species_name: str) -> str | None:
         """Prompts the user to enter their name."""
         try:
-            nick = input(f"What's your name? (max 12 chars, Return to skip) ").strip()
+            nick = input("What's your name? (max 12 chars, Return to skip) ").strip()
             if nick:
                 return nick[:12]
             return None
@@ -3415,7 +3404,7 @@ class Game:
                 elif move["name"] == "Belly Drum" and self.player_pokemon.stat_modifiers.get("Attack", 0) >= 6:
                     self.log_message(f"{self.player_pokemon.name}'s Attack is already maxed!")
                 elif move["name"] == "Recycle" and not any(item.get("name") == "Plain Seed" for item in getattr(self, "inventory", [])):
-                    self.log_message(f"There are no Plain Seeds to recycle!")
+                    self.log_message("There are no Plain Seeds to recycle!")
                 elif move["name"] == getattr(self.player_pokemon, "disable_move_effect", None):
                     self.log_message(f"{self.player_pokemon.name}'s {move['name']} is disabled!")
                 elif move["name"] in getattr(self.player_pokemon, "imprisoned_moves", []):
@@ -3425,7 +3414,7 @@ class Game:
                 elif self.player_pokemon.current_pp < move["pp_cost"]:
                     self.log_message(f"Not enough PP to use {move['name']}!")
                 else:
-                    self.log_message(f"This message should never appear. If it does, send a bug report to C4.")
+                    self.log_message("This message should never appear. If it does, send a bug report to C4.")
                 return
 
         #Player is confused
@@ -5915,7 +5904,7 @@ class Game:
                         break
             if target_tile and 0 < target_tile[0] < self.floor.width - 1 and 0 < target_tile[1] < self.floor.height - 1 and self.floor.grid[target_tile[1]][target_tile[0]] == WALL_CHAR:
                 self.floor.grid[target_tile[1]][target_tile[0]] = FLOOR_CHAR
-                self.log_message(f"{attacker.name} shattered the wall!")
+                self.log_message("The wall was destroyed!")
             else:
                 self.log_message("The move failed!")
             return
@@ -6115,7 +6104,7 @@ class Game:
             self.flash_damages[(tx, ty)] = (damage, 1.0)
             self.trigger_damage_flash()
 
-            self.log_message(f"It's a one-hit KO!")
+            self.log_message("It's a one-hit KO!")
             attacker.defeat_pokemon(defender, game=self)
             if defender in self.spawned_pokemon:
                 self.spawned_pokemon.remove(defender)
@@ -6769,9 +6758,9 @@ class Game:
                     defender.cure_status("Metal Burst", self)
                     refl = damage
                     dx, dy = get_pokemon_position(self, defender)
-                    all_candidates = list(self.spawned_pokemon) if defender in self.party else list(self.party)
+                    mb_candidates = list(self.spawned_pokemon) if defender in self.party else list(self.party)
                     adj_enemies = []
-                    for enemy in all_candidates:
+                    for enemy in mb_candidates:
                         if int(enemy.current_hp) > 0:
                             ex, ey = get_pokemon_position(self, enemy)
                             if max(abs(ex - dx), abs(ey - dy)) == 1:
@@ -7092,8 +7081,8 @@ class Game:
             self.start_player_action()
         if isinstance(targets, Pokemon):
             is_single = True
-            single_target: Pokemon | None = targets
-            target_list: list[Pokemon] = [get_actual_target(self, attacker, single_target, move)]
+            target_list: list[Pokemon] = [get_actual_target(self, attacker, targets, move)]
+            single_target: Pokemon | None = target_list[0] if target_list else None
         elif targets is None:
             is_single = True
             single_target = None
@@ -7888,7 +7877,7 @@ class Game:
                         break
 
                 if target_poke:
-                    item_to_use = self.inventory.pop(target_idx)
+                    self.inventory.pop(target_idx)
                     self.waiting_for_orb_direction = None
                     self.log_message(f"{self.player_pokemon.name} used the Beat Up Orb!")
 
@@ -8112,7 +8101,7 @@ class Game:
                             break
 
                 if target_enemy:
-                    item_to_use = self.inventory.pop(target_idx)
+                    self.inventory.pop(target_idx)
                     self.waiting_for_orb_direction = None
                     self.log_message(f"{self.player_pokemon.name} used the {orb_name}!")
 
@@ -8888,7 +8877,7 @@ class Game:
         """Awards experience points to existing team members when a wild Pokémon is successfully recruited; it's the same as when defeating an enemy but with a 50% bonus
         The recruited Pokémon does not gain experience points.
         """
-        if not recruited_pokemon or not hasattr(recruitment_pokemon if False else recruited_pokemon, "species_data"):
+        if not recruited_pokemon or not hasattr(recruited_pokemon, "species_data"):
             return
 
         exp_yield = recruited_pokemon.species_data.get("exp_yield", 0)
@@ -9050,7 +9039,6 @@ class Game:
             mon_info = f"{hk} {mon.name} (Lv{mon.level} {mon.species_name} {types_str}){leader_tag}"
             rows.append(fmt_line(f"{prefix}{mon_info}"))
 
-        reject_prefix = " ► " if sel_idx == 6 else "   "
         rows.append(empty_line)
         rows.append(fmt_line("[Esc] Cancel  [Return] Confirm"))
         rows.append(bot_border)
@@ -9235,7 +9223,7 @@ class Game:
             self.player_pokemon.last_damage_source = "Give Up"
             if hasattr(self, "record_team_member_defeat"):
                 self.record_team_member_defeat(self.player_pokemon, damage_source="Give Up")
-        self.log_message(f"The team gave up...", important=True)
+        self.log_message("The team gave up...", important=True)
         self.render()
 
     def render_pause_menu_screen(self) -> list[str]:
@@ -9650,8 +9638,7 @@ class Game:
 
         #4. Tip of the Day
         tip = state.get("tip_of_the_day", TIPS_OF_THE_DAY[0])
-        tip_text = f"\033[96mTip of the Day:\033[0m \033[37m{tip}\033[0m"
-        rows.append(wrap(f"\033[96mTip of the Day:\033[0m"))
+        rows.append(wrap("\033[96mTip of the Day:\033[0m"))
         rows.append(wrap(f"\033[96m{tip}\033[0m"))
         rows.append(empty_line)
         rows.append(bot_border)
@@ -9840,7 +9827,7 @@ class Game:
         for idx, (sp, types_str) in enumerate(starters):
             if sub_mode == "naming" and sp == chosen_species:
                 prefix = "\033[1;93m ► "
-                suffix = f"  \033[1;92m[√]\033[0m"
+                suffix = "  \033[1;92m[√]\033[0m"
             elif sub_mode == "select" and sel_idx == idx:
                 prefix = "\033[1;93m ► "
                 suffix = "\033[0m"
@@ -9986,7 +9973,7 @@ class Game:
             box_rows.append(bot_border)
 
         elif mode == "farewell_confirm":
-            box_rows.append(fmt_line(f"Are you SURE you want to say goodbye to"))
+            box_rows.append(fmt_line("Are you SURE you want to say goodbye to"))
             box_rows.append(fmt_line(f"{poke.name}? They will leave the team forever."))
             box_rows.append(empty_line)
             box_rows.append(fmt_line("[Y] Proceed  [N] / [Esc] Cancel"))
@@ -10066,7 +10053,7 @@ class Game:
 
         output_rows = []
         shake_x, shake_y = getattr(self, "map_shake_offset", (0, 0))
-        blanked_tiles = getattr(self, "collapse_blanked_tiles", set())
+        blanked_tiles: set[tuple[int, int]] = getattr(self, "collapse_blanked_tiles", set())
 
         for y in range(self.floor.height):
             row_chars = []
@@ -10860,7 +10847,7 @@ class Game:
             interior.append("") #spacer
 
         interior.append("─" * 74)
-        interior.append(f" Move to Learn:")
+        interior.append(" Move to Learn:")
 
         #New move STAB, accuracy & color coding
         new_name = new_move["name"]
@@ -10971,7 +10958,7 @@ class Game:
         state = getattr(self, "inventory_state", None)
         is_swap = state is not None and state.get("mode") == "swap_ground"
 
-        if is_swap:
+        if is_swap and state is not None:
             ground_item = state.get("ground_item")
             ground_name = items.get_item_display_name(ground_item) if ground_item else "Ground Item"
             left_text = f"  Swap with {ground_name}"
@@ -11108,13 +11095,10 @@ class Game:
         else:
             scroll = max(0, min(max_scroll, state.get("scroll", max_scroll)))
 
-        msg_count = len(self.message_log.raw_messages)
-
         rows = []
         rows.append("┌" + "─" * 74 + "┐")
 
         title = "  Message History"
-        spaces_needed = 74 - len(title)
         header_text = title
         rows.append(f"│{self.pad_ansi_string(header_text, 74)}│")
 
@@ -11607,7 +11591,7 @@ class Game:
         except (KeyboardInterrupt, SystemExit):
             self.is_running = False
             raise
-        except Exception as e:
+        except Exception:
             self.is_running = False
             try:
                 from save_game import attempt_emergency_save
@@ -11806,7 +11790,7 @@ class Game:
                 elif action == game_input.USE_MOVE_4:
                     slot_index = 3
                 elif action == game_input.QUIT:
-                    self.log_message(f"But it failed!")
+                    self.log_message("But it failed!")
                     self.mimic_selection_state = None
                     self.on_turn_completed()
                     if self.message_log.has_pending():
@@ -12035,7 +12019,6 @@ class Game:
                             if poke1 in self.party:
                                 idx1 = self.party.index(poke1)
                                 idx2 = chosen_idx
-                                poke2 = self.party[idx2]
                                 self.party[idx1], self.party[idx2] = self.party[idx2], self.party[idx1]
                                 self.summary_context_menu_state = None
                                 self.render()
