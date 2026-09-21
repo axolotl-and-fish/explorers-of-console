@@ -781,7 +781,6 @@ def apply_item_effect(item: dict, target, game, is_thrown: bool = False):
 
     elif name == "Power Toss Orb":
         target.apply_status("Power Toss", game, duration=99999)
-        game.log_message(f"{target.name}'s thrown attacks were powered up!")
 
     elif name == "Luminous Orb":
         game.floor_luminous = True
