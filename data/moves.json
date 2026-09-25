@@ -350,6 +350,23 @@
     ]
   },
   {
+    "name": "Blizzard",
+    "type": "Ice",
+    "description": "Damages all enemies in the room and has a 10% chance of freezing each enemy.",
+    "category": "Special",
+    "power": 110,
+    "accuracy": 70,
+    "range": "All enemies in room",
+    "pp_cost": 10,
+    "effects": [
+      {
+        "effect_type": "status_apply",
+        "status": "Frozen",
+        "chance": 0.1
+      }
+    ]
+  },
+  {
     "name": "Dragon Breath",
     "type": "Dragon",
     "description": "Damages an enemy up to 4 tiles away and has a 30% chance of paralyzing them. Cuts corners.",
