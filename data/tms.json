@@ -1,0 +1,292 @@
+[
+  {
+    "move_name": "Mega Punch",
+    "value": 1000,
+    "rarity": "Uncommon"
+  },
+  {
+    "move_name": "Razor Wind",
+    "value": 2000,
+    "rarity": "Rare"
+  },
+  {
+    "move_name": "Swords Dance",
+    "value": 1000,
+    "rarity": "Uncommon"
+  },
+  {
+    "move_name": "Whirlwind",
+    "value": 750,
+    "rarity": "Common"
+  },
+  {
+    "move_name": "Mega Kick",
+    "value": 1000,
+    "rarity": "Uncommon"
+  },
+  {
+    "move_name": "Toxic",
+    "value": 500,
+    "rarity": "Common"
+  },
+  {
+    "move_name": "Guillotine",
+    "value": 2500,
+    "rarity": "Very Rare"
+  },
+  {
+    "move_name": "Body Slam",
+    "value": 800,
+    "rarity": "Rare"
+  },
+  {
+    "move_name": "Take Down",
+    "value": 700,
+    "rarity": "Uncommon"
+  },
+  {
+    "move_name": "Double-Edge",
+    "value": 1500,
+    "rarity": "Epic"
+  },
+  {
+    "move_name": "Bubble Beam",
+    "value": 800,
+    "rarity": "Rare"
+  },
+  {
+    "move_name": "Water Gun",
+    "value": 300,
+    "rarity": "Uncommon"
+  },
+  {
+    "move_name": "Ice Beam",
+    "value": 800,
+    "rarity": "Very Rare"
+  },
+  {
+    "move_name": "Blizzard",
+    "value": 2500,
+    "rarity": "Epic"
+  },
+  {
+    "move_name": "Hyper Beam",
+    "value": 5000,
+    "rarity": "Legendary"
+  },
+  {
+    "move_name": "Pay Day",
+    "value": 777,
+    "rarity": "Common"
+  },
+  {
+    "move_name": "Submission",
+    "value": 1250,
+    "rarity": "Very Rare"
+  },
+  {
+    "move_name": "Counter",
+    "value": 600,
+    "rarity": "Uncommon"
+  },
+  {
+    "move_name": "Seismic Toss",
+    "value": 500,
+    "rarity": "Uncommon"
+  },
+  {
+    "move_name": "Rage",
+    "value": 1000,
+    "rarity": "Rare"
+  },
+  {
+    "move_name": "Mega Drain",
+    "value": 750,
+    "rarity": "Rare"
+  },
+  {
+    "move_name": "Solar Beam",
+    "value": 2000,
+    "rarity": "Epic"
+  },
+  {
+    "move_name": "Dragon Rage",
+    "value": 5000,
+    "rarity": "Legendary"
+  },
+  {
+    "move_name": "Thunderbolt",
+    "value": 1000,
+    "rarity": "Rare"
+  },
+  {
+    "move_name": "Thunder",
+    "value": 1750,
+    "rarity": "Very Rare"
+  },
+  {
+    "move_name": "Earthquake",
+    "value": 2800,
+    "rarity": "Epic"
+  },
+  {
+    "move_name": "Fissure",
+    "value": 2500,
+    "rarity": "Epic"
+  },
+  {
+    "move_name": "Dig",
+    "value": 1750,
+    "rarity": "Very Rare"
+  },
+  {
+    "move_name": "Psychic",
+    "value": 1800,
+    "rarity": "Very Rare"
+  },
+  {
+    "move_name": "Teleport",
+    "value": 250,
+    "rarity": "Common"
+  },
+  {
+    "move_name": "Mimic",
+    "value": 950,
+    "rarity": "Very Rare"
+  },
+  {
+    "move_name": "Double Team",
+    "value": 400,
+    "rarity": "Uncommon"
+  },
+  {
+    "move_name": "Reflect",
+    "value": 500,
+    "rarity": "Uncommon"
+  },
+  {
+    "move_name": "Bide",
+    "value": 300,
+    "rarity": "Common"
+  },
+  {
+    "move_name": "Metronome",
+    "value": 1000,
+    "rarity": "Very Rare"
+  },
+  {
+    "move_name": "Self-Destruct",
+    "value": 800,
+    "rarity": "Epic"
+  },
+  {
+    "move_name": "Egg Bomb",
+    "value": 1500,
+    "rarity": "Legendary"
+  },
+  {
+    "move_name": "Fire Blast",
+    "value": 2500,
+    "rarity": "Very Rare"
+  },
+  {
+    "move_name": "Swift",
+    "value": 500,
+    "rarity": "Uncommon"
+  },
+  {
+    "move_name": "Skull Bash",
+    "value": 1800,
+    "rarity": "Very Rare"
+  },
+  {
+    "move_name": "Recover",
+    "value": 1600,
+    "rarity": "Rare"
+  },
+  {
+    "move_name": "Dream Eater",
+    "value": 2000,
+    "rarity": "Epic"
+  },
+  {
+    "move_name": "Sky Attack",
+    "value": 5000,
+    "rarity": "Legendary"
+  },
+  {
+    "move_name": "Rest",
+    "value": 750,
+    "rarity": "Uncommon"
+  },
+  {
+    "move_name": "Thunder Wave",
+    "value": 600,
+    "rarity": "Uncommon"
+  },
+  {
+    "move_name": "Psywave",
+    "value": 950,
+    "rarity": "Rare"
+  },
+  {
+    "move_name": "Explosion",
+    "value": 2250,
+    "rarity": "Legendary"
+  },
+  {
+    "move_name": "Rock Slide",
+    "value": 1500,
+    "rarity": "Rare"
+  },
+  {
+    "move_name": "Tri Attack",
+    "value": 3333,
+    "rarity": "Legendary"
+  },
+  {
+    "move_name": "Substitute",
+    "value": 800,
+    "rarity": "Uncommon"
+  },
+  {
+    "move_name": "Cut",
+    "value": 400,
+    "rarity": "Uncommon"
+  },
+  {
+    "move_name": "Fly",
+    "value": 800,
+    "rarity": "Rare"
+  },
+  {
+    "move_name": "Surf",
+    "value": 1200,
+    "rarity": "Very Rare"
+  },
+  {
+    "move_name": "Strength",
+    "value": 1200,
+    "rarity": "Very Rare"
+  },
+  {
+    "move_name": "Flash",
+    "value": 600,
+    "rarity": "Common"
+  },
+  {
+    "move_name": "Vacuum-Cut",
+    "value": 500,
+    "rarity": "Common"
+  },
+  {
+    "move_name": "Wide Slash",
+    "value": 500,
+    "rarity": "Common"
+  },
+  {
+    "move_name": "Spin Slash",
+    "value": 500,
+    "rarity": "Common"
+  }
+]
