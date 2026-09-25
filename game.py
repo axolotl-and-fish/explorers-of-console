@@ -1270,7 +1270,7 @@ class Game:
 
         #Outside a room: within visibility radius (5 normally, 100 (unlimited) when floor_luminous) and has line of sight
         dist = max(abs(ex - tx), abs(ey - ty))
-        radius = 100 if getattr(self, "floor_luminous", False) else 5
+        radius = 56 if getattr(self, "floor_luminous", False) else 5
         if dist <= radius:
             return self._has_line_of_sight(ex, ey, tx, ty)
 
@@ -3228,7 +3228,7 @@ class Game:
         if self.player_pokemon and self.player_pokemon.status_effects.get("Blind", 0) > 0:
             return {(self.player_x, self.player_y)}
 
-        radius = 100 if getattr(self, "floor_luminous", False) else 5
+        radius = 56 if getattr(self, "floor_luminous", False) else 5
 
         visible = set()
         for member in self.party:
