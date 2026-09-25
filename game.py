@@ -3796,6 +3796,7 @@ class Game:
             if fixed_center_damage is not None and fixed_adjacent_damage is not None:
                 damage = fixed_center_damage if d == 0 else fixed_adjacent_damage
                 type_mult = 1.0
+                is_crit = False
             else:
                 falloff = max(0.2, 1.0 - (0.2 * d)) #20% damage reduction per tile
                 raw_dmg, is_crit, type_mult = calculate_damage(dummy_attacker, target, explosion_move, self)
