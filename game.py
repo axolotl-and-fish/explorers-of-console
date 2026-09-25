@@ -1116,7 +1116,7 @@ class Game:
         item_keys = items.get_spawnable_item_keys(self.floor_number)
         if not item_keys:
             item_keys = ["Poké"]
-        item_weights = [items.RARITY_WEIGHTS.get(items.ITEMS_DB[k].get("rarity", "Common"), 50) if k != "Poké" else 50 for k in item_keys]
+        item_weights = [items.get_item_spawn_weight(k, self.floor_number) for k in item_keys]
 
         needed = len(selected_tiles) - len(item_names)
         if needed > 0:

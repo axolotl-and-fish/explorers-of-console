@@ -18,10 +18,22 @@ def load_items_database(filepath: str | None = None) -> dict:
         raise FileNotFoundError(f"Items database file not found: {filepath}")
     with open(filepath, "r", encoding="utf-8") as f:
         data = json.load(f)
-    return {entry["name"]: entry for entry in data}
+    items_dict = {entry["name"]: entry for entry in data}
+    try:
+        from tms_db import get_tms_dict
+        items_dict.update(get_tms_dict())
+    except Exception:
+        pass
+    return items_dict
 
 _items_json_path = get_data_file_path("items.json")
 ITEMS_DB = load_items_database(_items_json_path)
+
+try:
+    from tms_db import get_tms_dict
+    TMS_DB = get_tms_dict()
+except Exception:
+    TMS_DB = {}
 
 #Used for the UI
 RARITY_COLORS = {
@@ -30,7 +42,8 @@ RARITY_COLORS = {
     "Rare": "\033[94m",
     "Very Rare": "\033[91m",
     "Epic": "\033[95m",
-    "Legendary": "\033[93m"
+    "Legendary": "\033[93m",
+    "tm": "\033[93m"
 }
 
 #Weights of how often items should spawn of each rarity tier
@@ -40,8 +53,38 @@ RARITY_WEIGHTS = {
     "Rare": 12,
     "Very Rare": 6,
     "Epic": 3,
-    "Legendary": 1
+    "Legendary": 1,
+    "tm": 15
 }
+
+
+def get_item_spawn_weight(item_name: str, floor_number: int = 1) -> float:
+    """Returns the spawning weight of an item on the given floor.
+    Standard items use their rarity tier weight.
+    TMs belong to the 'tm' category (weight 15) and are weighted internally by their standard rarity.
+    """
+    if item_name in ("Poké", "Poke"):
+        return float(RARITY_WEIGHTS.get("Common", 50))
+
+    item = ITEMS_DB.get(item_name)
+    if not item:
+        return 0.0
+
+    if is_tm(item):
+        tm_rarity = item.get("rarity", "Common")
+        std_weight = RARITY_WEIGHTS.get(tm_rarity, 50)
+        
+        spawnable_tms = [t for t in TMS_DB.values() if can_item_spawn_on_floor(t, floor_number)]
+        total_tm_std = sum(RARITY_WEIGHTS.get(t.get("rarity", "Common"), 50) for t in spawnable_tms)
+        
+        tm_category_weight = float(RARITY_WEIGHTS.get("tm", 15))
+        if total_tm_std > 0:
+            return tm_category_weight * (std_weight / total_tm_std)
+        return tm_category_weight
+
+    rarity = item.get("rarity", "Common")
+    return float(RARITY_WEIGHTS.get(rarity, 50))
+
 
 
 def can_item_spawn_on_floor(item: dict | str, floor_number: int) -> bool:
@@ -109,6 +152,104 @@ def can_use_evolution_item(item: dict, target) -> bool:
     return False
 
 
+def is_tm(item: dict | str) -> bool:
+    """Returns True if the item is a Technical Machine (TM)."""
+    if isinstance(item, str):
+        return item.startswith("TM") and item in ITEMS_DB
+    if isinstance(item, dict):
+        return item.get("type") == "TM" or item.get("is_tm", False) or item.get("name", "").startswith("TM")
+    return False
+
+
+def get_tm_move_name(item: dict | str) -> str | None:
+    """Returns the name of the move taught by the TM."""
+    if isinstance(item, str):
+        item = ITEMS_DB.get(item, {})
+    if not is_tm(item):
+        return None
+    if "move_name" in item:
+        return item["move_name"]
+    name = item.get("name", "")
+    parts = name.split(" ", 1)
+    if len(parts) == 2 and parts[0].startswith("TM"):
+        return parts[1]
+    return None
+
+
+def pokemon_knows_move(pokemon, move_name: str) -> bool:
+    """Returns True if the Pokémon currently knows the move."""
+    if not pokemon or not hasattr(pokemon, "moves"):
+        return False
+    target_names = {move_name.lower(), move_name.lower().replace("-", " "), move_name.lower().replace(" ", "-")}
+    for m in getattr(pokemon, "moves", []):
+        m_name = m.get("name", "").lower()
+        if m_name in target_names:
+            return True
+    return False
+
+
+def is_tm_compatible_with_pokemon(tm_item: dict | str, pokemon) -> bool:
+    """Returns True if the TM is compatible with the Pokémon.
+    A TM is compatible if the move is in the species' tm_moves field in pokemon.json,
+    OR if the Pokémon can learn the move by leveling up (even if not in tm_moves).
+    """
+    move_name = get_tm_move_name(tm_item) if (isinstance(tm_item, dict) or (isinstance(tm_item, str) and tm_item.startswith("TM"))) else tm_item
+    if not move_name or not pokemon:
+        return False
+
+    target_names = {move_name.lower(), move_name.lower().replace("-", " "), move_name.lower().replace(" ", "-")}
+    species_data = getattr(pokemon, "species_data", {}) or {}
+
+    # 1. Check tm_moves field
+    tm_moves = species_data.get("tm_moves", [])
+    for m in tm_moves:
+        if isinstance(m, str) and m.lower() in target_names:
+            return True
+
+    # 2. Check level_up_moves field (always compatible if learnable by level up)
+    level_up_moves = species_data.get("level_up_moves", [])
+    for entry in level_up_moves:
+        if isinstance(entry, (list, tuple)) and len(entry) == 2:
+            lvl_move_name = str(entry[1]).lower()
+            if lvl_move_name in target_names:
+                return True
+
+    return False
+
+
+def can_use_tm(tm_item: dict | str, pokemon) -> bool:
+    """Returns True if the TM can be used on the Pokémon.
+    TMs cannot be used on incompatible Pokémon, or Pokémon that already know the move.
+    """
+    move_name = get_tm_move_name(tm_item)
+    if not move_name or not pokemon:
+        return False
+    if pokemon_knows_move(pokemon, move_name):
+        return False
+    return is_tm_compatible_with_pokemon(tm_item, pokemon)
+
+
+def get_tm_compatibility_symbols(tm_item: dict | str, party: list) -> str:
+    """Returns the bracketed list of compatibility symbols for all party members in order.
+    - Green √ (\033[92m√\033[0m): Compatible with the Pokémon
+    - Gray √ (\033[90m√\033[0m): Pokémon already knows the move
+    - Red X (\033[91mX\033[0m): Not compatible with the Pokémon
+    Example return: '[\033[92m√\033[0m\033[90m√\033[0m\033[91mX\033[0m]'
+    """
+    move_name = get_tm_move_name(tm_item)
+    if not move_name:
+        return ""
+    symbols = []
+    for member in party:
+        if pokemon_knows_move(member, move_name):
+            symbols.append("\033[90m√\033[0m")
+        elif is_tm_compatible_with_pokemon(tm_item, member):
+            symbols.append("\033[92m√\033[0m")
+        else:
+            symbols.append("\033[91mX\033[0m")
+    return f"[{''.join(symbols)}]"
+
+
 def apply_item_effect(item: dict, target, game, is_thrown: bool = False):
     """Applies the use or throw effect of an item to a target Pokémon"""
     if hasattr(game, "party") and target not in game.party:
@@ -122,6 +263,30 @@ def apply_item_effect(item: dict, target, game, is_thrown: bool = False):
     if is_thrown and hasattr(target, "napping") and target.napping:
         target.napping = False
         target.just_woke_up = True
+
+    if is_tm(item):
+        if is_thrown:
+            return
+        move_name = get_tm_move_name(item)
+        if not move_name:
+            return
+        if not can_use_tm(item, target):
+            if pokemon_knows_move(target, move_name):
+                game.log_message(f"{target.name} already knows {move_name}!")
+            else:
+                game.log_message(f"This item can't be used on {target.name}.")
+            return
+        from pokemon import _get_move_data
+        move_info = _get_move_data(move_name)
+        if len(target.moves) < 4:
+            move_entry = dict(move_info)
+            move_entry["enabled"] = True
+            target.moves.append(move_entry)
+            game.log_message(f"{target.name} learned {move_info['name']}!")
+        else:
+            game.prompt_forget_and_learn_move(target, dict(move_info), tm_item=item)
+        return
+
 
     name = item["name"]
     edible = item.get("edible", False)
