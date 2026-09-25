@@ -54,14 +54,13 @@ RARITY_WEIGHTS = {
     "Very Rare": 6,
     "Epic": 3,
     "Legendary": 1,
-    "tm": 15
+    "tm": 50
 }
 
 
 def get_item_spawn_weight(item_name: str, floor_number: int = 1) -> float:
     """Returns the spawning weight of an item on the given floor.
-    Standard items use their rarity tier weight.
-    TMs belong to the 'tm' category (weight 15) and are weighted internally by their standard rarity.
+    Standard items use their rarity tier weight, while TMs belong to the 'tm' category (weight 50) and are weighted internally by their standard rarity.
     """
     if item_name in ("Poké", "Poke"):
         return float(RARITY_WEIGHTS.get("Common", 50))
@@ -177,7 +176,7 @@ def get_tm_move_name(item: dict | str) -> str | None:
 
 
 def pokemon_knows_move(pokemon, move_name: str) -> bool:
-    """Returns True if the Pokémon currently knows the move."""
+    """Returns True if the Pokémon currently knows the move (used for TM items)"""
     if not pokemon or not hasattr(pokemon, "moves"):
         return False
     target_names = {move_name.lower(), move_name.lower().replace("-", " "), move_name.lower().replace(" ", "-")}
@@ -189,10 +188,7 @@ def pokemon_knows_move(pokemon, move_name: str) -> bool:
 
 
 def is_tm_compatible_with_pokemon(tm_item: dict | str, pokemon) -> bool:
-    """Returns True if the TM is compatible with the Pokémon.
-    A TM is compatible if the move is in the species' tm_moves field in pokemon.json,
-    OR if the Pokémon can learn the move by leveling up (even if not in tm_moves).
-    """
+    """Returns True if the TM is compatible with the Pokémon (the move's name is found in the species' tm_moves field in pokemon.json, or the species can learn the move by level up)."""
     move_name = get_tm_move_name(tm_item) if (isinstance(tm_item, dict) or (isinstance(tm_item, str) and tm_item.startswith("TM"))) else tm_item
     if not move_name or not pokemon:
         return False
@@ -234,7 +230,6 @@ def get_tm_compatibility_symbols(tm_item: dict | str, party: list) -> str:
     - Green √ (\033[92m√\033[0m): Compatible with the Pokémon
     - Gray √ (\033[90m√\033[0m): Pokémon already knows the move
     - Red X (\033[91mX\033[0m): Not compatible with the Pokémon
-    Example return: '[\033[92m√\033[0m\033[90m√\033[0m\033[91mX\033[0m]'
     """
     move_name = get_tm_move_name(tm_item)
     if not move_name:
