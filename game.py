@@ -9718,6 +9718,9 @@ class Game:
         state = getattr(self, "starter_select_state", None)
         if state is None:
             return
+        if state.get("sub_mode") == "stat_roller":
+            self.handle_stat_roller_input(action)
+            return
 
         starters = [
             "Bulbasaur", "Charmander", "Squirtle", "Pikachu", "Vulpix", "Vulpix-A",
@@ -9748,8 +9751,70 @@ class Game:
         if action in (game_input.CONFIRM, "\r", "\n", "z", "Z"):
             chosen_species = starters[sel]
             state["chosen_species"] = chosen_species
+            state["sub_mode"] = "stat_roller"
+            from pokemon_db import VALID_STATS
+            from natures import NATURE_NAMES
+            import random
+            state["ivs"] = {stat: random.randint(0, 31) for stat in VALID_STATS}
+            state["nature"] = random.choice(NATURE_NAMES)
+            state["locked"] = set()
+            self.render()
+            return
+
+    def handle_stat_roller_input(self, action: str):
+        """Handles input for the Stat Roller screen."""
+        state = getattr(self, "starter_select_state", None)
+        if state is None:
+            return
+
+        stat_lock_map = {
+            game_input.STATUS_1: "HP", "a": "HP", "A": "HP",
+            game_input.STATUS_2: "Attack", "s": "Attack", "S": "Attack",
+            game_input.STATUS_3: "Defense", "d": "Defense", "D": "Defense",
+            game_input.STATUS_4: "Special_Attack", "f": "Special_Attack", "F": "Special_Attack",
+            game_input.STATUS_5: "Special_Defense", "g": "Special_Defense", "G": "Special_Defense",
+            game_input.STATUS_6: "Speed", "h": "Speed", "H": "Speed",
+            game_input.USE_MOVE_4: "Nature", "v": "Nature", "V": "Nature",
+        }
+
+        #Lock / Unlock toggle
+        if action in stat_lock_map:
+            target = stat_lock_map[action]
+            locked = state.setdefault("locked", set())
+            if target in locked:
+                locked.remove(target)
+            else:
+                if len(locked) < 2:
+                    locked.add(target)
+            self.render()
+            return
+
+        #Reroll stats and nature
+        if action in (game_input.USE_MOVE_1, "z", "Z"):
+            from pokemon_db import VALID_STATS
+            from natures import NATURE_NAMES
+            import random
+            locked = state.get("locked", set())
+            ivs = state.setdefault("ivs", {})
+            for stat in VALID_STATS:
+                if stat not in locked:
+                    ivs[stat] = random.randint(0, 31)
+            if "Nature" not in locked:
+                state["nature"] = random.choice(NATURE_NAMES)
+            self.render()
+            return
+
+        #Confirm and proceed to nickname prompt
+        if action in (game_input.CONFIRM, "\r", "\n", "ENTER", "Return"):
             state["sub_mode"] = "naming"
-            state["text"] = chosen_species
+            state["text"] = state.get("chosen_species", "Bulbasaur")
+            self.render()
+            return
+
+        #Escape back to starter species selection
+        if action in (game_input.QUIT, "\x1b", "ESC", "Esc", "esc"):
+            state["sub_mode"] = "select"
+            state["locked"] = set()
             self.render()
             return
 
@@ -9766,9 +9831,9 @@ class Game:
             nick = curr_text.strip()[:12]
             if not nick or nick == chosen_species:
                 nick = None
-            self.start_new_game(chosen_species, nick)
+            self.start_new_game(chosen_species, nick, ivs=state.get("ivs"), nature=state.get("nature"))
         elif char_in == "ESC":
-            self.start_new_game(chosen_species, None)
+            self.start_new_game(chosen_species, None, ivs=state.get("ivs"), nature=state.get("nature"))
         elif char_in == "BACKSPACE":
             if curr_text:
                 state["text"] = curr_text[:-1]
@@ -9804,13 +9869,13 @@ class Game:
                 }
                 self.render()
 
-    def start_new_game(self, species_name: str, nickname: str | None = None):
+    def start_new_game(self, species_name: str, nickname: str | None = None, ivs: dict[str, int] | None = None, nature: str | None = None):
         """Initializes and starts a new game run with the chosen starter Pokémon."""
         self.title_screen_state = None
         self.starter_select_state = None
         self.high_scores_state = None
 
-        self.player_pokemon = Pokemon(species_name, level=2, nickname=nickname)
+        self.player_pokemon = Pokemon(species_name, level=2, nickname=nickname, nature=nature, ivs=ivs)
         self.player_pokemon.is_leader = True
         self.party = [self.player_pokemon]
 
@@ -9844,6 +9909,133 @@ class Game:
 
         self.render()
 
+    def render_stat_roller_screen(self) -> list[str]:
+        """Renders the stat roller screen."""
+        state = getattr(self, "starter_select_state", None)
+        if state is None:
+            return []
+
+        chosen_species = state.get("chosen_species", "Bulbasaur")
+        ivs = state.get("ivs", {})
+        nature = state.get("nature", "Hardy")
+        locked = state.get("locked", set())
+
+        #Calculate Level 2 stats for the chosen starter with current IVs and Nature
+        calc_mon = Pokemon(chosen_species, level=2, nature=nature, ivs=ivs)
+        calc_stats = calc_mon.stats
+        species_types = calc_mon.types
+        formatted_types = " / ".join(f"{TYPE_COLORS.get(t, '\033[37m')}{t}\033[0m" for t in species_types)
+
+        width = 76
+        inner_w = width - 2
+        top_border = "┌" + "─" * inner_w + "┐"
+        bot_border = "└" + "─" * inner_w + "┘"
+        divider = "├" + "─" * inner_w + "┤"
+        empty_line = "│" + " " * inner_w + "│"
+
+        def wrap_center(content: str) -> str:
+            return "│" + center_ansi(content, inner_w) + "│"
+
+        def wrap_line(content: str) -> str:
+            padded = self.pad_ansi_string(content, inner_w)
+            return "│" + padded + "│"
+
+        rows = [
+            top_border,
+            wrap_center("\033[1;97mRoll Your IVs & Nature\033[0m"),
+            divider,
+            empty_line,
+            wrap_center(f"\033[1;93m{chosen_species}\033[0m (Level 2) [{formatted_types}]"),
+            empty_line,
+            empty_line,
+            divider,
+            empty_line,
+        ]
+
+        # Table header
+        header_text = "           Key   Stat               IV     Value"
+        rows.append(wrap_line(f"\033[1;97m{header_text}\033[0m"))
+        rows.append(wrap_line("           ───   ───────────────   ────    ─────"))
+
+        stat_defs = [
+            ("HP", "HP", "A"),
+            ("Attack", "Attack", "S"),
+            ("Defense", "Defense", "D"),
+            ("Sp. Attack", "Special_Attack", "F"),
+            ("Sp. Defense", "Special_Defense", "G"),
+            ("Speed", "Speed", "H"),
+        ]
+
+        inc_stat, dec_stat = NATURES.get(nature, (None, None))
+
+        for label, key, shortcut in stat_defs:
+            stat_iv = ivs.get(key, 0)
+            stat_val = calc_stats.get(key, 0)
+            is_locked = key in locked
+
+            if is_locked:
+                lock_tag = "[LOCKED]"
+                line_content = f"           [{shortcut}]   {label:<15}   {stat_iv:>4}    {stat_val:>5}     {lock_tag}"
+                rows.append(wrap_line(f"\033[90m{line_content}\033[0m"))
+            else:
+                if key == inc_stat:
+                    label_colored = f"\033[91m{label}\033[0m{' ' * (15 - len(label))}"
+                elif key == dec_stat:
+                    label_colored = f"\033[94m{label}\033[0m{' ' * (15 - len(label))}"
+                else:
+                    label_colored = f"{label:<15}"
+
+                if stat_iv == 31:
+                    iv_str = f"\033[91m{stat_iv:>4}\033[0m"
+                elif stat_iv == 0:
+                    iv_str = f"\033[94m{stat_iv:>4}\033[0m"
+                else:
+                    iv_str = f"{stat_iv:>4}"
+
+                line_content = f"           \033[1;97m[{shortcut}]\033[0m   {label_colored}   {iv_str}    {stat_val:>5}"
+                rows.append(wrap_line(line_content))
+
+            rows.append(empty_line)
+
+        rows.append(divider)
+        rows.append(empty_line)
+
+        # Nature display below all stats
+        is_nature_locked = "Nature" in locked
+        stat_abbrev = {
+            "Special_Attack": "Sp. Atk",
+            "Special_Defense": "Sp. Def",
+        }
+        inc_name = stat_abbrev.get(inc_stat, inc_stat) if inc_stat else ""
+        dec_name = stat_abbrev.get(dec_stat, dec_stat) if dec_stat else ""
+        if inc_name and dec_name:
+            effect_str = f"(+{inc_name}, -{dec_name})"
+        else:
+            effect_str = ""
+
+        if is_nature_locked:
+            nature_line = f"           [V]   Nature: {nature:<10} {effect_str:<22} [LOCKED]"
+            rows.append(wrap_line(f"\033[90m{nature_line}\033[0m"))
+        else:
+            nature_line = f"           \033[1;97m[V]\033[0m   Nature: \033[1;97m{nature:<10}\033[0m \033[90m{effect_str:<22}\033[0m"
+            rows.append(wrap_line(nature_line))
+
+        rows.append(empty_line)
+        rows.append(divider)
+
+        # Remaining locks and controls at the bottom
+        rem_locks = 2 - len(locked)
+        while len(rows) < 43:
+            rows.append(empty_line)
+
+        rows.append(wrap_center(f"\033[1;97mLocks left: {rem_locks}\033[0m \033[90m(Press [A]-[H] or [V] to toggle lock)\033[0m"))
+        rows.append(empty_line)
+        rows.append(wrap_center("\033[90m[Z] Reroll   [Return] Confirm   [Esc] Back\033[0m"))
+        rows.append(empty_line)
+        rows.append(bot_border)
+
+        return self.sanitize_rendered_rows(rows[:48])
+
     def render_starter_select_screen(self) -> list[str]:
         """Renders the full-screen (76x48) starter Pokémon selection and naming screen."""
         state = getattr(self, "starter_select_state", None)
@@ -9851,6 +10043,9 @@ class Game:
             return []
 
         sub_mode = state.get("sub_mode", "select")
+        if sub_mode == "stat_roller":
+            return self.render_stat_roller_screen()
+
         sel_idx = state.get("selected_index", 0)
         text = state.get("text", "")
         chosen_species = state.get("chosen_species", "Bulbasaur")
@@ -11775,6 +11970,10 @@ class Game:
                         char_in = game_input.get_char_input(timeout=None)
                         if char_in is not None:
                             self.handle_starter_naming_input(char_in)
+                    elif self.starter_select_state.get("sub_mode") == "stat_roller":
+                        action = game_input.get_key(timeout=None)
+                        if action is not None:
+                            self.handle_stat_roller_input(action)
                     else:
                         action = game_input.get_key(timeout=None)
                         if action is not None:

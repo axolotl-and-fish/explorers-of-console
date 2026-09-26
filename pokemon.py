@@ -54,7 +54,7 @@ def _get_move_data(move_name: str) -> dict:
 class Pokemon:
     """Represents an instance of a Pokémon with all of its stats."""
 
-    def __init__(self, species_identifier: str | dict, level: int = 1, nickname: str | None = None, nature: str | None = None):
+    def __init__(self, species_identifier: str | dict, level: int = 1, nickname: str | None = None, nature: str | None = None, ivs: dict[str, int] | None = None):
         if isinstance(species_identifier, dict):
             self.species_data = species_identifier
         else:
@@ -85,8 +85,11 @@ class Pokemon:
         self.max_pp = 100
         self.current_pp = 100
 
-        #Randomize IVs when spawning
-        self.ivs = {stat: random.randint(0, 31) for stat in VALID_STATS}
+        #Randomize IVs when spawning (unless explicitly provided)
+        if ivs is not None:
+            self.ivs = dict(ivs)
+        else:
+            self.ivs = {stat: random.randint(0, 31) for stat in VALID_STATS}
 
         #Spawn with no EVs
         self.evs = {stat: 0 for stat in VALID_STATS}
