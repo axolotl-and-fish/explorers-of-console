@@ -1159,6 +1159,59 @@
     "rarity": "Epic"
   },
   {
+    "name": "EXP Candy XS",
+    "edible": true,
+    "description": "+5% Belly. Grants 100 EXP.",
+    "appearance": "*",
+    "color": "cyan",
+    "value": 100,
+    "rarity": "Uncommon",
+    "min_floor": 1,
+    "max_floor": 20
+  },
+  {
+    "name": "EXP Candy S",
+    "edible": true,
+    "description": "+5% Belly. Grants 500 EXP.",
+    "appearance": "*",
+    "color": "cyan",
+    "value": 400,
+    "rarity": "Rare",
+    "min_floor": 11,
+    "max_floor": 30
+  },
+  {
+    "name": "EXP Candy M",
+    "edible": true,
+    "description": "+5% Belly. Grants 2,000 EXP.",
+    "appearance": "*",
+    "color": "cyan",
+    "value": 1500,
+    "rarity": "Very Rare",
+    "min_floor": 21,
+    "max_floor": 40
+  },
+  {
+    "name": "EXP Candy L",
+    "edible": true,
+    "description": "+5% Belly. Grants 10,000 EXP.",
+    "appearance": "*",
+    "color": "cyan",
+    "value": 4000,
+    "rarity": "Epic",
+    "min_floor": 31
+  },
+  {
+    "name": "EXP Candy XL",
+    "edible": true,
+    "description": "+5% Belly. Grants 25,000 EXP.",
+    "appearance": "*",
+    "color": "cyan",
+    "value": 9000,
+    "rarity": "Legendary",
+    "min_floor": 41
+  },
+  {
     "name": "Beat Up Orb",
     "usable": true,
     "description": "Warps the team near a Pokémon in the distance.",
