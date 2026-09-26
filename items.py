@@ -600,9 +600,28 @@ def apply_item_effect(item: dict, target, game, is_thrown: bool = False):
         if target.level < 99:
             req_next = target.get_experience_required_for_level(target.level + 1)
             diff = max(1, req_next - target.experience)
-            target.gain_experience(diff, game=game)
+            target.gain_experience(diff, game=game, apply_multipliers=False)
         else:
             game.log_message(f"{target.name} is already at the maximum level.")
+
+    elif name in ("EXP Candy XS", "EXP Candy S", "EXP Candy M", "EXP Candy L", "EXP Candy XL"):
+        candy_exp = {
+            "EXP Candy XS": 100,
+            "EXP Candy S": 500,
+            "EXP Candy M": 2000,
+            "EXP Candy L": 10000,
+            "EXP Candy XL": 25000,
+        }
+        amount = candy_exp[name]
+        if target.level < 99:
+            if game and hasattr(game, "log_message"):
+                game.log_message(f"{target.name} gained {amount:,} EXP!")
+                ex, ey = get_pokemon_position(game, target)
+                game.flash_damages[(ex, ey)] = (f"{amount:,}", "EXP")
+            target.gain_experience(amount, game=game, apply_multipliers=False)
+        else:
+            if game and hasattr(game, "log_message"):
+                game.log_message(f"{target.name} is already at the maximum level.")
 
     elif name in ("Occa Berry", "Passho Berry", "Wacan Berry", "Rindo Berry", "Yache Berry", "Chople Berry", "Kebia Berry", "Shuca Berry", "Coba Berry", "Payapa Berry", "Tanga Berry", "Charti Berry", "Kasib Berry", "Haban Berry", "Colbur Berry", "Babiri Berry", "Roseli Berry", "Chilan Berry", "Enigma Berry"):
         #Type-resistance berries

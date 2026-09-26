@@ -637,7 +637,7 @@ class Pokemon:
 
         self.has_notified_can_evolve = False
 
-    def gain_experience(self, amount: int, game=None):
+    def gain_experience(self, amount: int, game=None, apply_multipliers: bool = True):
         """Adds experience points and checks for level ups"""
         if int(getattr(self, "current_hp", 1)) <= 0:
             return
@@ -646,11 +646,12 @@ class Pokemon:
             raise ValueError("Experience amount cannot be negative.")
 
         import math
-        if self.can_evolve(game=game):
-            amount = math.floor(amount * 1.2)
+        if apply_multipliers:
+            if self.can_evolve(game=game):
+                amount = math.floor(amount * 1.2)
 
-        if self.status_effects.get("EXP Up"):
-            amount = math.floor(amount * 1.5)
+            if self.status_effects.get("EXP Up"):
+                amount = math.floor(amount * 1.5)
 
         if game and amount > 0 and hasattr(game, "party") and self in game.party:
             from game import get_pokemon_position
