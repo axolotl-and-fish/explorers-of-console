@@ -15,6 +15,7 @@ import atexit
 from dungeon import DungeonFloor, WALL_CHAR, FLOOR_CHAR, get_target_floor_width
 import input as game_input
 from pokemon import Pokemon  #type: ignore
+from natures import NATURES
 from message_log import MessageLog  #type: ignore
 from combat import calculate_damage
 from targeting import get_valid_targets, get_pokemon_position, get_room_tiles_at, get_confusion_targets, get_actual_target, is_ally_in_way_of_attack, is_ally_in_way_from_pos, has_clear_path, get_effective_move_range
@@ -11329,10 +11330,11 @@ class Game:
             interior.append(f"   {line}")
         interior.append("─" * 74)
 
-        #4. Stats Table (with stage change arrows on the right)
+        #4. Stats Table (with stage change arrows and nature on the right)
         interior.append(" Stats:")
-        interior.append("                                  │Value│ Eff.│ EVs │IVs")
-        interior.append("                      ────────────┼─────┼─────┼─────┼───")
+        table_indent = 8
+        interior.append(f"{' ' * (table_indent + 11)}│Value│ Eff.│ EVs │IVs")
+        interior.append(f"{' ' * (table_indent - 1)}{'─' * 12}┼─────┼─────┼─────┼───")
         
         stat_configs = [
             ("HP", "HP"),
@@ -11342,7 +11344,10 @@ class Game:
             ("Sp.Defense", "Special_Defense"),
             ("Speed", "Speed")
         ]
-        for label, key in stat_configs:
+        poke_nature = getattr(pokemon, "nature", None)
+        inc_stat, dec_stat = NATURES.get(poke_nature, (None, None)) if poke_nature else (None, None)
+
+        for idx, (label, key) in enumerate(stat_configs):
             val = pokemon.stats[key]
             eff = int(pokemon.current_hp) if key == "HP" else pokemon.get_modified_stat(key, game=self)
             ev = pokemon.evs[key]
@@ -11357,6 +11362,7 @@ class Game:
                 arrow_cnt = min(6, abs(stage))
                 arrows = f"\033[94m{'↓' * arrow_cnt}\033[0m"
             else:
+                arrow_cnt = 0
                 arrows = ""
 
             #Color effective stat values red if above normal, blue if below
@@ -11377,7 +11383,19 @@ class Game:
             else:
                 iv_str = iv_val_str
 
-            interior.append(f"                       {label:<10} │{val:>5,}│{eff_str}│{ev:>5,}│ {iv_str}  {arrows}")
+            #Color stat name red for increased stat, blue for decreased stat
+            pad_spaces = " " * (10 - len(label))
+            if key == inc_stat:
+                label_str = f"\033[91m{label}\033[0m{pad_spaces}"
+            elif key == dec_stat:
+                label_str = f"\033[94m{label}\033[0m{pad_spaces}"
+            else:
+                label_str = f"{label}{pad_spaces}"
+
+            arrow_pad = " " * (6 - arrow_cnt)
+            nature_text = f"   Nature: {poke_nature}" if (idx == 2 and poke_nature) else ""
+
+            interior.append(f"{' ' * table_indent}{label_str} │{val:>5,}│{eff_str}│{ev:>5,}│ {iv_str}  {arrows}{arrow_pad}{nature_text}")
         interior.append("─" * 74)
 
         #5. Known Moves (dynamically affected by stat changes and STAB)

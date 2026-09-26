@@ -6,6 +6,7 @@ This class defines all the information about a Pokémon, including its stats, le
 
 import random
 from pokemon_db import load_pokemon_database, VALID_STATS
+from natures import NATURES, NATURE_NAMES
 
 _species_cache: dict[str, dict] = {}
 _moves_cache: dict[str, dict] = {}
@@ -53,7 +54,7 @@ def _get_move_data(move_name: str) -> dict:
 class Pokemon:
     """Represents an instance of a Pokémon with all of its stats."""
 
-    def __init__(self, species_identifier: str | dict, level: int = 1, nickname: str | None = None):
+    def __init__(self, species_identifier: str | dict, level: int = 1, nickname: str | None = None, nature: str | None = None):
         if isinstance(species_identifier, dict):
             self.species_data = species_identifier
         else:
@@ -62,6 +63,15 @@ class Pokemon:
         self.nickname = nickname
         self._level = level
         self.experience = self.get_experience_required_for_level(level)
+
+        #Assign nature (randomly if not specified)
+        self.nature: str
+        if nature is not None:
+            if nature not in NATURES:
+                raise ValueError(f"Unknown nature: {nature}")
+            self.nature = nature
+        else:
+            self.nature = random.choice(NATURE_NAMES)
         self.x: int = 0
         self.y: int = 0
         self.napping: bool = False #Pokémon that spawn when the floor generates are in an inactive "napping" state
@@ -693,7 +703,15 @@ class Pokemon:
                 self.stats[stat] = math.floor(val)
             else:
                 val = (((2 * base + iv + (ev / 2)) * level) / 100) + 5
-                self.stats[stat] = math.floor(val)
+                stat_val = math.floor(val)
+                nature = getattr(self, "nature", None)
+                if nature in NATURES:
+                    inc, dec = NATURES[nature]
+                    if stat == inc:
+                        stat_val = math.floor(round(stat_val * 1.1, 9))
+                    elif stat == dec:
+                        stat_val = math.floor(round(stat_val * 0.9, 9))
+                self.stats[stat] = stat_val
 
         new_max_hp = float(self.stats["HP"])
         if not hasattr(self, "current_hp"):
