@@ -124,6 +124,7 @@ TIPS_OF_THE_DAY = [
 
 
 COLOR_ESCAPE_REGEX = re.compile(r'\x1b\[[0-9;]*m')
+ANSI_ESCAPE_REGEX = re.compile(r'\x1b\[[0-9;]*[a-zA-Z]')
 
 
 def strip_ansi_color(text: str) -> str:
@@ -133,8 +134,7 @@ def strip_ansi_color(text: str) -> str:
 
 def center_ansi(text: str, width: int = 76) -> str:
     """Used to center text on the screen for menus and the like."""
-    ansi_escape = re.compile(r'\x1b\[[0-9;]*[a-zA-Z]')
-    visible_length = len(ansi_escape.sub('', text))
+    visible_length = len(ANSI_ESCAPE_REGEX.sub('', text))
     left_padding = max(0, (width - visible_length) // 2)
     right_padding = max(0, width - visible_length - left_padding)
     return " " * left_padding + text + " " * right_padding
@@ -10781,9 +10781,7 @@ class Game:
 
     def pad_ansi_string(self, s: str, target_len: int) -> str:
         """Pads a string containing ANSI escape codes to target_len printable characters"""
-        import re
-        ansi_escape = re.compile(r'\x1b\[[0-9;]*[a-zA-Z]')
-        plain_len = len(ansi_escape.sub('', s))
+        plain_len = len(ANSI_ESCAPE_REGEX.sub('', s))
         padding = target_len - plain_len
         if padding > 0:
             return s + " " * padding
@@ -11309,7 +11307,27 @@ class Game:
                     elif idx == 3:
                         right_text = "└" + "─" * 21 + "┘"
                 
-                left_part = self.pad_ansi_string(item_line, 45)
+                if items.is_tm(item):
+                    party = getattr(self, "party", []) or []
+                    compat_symbols = items.get_tm_compatibility_symbols(item, party)
+                    if compat_symbols:
+                        vis_len_item = len(ANSI_ESCAPE_REGEX.sub('', item_line))
+                        vis_len_sym = len(ANSI_ESCAPE_REGEX.sub('', compat_symbols))
+                        spaces = 45 - vis_len_item - vis_len_sym
+                        if spaces >= 0:
+                            left_part = item_line + (" " * spaces) + compat_symbols
+                        else:
+                            prefix = "\033[94m► \033[0m" if idx == selected_idx else "  "
+                            max_name_len = 45 - 2 - 1 - vis_len_sym
+                            trunc_name = item_name[:max(0, max_name_len - 3)] + "..." if len(item_name) > max_name_len else item_name
+                            new_item_line = f"{prefix}{r_color}{trunc_name}\033[0m"
+                            vis_len_new = len(ANSI_ESCAPE_REGEX.sub('', new_item_line))
+                            new_spaces = max(1, 45 - vis_len_new - vis_len_sym)
+                            left_part = new_item_line + (" " * new_spaces) + compat_symbols
+                    else:
+                        left_part = self.pad_ansi_string(item_line, 45)
+                else:
+                    left_part = self.pad_ansi_string(item_line, 45)
                 right_part = self.pad_ansi_string(right_text, 26)
                 interior.append(left_part + "   " + right_part)
                 

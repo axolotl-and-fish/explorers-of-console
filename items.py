@@ -181,7 +181,12 @@ def pokemon_knows_move(pokemon, move_name: str) -> bool:
         return False
     target_names = {move_name.lower(), move_name.lower().replace("-", " "), move_name.lower().replace(" ", "-")}
     for m in getattr(pokemon, "moves", []):
-        m_name = m.get("name", "").lower()
+        if isinstance(m, str):
+            m_name = m.lower()
+        elif isinstance(m, dict):
+            m_name = m.get("name", "").lower()
+        else:
+            continue
         if m_name in target_names:
             return True
     return False
@@ -232,7 +237,7 @@ def get_tm_compatibility_symbols(tm_item: dict | str, party: list) -> str:
     - Red X (\033[91mX\033[0m): Not compatible with the Pokémon
     """
     move_name = get_tm_move_name(tm_item)
-    if not move_name:
+    if not move_name or not party:
         return ""
     symbols = []
     for member in party:
@@ -616,8 +621,11 @@ def apply_item_effect(item: dict, target, game, is_thrown: bool = False):
         if target.level < 99:
             if game and hasattr(game, "log_message"):
                 game.log_message(f"{target.name} gained {amount:,} EXP!")
-                ex, ey = get_pokemon_position(game, target)
-                game.flash_damages[(ex, ey)] = (f"{amount:,}", "EXP")
+                if hasattr(game, "flash_damages"):
+                    from targeting import get_pokemon_position
+                    pos = get_pokemon_position(game, target)
+                    if pos:
+                        game.flash_damages[pos] = (f"{amount:,}", "EXP")
             target.gain_experience(amount, game=game, apply_multipliers=False)
         else:
             if game and hasattr(game, "log_message"):
