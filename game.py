@@ -174,6 +174,7 @@ class Game:
         self.radar_active: bool = False #Radar Orb
         self.scanner_active: bool = False #Scanner Orb
         self.stairs_revealed: bool = False #Stairs Orb
+        self.floor_luminous: bool = False #Luminous Orb
         self.turn_number = 0
         self.player_action_number: int = 1
         self.turn_in_progress: bool = False
@@ -9896,6 +9897,10 @@ class Game:
             new_width = self.get_target_floor_width(self.floor_number)
         self.floor = DungeonFloor(width=new_width)
         self.explored_tiles.clear()
+        self.radar_active = False
+        self.scanner_active = False
+        self.stairs_revealed = False
+        self.floor_luminous = False
         self.player_x, self.player_y = self._get_starting_position()
         self.player_pokemon.x, self.player_pokemon.y = self.player_x, self.player_y
         self.spawn_party_members()
@@ -12775,6 +12780,7 @@ class Game:
                         self.radar_active = False
                         self.scanner_active = False
                         self.stairs_revealed = False
+                        self.floor_luminous = False
                         
                         #Spawn player & party
                         self.player_x, self.player_y = self._get_starting_position()
