@@ -163,7 +163,7 @@ class Game:
         self.floor_timer_collapsed = False
         self.map_shake_offset = (0, 0)
         self.collapse_blanked_tiles: set[tuple[int, int]] = set()
-        self.build_string = "Beta 0.1.2"
+        self.build_string = "Beta 0.2.0-dev"
         self.message = self.build_string
         self.stairs_position = (0, 0)
         self.spawn_stairs()
@@ -8259,6 +8259,52 @@ class Game:
             if suppressed_here:
                 self.suppress_target_logs = False
 
+    def is_tm_compatible_with_party(self, tm_item: dict | str) -> bool:
+        """Returns True if at least one current party member is compatible with the TM."""
+        party = getattr(self, "party", []) or []
+        return any(items.is_tm_compatible_with_pokemon(tm_item, m) for m in party)
+
+    def is_context_menu_item_disabled(self, index: int) -> bool:
+        """Returns True if the context menu item at index is currently disabled. Currently used for TMs.
+        - In options mode for TMs: 'Use' is disabled if no team members are compatible with the TM.
+        - In party_select mode for TMs: team members incompatible with the TM are disabled.
+        """
+        state = getattr(self, "inventory_state", None)
+        if not state or state.get("context_menu") is None:
+            return False
+        menu = state["context_menu"]
+        if not (0 <= index < len(menu)):
+            return False
+
+        if "disabled_indices" in state and index in state["disabled_indices"]:
+            return True
+
+        mode = state.get("mode")
+        selected_idx = state.get("selected_index", 0)
+        inventory = getattr(self, "inventory", [])
+        if not (0 <= selected_idx < len(inventory)):
+            return False
+        selected_item = inventory[selected_idx]
+
+        if not items.is_tm(selected_item):
+            return False
+
+        party = getattr(self, "party", []) or []
+
+        if mode == "options":
+            option = menu[index]
+            if option in ("Use", "Eat"):
+                return not self.is_tm_compatible_with_party(selected_item)
+            return False
+
+        elif mode == "party_select":
+            if 0 <= index < len(party):
+                member = party[index]
+                return not items.is_tm_compatible_with_pokemon(selected_item, member)
+            return False
+
+        return False
+
     def handle_inventory_input(self, action):
         """Processes key inputs inside the inventory overlay screen"""
         state = self.inventory_state
@@ -8279,7 +8325,14 @@ class Game:
             if state["context_menu"] is not None:
                 menu_len = len(state["context_menu"])
                 if menu_len > 0:
-                    state["context_index"] = (state["context_index"] - 1) % menu_len
+                    current_idx = state["context_index"]
+                    new_idx = current_idx
+                    for step in range(1, menu_len + 1):
+                        cand = (current_idx - step) % menu_len
+                        if not self.is_context_menu_item_disabled(cand):
+                            new_idx = cand
+                            break
+                    state["context_index"] = new_idx
             else:
                 item_len = len(self.inventory)
                 if item_len > 0:
@@ -8291,7 +8344,14 @@ class Game:
             if state["context_menu"] is not None:
                 menu_len = len(state["context_menu"])
                 if menu_len > 0:
-                    state["context_index"] = (state["context_index"] + 1) % menu_len
+                    current_idx = state["context_index"]
+                    new_idx = current_idx
+                    for step in range(1, menu_len + 1):
+                        cand = (current_idx + step) % menu_len
+                        if not self.is_context_menu_item_disabled(cand):
+                            new_idx = cand
+                            break
+                    state["context_index"] = new_idx
             else:
                 item_len = len(self.inventory)
                 if item_len > 0:
@@ -8348,11 +8408,18 @@ class Game:
                 options.append("Trash")
                 
                 state["context_menu"] = options
-                state["context_index"] = 0
                 state["mode"] = "options"
+                start_idx = 0
+                for idx in range(len(options)):
+                    if not self.is_context_menu_item_disabled(idx):
+                        start_idx = idx
+                        break
+                state["context_index"] = start_idx
                 self.render()
             else:
                 if state["mode"] == "options":
+                    if self.is_context_menu_item_disabled(state["context_index"]):
+                        return
                     option = state["context_menu"][state["context_index"]]
                     if option in ("Use", "Eat", "Use/Eat"):
                         if self.player_pokemon.status_effects.get("Substitute", 0) > 0:
@@ -8389,8 +8456,13 @@ class Game:
                         is_orb = selected_item.get("name", "").endswith("Orb") or selected_item.get("is_orb", False)
                         if is_usable_item and len(self.party) > 1 and not is_orb:
                             state["context_menu"] = [m.name for m in self.party]
-                            state["context_index"] = 0
                             state["mode"] = "party_select"
+                            start_idx = 0
+                            for idx in range(len(self.party)):
+                                if not self.is_context_menu_item_disabled(idx):
+                                    start_idx = idx
+                                    break
+                            state["context_index"] = start_idx
                             self.render()
                         else:
                             if not is_usable_item:
@@ -8549,6 +8621,8 @@ class Game:
                             self.render()
                             
                 elif state["mode"] == "party_select":
+                    if self.is_context_menu_item_disabled(state["context_index"]):
+                        return
                     target_member = self.party[state["context_index"]]
                     selected_item = self.inventory[state["selected_index"]]
                     if selected_item.get("name") in ("Apple", "Big Apple", "Huge Apple", "Banana") and getattr(target_member, "current_belly", 0) > getattr(target_member, "max_belly", 100):
@@ -11298,7 +11372,10 @@ class Game:
                         else:
                             menu_item_idx = idx - 1
                             menu_item = menu[menu_item_idx]
-                            if menu_item_idx == context_idx:
+                            is_disabled = self.is_context_menu_item_disabled(menu_item_idx)
+                            if is_disabled:
+                                right_text = f"│   \033[90m{menu_item:<17}\033[0m │"
+                            elif menu_item_idx == context_idx:
                                 right_text = f"│ \033[94m> {menu_item:<17}\033[0m │"
                             else:
                                 right_text = f"│   {menu_item:<17} │"
@@ -11351,7 +11428,10 @@ class Game:
                     else:
                         menu_item_idx = idx - 1
                         menu_item = menu[menu_item_idx]
-                        if menu_item_idx == context_idx:
+                        is_disabled = self.is_context_menu_item_disabled(menu_item_idx)
+                        if is_disabled:
+                            right_text = f"│   \033[90m{menu_item:<17}\033[0m │"
+                        elif menu_item_idx == context_idx:
                             right_text = f"│ \033[94m> {menu_item:<17}\033[0m │"
                         else:
                             right_text = f"│   {menu_item:<17} │"
