@@ -241,7 +241,7 @@ class Game:
         self.wrap_bindings: list[dict] = []
         self.sand_tomb_bindings: list[dict] = []
         self.whirlpool_bindings: list[dict] = []
-        self.move_replacement_queue: list[tuple[Pokemon, dict]] = [] #List of moves that the Pokémon has learned that are pending
+        self.move_replacement_queue: list[tuple] = [] #List of moves that the Pokémon has learned that are pending
 
         self.gravity = False
         self.weather = "Clear"
@@ -10686,7 +10686,7 @@ class Game:
 
         elif getattr(self, "move_replacement_queue", None):
             screen_view = "move_replacement"
-            pokemon, new_move = self.move_replacement_queue[0]
+            pokemon, new_move = self.move_replacement_queue[0][:2]
             rows = self.render_move_replacement_screen(pokemon, new_move)
 
         elif getattr(self, "active_status_pokemon", None) is not None:
@@ -11076,9 +11076,9 @@ class Game:
             return gauge_str
         return f"{color_code}{gauge_str}\033[0m"
 
-    def prompt_forget_and_learn_move(self, pokemon: Pokemon, move_info: dict):
+    def prompt_forget_and_learn_move(self, pokemon: Pokemon, move_info: dict, tm_item: dict | None = None):
         """Adds a move replacement prompt to the queue"""
-        self.move_replacement_queue.append((pokemon, move_info))
+        self.move_replacement_queue.append((pokemon, move_info, tm_item))
 
     def render_move_replacement_screen(self, pokemon: Pokemon, new_move: dict) -> list[str]:
         """Renders the window that appears when a Pokémon learns a move while not having any free move slots."""
@@ -12085,7 +12085,9 @@ class Game:
                 action = game_input.get_key(timeout=None)
                 if action is None:
                     continue
-                pokemon, new_move = self.move_replacement_queue[0]
+                entry = self.move_replacement_queue[0]
+                pokemon, new_move = entry[0], entry[1]
+                tm_item = entry[2] if len(entry) > 2 else None
                 slot_index = None
                 if action in (game_input.USE_MOVE_1, "z", "Z", "1"):
                     slot_index = 0
@@ -12105,6 +12107,8 @@ class Game:
                     self.render()
                 elif action in (game_input.QUIT, "\x1b", "q", "Q"):
                     self.move_replacement_queue.pop(0)
+                    if tm_item is not None and hasattr(self, "inventory"):
+                        self.inventory.append(tm_item)
                     self.log_message(f"{pokemon.name} did not learn {new_move['name']}.")
                     self.render()
                 continue
