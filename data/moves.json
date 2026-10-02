@@ -2973,6 +2973,7 @@
     "pp_cost": 10,
     "cuts_corners": true,
 	"sound_based": true,
+	"dangerous": true,
     "effects": []
   },
   {
@@ -3169,6 +3170,7 @@
     "range": "User",
     "pp_cost": 15,
 	"sound_based": true,
+	"dangerous": true,
     "effects": [
       {
         "effect_type": "healing_wish"
@@ -4072,6 +4074,7 @@
     "range": "Adjacent enemy",
     "pp_cost": 3,
 	"sound_based": true,
+	"dangerous": true,
     "effects": [
       {
         "effect_type": "status_apply",
@@ -4106,6 +4109,7 @@
     "accuracy": 100,
     "range": "Adjacent enemy or ally",
     "pp_cost": 3,
+	"dangerous": true,
     "effects": [
       {
         "effect_type": "soak"
@@ -4136,6 +4140,7 @@
     "accuracy": null,
     "range": "User",
     "pp_cost": 5,
+	"dangerous": true,
     "effects": [
       {
         "effect_type": "wonder_room"
@@ -4863,6 +4868,7 @@
     "accuracy": null,
     "range": "User",
     "pp_cost": 0,
+	"dangerous": true,
     "effects": []
   },
   {
@@ -5496,6 +5502,7 @@
     "accuracy": 100,
     "range": "Room",
     "pp_cost": 20,
+	"dangerous": true,
     "effects": []
   },
   {
@@ -5523,6 +5530,7 @@
     "range": "Floor",
     "pp_cost": 10,
 	"sound_based": true,
+	"dangerous": true,
     "effects": []
   },
   {
@@ -5687,6 +5695,7 @@
     "range": "Adjacent enemy or ally",
     "pp_cost": 2,
     "cuts_corners": true,
+	"dangerous": true,
     "effects": []
   },
   {
@@ -5699,6 +5708,7 @@
     "range": "Adjacent enemy or ally",
     "pp_cost": 2,
     "cuts_corners": true,
+	"dangerous": true,
     "effects": []
   },
   {
@@ -5899,6 +5909,7 @@
     "accuracy": null,
     "range": "User",
     "pp_cost": 30,
+	"dangerous": true,
     "effects": []
   },
   {
@@ -5910,6 +5921,7 @@
     "accuracy": null,
     "range": "User",
     "pp_cost": 25,
+	"dangerous": true,
     "effects": []
   },
   {
@@ -5921,6 +5933,7 @@
     "accuracy": null,
     "range": "User",
     "pp_cost": 3,
+	"dangerous": true,
     "effects": [
       {
         "effect_type": "status_apply",
@@ -6238,6 +6251,7 @@
     "accuracy": 100,
     "range": "Adjacent enemy",
     "pp_cost": 1,
+	"dangerous": true,
     "effects": []
   },
   {
@@ -6266,7 +6280,7 @@
   {
     "name": "Substitute",
     "type": "Normal",
-    "description": "Costs 50% HP to turn into a Substitute for 10 turns. Ignored by enemies, can move, but cannot attack or use items.",
+    "description": "Costs 50% HP to turn into a Substitute for 10 turns, where the user will be ignored by enemies, but can't attack or use items.",
     "category": "Status",
     "power": null,
     "accuracy": null,
@@ -6415,6 +6429,7 @@
     "accuracy": null,
     "range": "User",
     "pp_cost": 5,
+	"dangerous": true,
     "effects": []
   },
   {
