@@ -8713,6 +8713,7 @@ class Game:
                 thrown_item = self.inventory.pop(target_idx)
             thrown_item.pop("dropped_by_player", None)
             self.waiting_for_throw_direction = None
+            is_apricorn = bool(thrown_item.get("apricorn", False) or "Apricorn" in thrown_item.get("name", ""))
 
             flying_char = self.get_flying_item_char(thrown_item, dx, dy)
             color_raw = thrown_item.get("color", "green")
@@ -8788,7 +8789,7 @@ class Game:
                     else:
                         trajectory.append((curr_x, curr_y, None))
             else:
-                is_pierce = bool(self.player_pokemon.status_effects.get("Pierce Throw"))
+                is_pierce = bool(self.player_pokemon.status_effects.get("Pierce Throw")) and not is_apricorn
                 for step in range(1, 11):
                     tx = self.player_x + step * dx
                     ty = self.player_y + step * dy
@@ -8829,7 +8830,7 @@ class Game:
             self.flying_item_animation = None
 
             if trajectory:
-                is_pierce = bool(self.player_pokemon.status_effects.get("Pierce Throw"))
+                is_pierce = bool(self.player_pokemon.status_effects.get("Pierce Throw")) and not is_apricorn
                 if is_pierce:
                     hit_enemies = [hit_type for _, _, hit_type in trajectory if isinstance(hit_type, Pokemon)]
                     for enemy_hit in hit_enemies:
@@ -8866,7 +8867,7 @@ class Game:
                         ex, ey = get_pokemon_position(self, enemy_hit)
                         enemy_visible = (ex, ey) in currently_visible
 
-                        if thrown_item.get("apricorn", False):
+                        if is_apricorn:
                             consumed = self.attempt_apricorn_recruitment(thrown_item, enemy_hit)
                             if not consumed:
                                 self.place_item_on_floor(final_x, final_y, thrown_item)
