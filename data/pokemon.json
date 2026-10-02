@@ -5651,8 +5651,8 @@
     ],
     "tm_moves": ["Strength", "Rock Slide", "Skull Bash", "Swift", "Fire Blast", "Dig", "Fissure", "Earthquake", "Mega Drain", "Counter", "Seismic Toss","Submission", "Bubble Beam", "Water Gun", "Ice Beam", "Blizzard", "Take Down", "Double-Edge", "Body Slam", "Mega Punch", "Swords Dance", "Mega Kick", "Toxic", "Mimic", "Bide", "Rest", "Double Team", "Vacuum-Cut", "Wide Slash", "Spin Slash", "Rage"],
     "evolutions": [
-      { "to": "Marowak", "level": 28 },
-      { "to": "Marowak-A", "level": 28 }
+      { "to": "Marowak", "min_level": 28 },
+      { "to": "Marowak-A", "min_level": 28 }
     ]
   },
   {
@@ -5898,8 +5898,8 @@
     ],
     "tm_moves": ["Flash", "Explosion", "Fire Blast", "Self-Destruct", "Thunderbolt", "Thunder", "Take Down", "Double-Edge", "Body Slam", "Toxic", "Mimic", "Bide", "Rest", "Double Team", "Vacuum-Cut", "Wide Slash", "Spin Slash", "Rage"],
     "evolutions": [
-      { "to": "Weezing", "level": 35 },
-      { "to": "Weezing-G", "level": 35 }
+      { "to": "Weezing", "min_level": 35 },
+      { "to": "Weezing-G", "min_level": 35 }
     ]
   },
   {
