@@ -950,20 +950,16 @@ def apply_item_effect(item: dict, target, game, is_thrown: bool = False):
             game.log_message("But nothing happened.")
 
     elif name == "Hail Orb":
-        game.weather = "Hail"
-        game.log_message("It started to hail!")
+        game.set_weather("Hail", duration=random.randint(15, 20))
         
     elif name == "Rainy Orb":
-        game.weather = "Rain"
-        game.log_message("It started to rain!")
+        game.set_weather("Rain", duration=random.randint(15, 20))
         
     elif name == "Sandy Orb":
-        game.weather = "Sandstorm"
-        game.log_message("A sandstorm kicked up!")
+        game.set_weather("Sandstorm", duration=random.randint(15, 20))
         
     elif name == "Sunny Orb":
-        game.weather = "Sunny"
-        game.log_message("The sunlight got bright!")
+        game.set_weather("Sunny", duration=random.randint(15, 20))
 
     elif name == "Invisify Orb":
         for member in game.party:

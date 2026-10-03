@@ -382,6 +382,7 @@ def serialize_game_state(game) -> dict:
         "turn_count": getattr(game, "turn_count", 0),
         "start_time": getattr(game, "start_time", 0.0),
         "accumulated_play_time": play_time,
+        "base_weather": getattr(game, "base_weather", "Clear"),
         "weather": getattr(game, "weather", "Clear"),
         "weather_turns_left": weather_turns,
         "weather_turns": weather_turns,
@@ -440,6 +441,7 @@ def apply_game_state(game, state_dict: dict):
         game.accumulated_play_time = 0.0
     game.session_start_time = time.time()
     game.compatibility_mode = state_dict.get("compatibility_mode", getattr(game, "compatibility_mode", False))
+    game.base_weather = state_dict.get("base_weather", "Clear")
     game.weather = state_dict.get("weather", "Clear")
     weather_turns = state_dict.get("weather_turns_left", state_dict.get("weather_turns", 0))
     game.weather_turns_left = weather_turns

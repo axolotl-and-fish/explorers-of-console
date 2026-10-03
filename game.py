@@ -246,6 +246,7 @@ class Game:
         self.move_replacement_queue: list[tuple] = [] #List of moves that the Pokémon has learned that are pending
 
         self.gravity = False
+        self.base_weather = "Clear"
         self.weather = "Clear"
         self.weather_turns_left = 0
         self.wonder_room_turns = 0
@@ -609,6 +610,27 @@ class Game:
 
         self.floor_spawn_list = chosen
 
+    def generate_floor_base_weather(self, floor_number: int | None = None) -> str:
+        """Determines the floor's natural base weather using 3 successive rolls."""
+        import random
+        if floor_number is None:
+            floor_number = getattr(self, "floor_number", 1)
+        n = max(0, floor_number - 1)
+        chance = min(1.0, n / 100.0)
+        if chance <= 0.0 or random.random() >= chance:
+            return "Clear"
+
+        # Roll 1 succeeded
+        if random.random() >= chance:
+            return random.choice(["Sunny", "Cloudy", "Fog", "Snow", "Rain"])
+
+        # Roll 2 succeeded
+        if random.random() >= chance:
+            return random.choice(["Hail", "Sandstorm", "Blizzard", "Thunderstorm"])
+
+        # Roll 3 succeeded
+        return random.choice(["Harsh Sunlight", "Heavy Rain", "Strong Winds", "Shadowy Aura"])
+
     def set_weather(self, weather: str, duration: int = 0):
         """Sets the dungeon weather and prints the appropriate message"""
         msg_map = {
@@ -619,7 +641,16 @@ class Game:
             "Clear": "The weather cleared up.",
             "Grassy Terrain": "Grass grew to cover the dungeon!",
             "Electric Terrain": "An electric current runs across the dungeon!",
-            "Misty Terrain": "Mist swirls around the dungeon!"
+            "Misty Terrain": "Mist swirls around the dungeon!",
+            "Cloudy": "It became cloudy!",
+            "Fog": "A deep fog set in!",
+            "Snow": "It began to snow!",
+            "Blizzard": "A howling blizzard whipped up!",
+            "Thunderstorm": "A thunderstorm began to rage!",
+            "Harsh Sunlight": "The sunlight turned extremely harsh!",
+            "Heavy Rain": "A heavy rain began to fall!",
+            "Strong Winds": "Mysterious strong winds began to blow!",
+            "Shadowy Aura": "A shadowy aura shrouded the area!"
         }
         if weather == "Misty Terrain" and duration <= 0:
             import random
@@ -636,6 +667,16 @@ class Game:
                     for st in ("Sleep", "Resting", "Paralysis", "Poison", "Toxic", "Burn", "Frozen"):
                         if p.status_effects.get(st):
                             p.cure_status(st, self)
+        elif weather == "Harsh Sunlight":
+            all_pokes = list(getattr(self, "party", [])) + list(getattr(self, "spawned_pokemon", []))
+            for p in all_pokes:
+                if p.status_effects.get("Frozen", 0) > 0:
+                    p.cure_status("Frozen", self)
+        elif weather == "Heavy Rain":
+            all_pokes = list(getattr(self, "party", [])) + list(getattr(self, "spawned_pokemon", []))
+            for p in all_pokes:
+                if p.status_effects.get("Burn"):
+                    p.cure_status("Burn", self)
 
     def get_status_line(self, pokemon: Pokemon, max_len: int = 56) -> str:
         """Formats the status line of a Pokémon's party window, truncated to fit max_len"""
@@ -766,6 +807,12 @@ class Game:
                 items.append((f"{res_t} Res", "positive"))
 
         spd_stage = pokemon.movement_speed_stage
+        p_types = getattr(pokemon, "types", pokemon.species_data.get("types", []))
+        if getattr(self, "weather", None) == "Blizzard" and "Ice" in p_types:
+            spd_stage += 1
+        elif getattr(self, "weather", None) == "Strong Winds" and "Flying" in p_types:
+            spd_stage += 1
+        spd_stage = min(3, max(-1, spd_stage))
         if spd_stage == -1:
             items.append(("Slow", "negative"))
         elif spd_stage == 1:
@@ -1275,6 +1322,11 @@ class Game:
         #Outside a room: within visibility radius (5 normally, 100 (unlimited) when floor_luminous) and has line of sight
         dist = max(abs(ex - tx), abs(ey - ty))
         radius = 56 if getattr(self, "floor_luminous", False) else 5
+        if not enemy_room_tiles:
+            if getattr(self, "weather", None) == "Cloudy":
+                radius = max(1, radius - 1)
+            elif getattr(self, "weather", None) == "Fog":
+                radius = max(1, radius - 2)
         if dist <= radius:
             return self._has_line_of_sight(ex, ey, tx, ty)
 
@@ -1586,6 +1638,10 @@ class Game:
 
     def process_roaming_ai(self, mon: Pokemon):
         """Processes standard wandering/roaming AI for a Pokémon (inside room or corridor)"""
+        mon_types = getattr(mon, "types", mon.species_data.get("types", []))
+        if getattr(self, "weather", None) == "Strong Winds" and "Flying" not in mon_types:
+            if random.random() < 0.33:
+                return
         ex, ey = get_pokemon_position(self, mon)
         room_tiles = get_room_tiles_at(self.floor, ex, ey)
 
@@ -1764,6 +1820,11 @@ class Game:
         Hallucinating Pokémon move in random directions each turn without attacking"""
         if int(mon.current_hp) <= 0 or not self.is_running:
             return
+
+        mon_types = getattr(mon, "types", mon.species_data.get("types", []))
+        if getattr(self, "weather", None) == "Strong Winds" and "Flying" not in mon_types:
+            if random.random() < 0.33:
+                return
 
         px, py = get_pokemon_position(self, mon)
         dirs = [(dx, dy) for dx in [-1, 0, 1] for dy in [-1, 0, 1] if not (dx == 0 and dy == 0)]
@@ -2051,6 +2112,12 @@ class Game:
                     continue
 
                 #2. Movement Priority
+                ally_types = getattr(ally, "types", ally.species_data.get("types", []))
+                if getattr(self, "weather", None) == "Strong Winds" and "Flying" not in ally_types:
+                    if random.random() < 0.33:
+                        if self._is_tile_visible_to_player(ax, ay):
+                            self.log_message(f"{ally.name} was pushed back by the strong winds!")
+                        continue
                 moved = False
 
                 #Target A: Enemy in sight (prioritized even over following leader, if leader is in the same room)
@@ -2370,6 +2437,10 @@ class Game:
                             self.execute_single_move(enemy, enemy, chosen_user_move)
                         else:
                             #Target is visible but out of range, so pathfind towards it
+                            enemy_types = getattr(enemy, "types", enemy.species_data.get("types", []))
+                            if getattr(self, "weather", None) == "Strong Winds" and "Flying" not in enemy_types:
+                                if random.random() < 0.33:
+                                    continue
                             tx, ty = get_pokemon_position(self, target)
                             ex, ey = get_pokemon_position(self, enemy)
 
@@ -2424,6 +2495,12 @@ class Game:
 
         #3. Speed stage calculations
         stage = pokemon.movement_speed_stage
+        p_types = getattr(pokemon, "types", pokemon.species_data.get("types", []))
+        if getattr(self, "weather", None) == "Blizzard" and "Ice" in p_types:
+            stage += 1
+        elif getattr(self, "weather", None) == "Strong Winds" and "Flying" in p_types:
+            stage += 1
+        stage = min(3, max(-1, stage))
         if stage == 3: #4x speed
             return 4
         elif stage == 2: #3x speed
@@ -2908,6 +2985,8 @@ class Game:
                     dec = 1
                     if status == "Frozen" and self.weather == "Sunny":
                         dec = 2
+                    elif status == "Frozen" and self.weather == "Harsh Sunlight":
+                        dec = val
                     new_val = max(0, val - dec)
                     if new_val == 0:
                         p.cure_status(status, self)
@@ -2923,11 +3002,16 @@ class Game:
                     else:
                         p.status_effects[status] = new_val
 
+        if self.weather == "Heavy Rain":
+            for p in list(self.party + self.spawned_pokemon):
+                if p.status_effects.get("Burn"):
+                    p.cure_status("Burn", self)
+
         #Decrement weather turns if active
         if getattr(self, "weather_turns_left", 0) > 0:
             self.weather_turns_left -= 1
             if self.weather_turns_left <= 0:
-                self.set_weather("Clear")
+                self.set_weather(getattr(self, "base_weather", "Clear"))
 
         #Replenish player actions for the next round
         self.replenish_player_actions()
@@ -3255,8 +3339,15 @@ class Game:
                 visible.update(m_room_tiles)
 
             #2. General visibility (radius of 5 normally, 10 when luminous, subject to line-of-sight)
-            for dy in range(-radius, radius + 1):
-                for dx in range(-radius, radius + 1):
+            member_radius = radius
+            if not m_room_tiles:
+                if getattr(self, "weather", None) == "Cloudy":
+                    member_radius = max(1, member_radius - 1)
+                elif getattr(self, "weather", None) == "Fog":
+                    member_radius = max(1, member_radius - 2)
+
+            for dy in range(-member_radius, member_radius + 1):
+                for dx in range(-member_radius, member_radius + 1):
                     tx = mx + dx
                     ty = my + dy
                     if 0 <= tx < self.floor.width and 0 <= ty < self.floor.height:
@@ -3998,8 +4089,8 @@ class Game:
                     self.trigger_damage_flash()
             elif eff_type == "weather_change":
                 weather_name = effect.get("weather", "Clear")
-                duration = 0
-                if weather_name == "Grassy Terrain":
+                duration = effect.get("duration", 0)
+                if duration <= 0 and weather_name != "Clear":
                     duration = random.randint(10, 20)
                 self.set_weather(weather_name, duration)
             elif eff_type == "rapid_spin_clear":
@@ -4484,6 +4575,8 @@ class Game:
             modified_acc = acc * acc_mult / ev_mult
             if self.gravity:
                 modified_acc *= 1.5
+            if getattr(self, "weather", None) == "Fog":
+                modified_acc *= 0.8
             
             import random
             if random.randint(1, 100) <= modified_acc:
@@ -4610,6 +4703,8 @@ class Game:
             modified_acc = acc * acc_mult / ev_mult
             if self.gravity:
                 modified_acc *= 1.5
+            if getattr(self, "weather", None) == "Fog":
+                modified_acc *= 0.8
             
             import random
             if random.randint(1, 100) <= modified_acc:
@@ -4677,6 +4772,8 @@ class Game:
             modified_acc = acc * acc_mult / ev_mult
             if self.gravity:
                 modified_acc *= 1.5
+            if getattr(self, "weather", None) == "Fog":
+                modified_acc *= 0.8
             
             if random.randint(1, 100) <= modified_acc:
                 damage, is_critical, type_mult = calculate_damage(attacker, defender, move, self)
@@ -6026,6 +6123,8 @@ class Game:
             modified_acc = acc * acc_mult / ev_mult
             if self.gravity:
                 modified_acc *= 1.5
+            if getattr(self, "weather", None) == "Fog":
+                modified_acc *= 0.8
             if random.randint(1, 100) > modified_acc:
                 self.log_message(f"{defender.name} avoided the attack!")
                 tx, ty = get_pokemon_position(self, defender)
@@ -6214,6 +6313,8 @@ class Game:
             modified_acc = acc * acc_mult / ev_mult
             if self.gravity:
                 modified_acc *= 1.5
+            if getattr(self, "weather", None) == "Fog":
+                modified_acc *= 0.8
             if random.randint(1, 100) > modified_acc:
                 self.log_message(f"{defender.name} avoided the attack!")
                 tx, ty = get_pokemon_position(self, defender)
@@ -6299,6 +6400,8 @@ class Game:
             modified_acc = acc * acc_mult / ev_mult
             if self.gravity:
                 modified_acc *= 1.5
+            if getattr(self, "weather", None) == "Fog":
+                modified_acc *= 0.8
             if random.randint(1, 100) > modified_acc:
                 self.log_message(f"{defender.name} avoided the attack!")
                 tx, ty = get_pokemon_position(self, defender)
@@ -6382,6 +6485,8 @@ class Game:
             modified_acc = acc * acc_mult / ev_mult
             if self.gravity:
                 modified_acc *= 1.5
+            if getattr(self, "weather", None) == "Fog":
+                modified_acc *= 0.8
 
             hit_count = 0
             for hit_idx in range(hits):
@@ -6474,6 +6579,8 @@ class Game:
             modified_acc = acc * acc_mult / ev_mult
             if self.gravity:
                 modified_acc *= 1.5
+            if getattr(self, "weather", None) == "Fog":
+                modified_acc *= 0.8
 
             hit_count = 0
             for hit_idx in range(hits):
@@ -6611,6 +6718,8 @@ class Game:
             modified_acc = acc * acc_mult / ev_mult
             if self.gravity:
                 modified_acc *= 1.5
+            if getattr(self, "weather", None) == "Fog":
+                modified_acc *= 0.8
 
             if random.randint(1, 100) > modified_acc:
                 attacker.last_move_failed_turn = self.turn_number
@@ -7211,6 +7320,20 @@ class Game:
         attacker.last_used_move = move["name"]
         attacker.last_used_move_on_floor = move["name"]
 
+        if getattr(self, "weather", None) == "Shadowy Aura":
+            move = move.copy()
+            move["type"] = "typeless"
+
+        if getattr(self, "weather", None) == "Harsh Sunlight" and move.get("type") == "Water":
+            attacker.last_move_failed_turn = self.turn_number
+            self.log_message("The Water-type attack evaporated in the harsh sunlight!")
+            return
+
+        if getattr(self, "weather", None) == "Heavy Rain" and move.get("type") == "Fire":
+            attacker.last_move_failed_turn = self.turn_number
+            self.log_message("The Fire-type attack fizzled out in the heavy rain!")
+            return
+
         if attacker.status_effects.get("Enraged", 0) > 0 and move.get("name") != "Rage":
             attacker.cure_status("Enraged", self)
 
@@ -7470,6 +7593,13 @@ class Game:
         if self.player_pokemon.status_effects.get("Stuck", 0) > 0 or self.player_pokemon.status_effects.get("Ingrain", 0) > 0:
             self.log_message(f"{self.player_pokemon.name} can't move!")
             return False
+
+        p_types = getattr(self.player_pokemon, "types", self.player_pokemon.species_data.get("types", []))
+        if getattr(self, "weather", None) == "Strong Winds" and "Flying" not in p_types:
+            if random.random() < 0.33:
+                self.start_player_action()
+                self.log_message(f"{self.player_pokemon.name} was pushed back by the strong winds!")
+                return True
 
         if self.player_pokemon.status_effects.get("Confusion", 0) > 0:
             directions = [(d_x, d_y) for d_x in [-1, 0, 1] for d_y in [-1, 0, 1] if not (d_x == 0 and d_y == 0)]
@@ -9973,6 +10103,9 @@ class Game:
         self.add_to_team_history(self.player_pokemon, is_starter=True)
 
         self.floor_number = 1
+        self.base_weather = "Clear"
+        self.weather = "Clear"
+        self.weather_turns_left = 0
         self.floor_timer = self.get_initial_floor_timer(self.floor_number)
         self.floor_timer_warned_250 = False
         self.floor_timer_warned_150 = False
@@ -10644,6 +10777,12 @@ class Game:
             "Snow": "\033[97m",
             "Harsh Sunlight": "\033[93m",
             "Heavy Rain": "\033[94m",
+            "Cloudy": "\033[37m",
+            "Fog": "\033[90m",
+            "Blizzard": "\033[96m",
+            "Thunderstorm": "\033[93m",
+            "Strong Winds": "\033[92m",
+            "Shadowy Aura": "\033[35m",
         }
         w_color = weather_color_map.get(weather_str, "\033[90m")
         bot_left_plain = f"─{weather_str}"
@@ -12909,7 +13048,12 @@ class Game:
                         
                         #Reset floor-level states & bindings
                         self.gravity = False
-                        self.weather = "Clear"
+                        self.base_weather = self.generate_floor_base_weather(self.floor_number)
+                        if self.base_weather == "Clear":
+                            self.weather = "Clear"
+                            self.weather_turns_left = 0
+                        else:
+                            self.set_weather(self.base_weather, duration=0)
                         self.wonder_room_turns = 0
                         self.leech_seed_sources.clear()
                         self.taunt_sources.clear()

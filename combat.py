@@ -40,6 +40,15 @@ def calculate_damage(attacker: Pokemon, defender: Pokemon, move: dict, game=None
     Returns:
         tuple[int, bool, float]: (final_damage, is_critical, type_multiplier)
     """
+    if game and hasattr(game, "weather"):
+        if game.weather == "Shadowy Aura":
+            move = dict(move)
+            move["type"] = "typeless"
+        elif game.weather == "Harsh Sunlight" and move.get("type") == "Water":
+            return 0, False, 0.0
+        elif game.weather == "Heavy Rain" and move.get("type") == "Fire":
+            return 0, False, 0.0
+
     #Moves where damage = user's level
     if move.get("name") == "Night Shade":
         raw_dmg = float(attacker.level)
@@ -224,15 +233,16 @@ def calculate_damage(attacker: Pokemon, defender: Pokemon, move: dict, game=None
 
     #Same-Type Attack Bonus (STAB)
     attacker_types = getattr(attacker, "types", attacker.species_data.get("types", []))
-    #Unique/multi-type moves
-    if move.get("name") == "Muddy Water":
-        if any(t in attacker_types for t in ["Water", "Ground"]):
+    if not (game and getattr(game, "weather", None) == "Shadowy Aura"):
+        #Unique/multi-type moves
+        if move.get("name") == "Muddy Water":
+            if any(t in attacker_types for t in ["Water", "Ground"]):
+                power = power * 1.5
+        elif move.get("name") == "Tri Attack":
+            if any(t in attacker_types for t in ["Fire", "Ice", "Electric"]):
+                power = power * 1.5
+        elif move.get("type") in attacker_types:
             power = power * 1.5
-    elif move.get("name") == "Tri Attack":
-        if any(t in attacker_types for t in ["Fire", "Ice", "Electric"]):
-            power = power * 1.5
-    elif move.get("type") in attacker_types:
-        power = power * 1.5
 
     #Boosts & penalties from weather
     if game and hasattr(game, "weather"):
@@ -247,6 +257,27 @@ def calculate_damage(attacker: Pokemon, defender: Pokemon, move: dict, game=None
                 power = power * 1.5
             elif m_type == "Fire":
                 power = power * 0.5
+        elif game.weather == "Cloudy":
+            if m_type == "Normal":
+                power = power * 1.33
+        elif game.weather in ("Snow", "Blizzard"):
+            if m_type == "Ice":
+                power = power * 1.5
+        elif game.weather == "Thunderstorm":
+            if m_type in ("Water", "Electric"):
+                power = power * 1.5
+            elif m_type == "Fire":
+                power = power * 0.5
+        elif game.weather == "Harsh Sunlight":
+            if m_type == "Fire":
+                power = power * 2.0
+            elif m_type == "Water":
+                return 0, False, 0.0
+        elif game.weather == "Heavy Rain":
+            if m_type == "Water":
+                power = power * 2.0
+            elif m_type == "Fire":
+                return 0, False, 0.0
         elif game.weather == "Grassy Terrain":
             if m_type == "Ground":
                 power = power * 0.5
@@ -303,7 +334,10 @@ def calculate_damage(attacker: Pokemon, defender: Pokemon, move: dict, game=None
         target_types = [t for t in target_types if t != "Flying"]
         if not target_types:
             target_types = ["typeless"]
-    move_type_key = str(move.get("name")) if move.get("name") in ("Muddy Water", "Freeze-Dry") else str(move.get("type", "typeless"))
+    if game and getattr(game, "weather", None) == "Shadowy Aura":
+        move_type_key = "typeless"
+    else:
+        move_type_key = str(move.get("name")) if move.get("name") in ("Muddy Water", "Freeze-Dry") else str(move.get("type", "typeless"))
     type_multiplier = get_effectiveness_multiplier(move_type_key, target_types)
     if move.get("type") == "Ground" and defender.status_effects.get("Magnet Rise", 0) > 0 and not is_grounded:
         type_multiplier = 0.0

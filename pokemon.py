@@ -907,7 +907,7 @@ class Pokemon:
         import math
         val = max(1, math.floor(base_val * multiplier))
 
-        #Apply weather-based boosts (Defense / Special Defense)
+        #Apply weather-based boosts (Defense / Special Defense / Speed)
         if game and hasattr(game, "weather"):
             p_types = self.types
             if actual_stat_name in ("Defense", "Special_Defense"):
@@ -915,6 +915,15 @@ class Pokemon:
                     val = max(1, math.floor(val * 1.33))
                 elif game.weather == "Sandstorm" and "Ground" in p_types:
                     val = max(1, math.floor(val * 1.33))
+                elif game.weather == "Strong Winds" and "Flying" in p_types:
+                    val = max(1, math.floor(val * 1.5))
+            elif actual_stat_name == "Speed":
+                if game.weather == "Fog":
+                    val = max(1, math.floor(val * 1.33))
+                elif game.weather == "Blizzard" and "Ice" in p_types:
+                    val = max(1, math.floor(val * 1.5))
+                elif game.weather == "Strong Winds" and "Flying" in p_types:
+                    val = max(1, math.floor(val * 1.5))
 
         #Apply status effect changes
         if actual_stat_name == "Attack" and self.status_effects.get("Burn"):
@@ -922,6 +931,8 @@ class Pokemon:
         if actual_stat_name in ("Defense", "Special_Defense") and (self.status_effects.get("Sleep", 0) > 0 or self.status_effects.get("Resting", 0) > 0):
             val = max(1, math.floor(val * 0.5))
         if actual_stat_name == "Special_Attack" and (self.status_effects.get("Poison") or self.status_effects.get("Toxic")):
+            val = max(1, math.floor(val * 0.5))
+        if actual_stat_name == "Speed" and self.status_effects.get("Paralysis", 0) > 0:
             val = max(1, math.floor(val * 0.5))
         if actual_stat_name == "Defense" and self.status_effects.get("Reflect", 0) > 0:
             val = max(1, math.floor(val * 2.0))
@@ -1197,13 +1208,16 @@ class Pokemon:
             if self.status_effects.get("Frozen", 0) > 0:
                 #Can't burn a frozen target or frozen cures it, let's just ignore or thaw
                 return
-            if hasattr(game, "weather") and game.weather == "Rain":
-                #Rain prevents burn
+            if hasattr(game, "weather") and game.weather in ("Rain", "Heavy Rain"):
+                #Rain and Heavy Rain prevent burn
                 return
             self.status_effects["Burn"] = True
             game.log_message(f"{self.name} sustained a burn!")
             self._trigger_status_popup("Burn", game)
         elif status == "Frozen":
+            if hasattr(game, "weather") and game.weather == "Harsh Sunlight":
+                #Harsh Sunlight prevents frozen
+                return
             self.status_effects["Frozen"] = duration if duration is not None else random.randint(3, 6)
             game.log_message(f"{self.name} was frozen solid!")
             self._trigger_status_popup("Frozen", game)
