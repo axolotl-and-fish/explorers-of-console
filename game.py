@@ -6718,6 +6718,9 @@ class Game:
                 raw_acc = None
             elif self.weather in ("Sunny", "Harsh Sunlight"):
                 raw_acc = 50
+        elif move_name == "Blizzard":
+            if self.weather in ("Hail", "Snow", "Blizzard"):
+                raw_acc = None
         elif move_name == "Toxic":
             atk_types = getattr(attacker, "temp_types", None) or attacker.types
             if "Poison" in atk_types:
