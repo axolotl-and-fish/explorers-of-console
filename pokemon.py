@@ -47,14 +47,17 @@ def _get_move_data(move_name: str) -> dict:
     if key not in _moves_cache:
         raise ValueError(f"Unknown move: {move_name}")
     res = dict(_moves_cache[key])
-    res.setdefault("enabled", True)
+    if res.get("dangerous", False):
+        res.setdefault("enabled", False)
+    else:
+        res.setdefault("enabled", True)
     return res
 
 
 class Pokemon:
     """Represents an instance of a Pokémon with all of its stats."""
 
-    def __init__(self, species_identifier: str | dict, level: int = 1, nickname: str | None = None, nature: str | None = None, ivs: dict[str, int] | None = None):
+    def __init__(self, species_identifier: str | dict, level: int = 1, nickname: str | None = None, nature: str | None = None, ivs: dict[str, int] | None = None, is_leader: bool = False):
         if isinstance(species_identifier, dict):
             self.species_data = species_identifier
         else:
@@ -203,7 +206,10 @@ class Pokemon:
         self.mimic_original_state: dict | None = None #Original state for the move Mimic
         self.transform_original_state: dict | None = None #Original state for transformed mons
         self.last_hit_by_move: dict | None = None #Move this mon was last hit by
-        self.is_leader: bool = False #Is this mon the player-controlled mon?
+        self.is_leader: bool = is_leader #Is this mon the player-controlled mon?
+        if self.is_leader and hasattr(self, "moves"):
+            for m in self.moves:
+                m["enabled"] = True
         self.swapped_this_turn: bool = False #Was this teammate swapped by the leader this turn?
         self.echoed_voice_count: int = 0 #Number of times Echoed Voice has been used
         self.damage_hit_turns: list[int] = [] #Turns when hit by damaging moves (for Rage Fist)
@@ -319,6 +325,8 @@ class Pokemon:
                             continue
                         
                         if len(self.moves) < 4:
+                            if getattr(self, "is_leader", False):
+                                move_info["enabled"] = True
                             self.moves.append(move_info)
                             if game and hasattr(game, "party") and self in game.party:
                                 game.log_message(f"{self.name} learned {move_info['name']}!")
@@ -328,6 +336,8 @@ class Pokemon:
                             else:
                                 if self.moves:
                                     self.moves.pop(0)
+                                if getattr(self, "is_leader", False):
+                                    move_info["enabled"] = True
                                 self.moves.append(move_info)
                     except ValueError:
                         pass
@@ -615,6 +625,8 @@ class Pokemon:
                     if any(m["name"] == move_info["name"] for m in self.moves):
                         continue
                     if len(self.moves) < 4:
+                        if getattr(self, "is_leader", False):
+                            move_info["enabled"] = True
                         self.moves.append(move_info)
                         if game and hasattr(game, "party") and self in game.party:
                             game.log_message(f"{self.name} learned {move_info['name']}!")
@@ -624,6 +636,8 @@ class Pokemon:
                         else:
                             if self.moves:
                                 self.moves.pop(0)
+                            if getattr(self, "is_leader", False):
+                                move_info["enabled"] = True
                             self.moves.append(move_info)
                 except ValueError:
                     pass

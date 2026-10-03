@@ -212,8 +212,10 @@ class Game:
                 player_species = "Bulbasaur"
 
         if player_species is not None:
-            self.player_pokemon: Pokemon = Pokemon(player_species, level=2, nickname=player_nickname)
+            self.player_pokemon: Pokemon = Pokemon(player_species, level=2, nickname=player_nickname, is_leader=True)
             self.player_pokemon.is_leader = True
+            for m in self.player_pokemon.moves:
+                m["enabled"] = True
             self.party = [self.player_pokemon]
 
             starter_sp = getattr(self.player_pokemon, "species_name", "") or self.player_pokemon.species_data.get("name", self.player_pokemon.name)
@@ -8989,6 +8991,8 @@ class Game:
             target.current_pp = target.max_pp
             for m in target.moves:
                 m["pp"] = m.get("max_pp", m.get("pp", 20))
+                if m.get("dangerous", False):
+                    m["enabled"] = False
 
             target.status_effects = {s: (False if isinstance(v, bool) else 0) for s, v in target.status_effects.items()}
             target.stat_modifiers = {s: 0 for s in target.stat_modifiers}
@@ -9142,6 +9146,9 @@ class Game:
                     self.set_poke_pos(recruit, rx, ry)
                     self.log_message(f"{replaced_mon.name} went away. {recruit.name} is now the leader!")
                 else:
+                    for m in recruit.moves:
+                        if m.get("dangerous", False):
+                            m["enabled"] = False
                     self.set_poke_pos(recruit, rx, ry)
                     self.log_message(f"{replaced_mon.name} went away...")
 
@@ -9951,8 +9958,10 @@ class Game:
         self.starter_select_state = None
         self.high_scores_state = None
 
-        self.player_pokemon = Pokemon(species_name, level=2, nickname=nickname, nature=nature, ivs=ivs)
+        self.player_pokemon = Pokemon(species_name, level=2, nickname=nickname, nature=nature, ivs=ivs, is_leader=True)
         self.player_pokemon.is_leader = True
+        for m in self.player_pokemon.moves:
+            m["enabled"] = True
         self.party = [self.player_pokemon]
 
         starter_sp = getattr(self.player_pokemon, "species_name", "") or self.player_pokemon.species_data.get("name", self.player_pokemon.name)
@@ -12019,6 +12028,192 @@ class Game:
             #Restore cursor on quit
             self._restore_cursor()
 
+    def handle_summary_input(self, action: str):
+        """Processes user input while on the full-screen Pokémon summary screen."""
+        context_state = getattr(self, "summary_context_menu_state", None)
+
+        if context_state is not None:
+            mode = context_state.get("mode", "menu")
+            if mode == "menu":
+                options = context_state.get("options", [])
+                if action in (game_input.MOVE_UP, "w", "W", "up", "UP"):
+                    context_state["selected_index"] = (context_state.get("selected_index", 0) - 1) % len(options)
+                    self.render()
+                    return
+                if action in (game_input.MOVE_DOWN, "s", "S", "down", "DOWN"):
+                    context_state["selected_index"] = (context_state.get("selected_index", 0) + 1) % len(options)
+                    self.render()
+                    return
+                if action in (game_input.CONFIRM, "\r", "\n"):
+                    sel_opt = options[context_state.get("selected_index", 0)]
+                    if sel_opt == "Evolve":
+                        target = self.active_status_pokemon
+                        if target and target.can_evolve(game=self):
+                            eligible = target.get_eligible_evolutions(game=self)
+                            if len(eligible) == 1:
+                                target_sp = eligible[0]["to"]
+                                req_item = eligible[0].get("item", eligible[0].get("evolution_item"))
+                                target.evolve(target_sp, game=self, consumed_item_name=req_item)
+                                self.summary_context_menu_state = None
+                                self.render()
+                                return
+                            elif len(eligible) > 1:
+                                context_state["mode"] = "evolve_select"
+                                context_state["options"] = [e["to"] for e in eligible]
+                                context_state["selected_index"] = 0
+                                self.render()
+                                return
+                    elif sel_opt == "Make Leader":
+                        target = self.active_status_pokemon
+                        if target and self.can_change_leader(target):
+                            for p in self.party:
+                                if p != target:
+                                    p.is_leader = False
+                                    for m in p.moves:
+                                        if m.get("dangerous", False):
+                                            m["enabled"] = False
+                            target.is_leader = True
+                            self.player_pokemon = target
+                            for m in target.moves:
+                                m["enabled"] = True
+                            if hasattr(target, "x") and hasattr(target, "y"):
+                                self.player_x = target.x
+                                self.player_y = target.y
+                            self.log_message(f"{target.name} became the leader!")
+                        self.summary_context_menu_state = None
+                        self.render()
+                        return
+                    elif sel_opt == "Switch Places":
+                        context_state["mode"] = "switch_places"
+                        self.render()
+                        return
+                    elif sel_opt == "Farewell":
+                        context_state["mode"] = "farewell_confirm"
+                        self.render()
+                        return
+                if action == game_input.QUIT:
+                    self.summary_context_menu_state = None
+                    self.render()
+                    return
+
+            elif mode == "evolve_select":
+                options = context_state.get("options", [])
+                if action in (game_input.MOVE_UP, "w", "W", "up", "UP"):
+                    context_state["selected_index"] = (context_state.get("selected_index", 0) - 1) % len(options)
+                    self.render()
+                    return
+                if action in (game_input.MOVE_DOWN, "s", "S", "down", "DOWN"):
+                    context_state["selected_index"] = (context_state.get("selected_index", 0) + 1) % len(options)
+                    self.render()
+                    return
+                if action in (game_input.CONFIRM, "\r", "\n"):
+                    target = self.active_status_pokemon
+                    if target:
+                        chosen_sp = options[context_state.get("selected_index", 0)]
+                        eligible = target.get_eligible_evolutions(game=self)
+                        req_item = None
+                        for e in eligible:
+                            if e["to"] == chosen_sp:
+                                req_item = e.get("item", e.get("evolution_item"))
+                                break
+                        target.evolve(chosen_sp, game=self, consumed_item_name=req_item)
+                        self.summary_context_menu_state = None
+                        self.render()
+                        return
+                if action == game_input.QUIT:
+                    context_state["mode"] = "menu"
+                    context_state["options"] = self.get_summary_context_menu_options(self.active_status_pokemon)
+                    context_state["selected_index"] = 0
+                    self.render()
+                    return
+
+            elif mode == "switch_places":
+                slot_map = {
+                    game_input.STATUS_1: 0, "a": 0, "A": 0, "1": 0,
+                    game_input.STATUS_2: 1, "s": 1, "S": 1, "2": 1,
+                    game_input.STATUS_3: 2, "d": 2, "D": 2, "3": 2,
+                    game_input.STATUS_4: 3, "f": 3, "F": 3, "4": 3,
+                    game_input.STATUS_5: 4, "g": 4, "G": 4, "5": 4,
+                    game_input.STATUS_6: 5, "h": 5, "H": 5, "6": 5,
+                }
+                chosen_idx = None
+                if action in slot_map:
+                    chosen_idx = slot_map[action]
+
+                if chosen_idx is not None and chosen_idx < len(self.party):
+                    poke1 = self.active_status_pokemon
+                    if poke1 in self.party:
+                        idx1 = self.party.index(poke1)
+                        idx2 = chosen_idx
+                        self.party[idx1], self.party[idx2] = self.party[idx2], self.party[idx1]
+                        self.summary_context_menu_state = None
+                        self.render()
+                        return
+                if action == game_input.QUIT:
+                    context_state["mode"] = "menu"
+                    self.render()
+                    return
+
+            elif mode == "farewell_confirm":
+                if action in (game_input.CONFIRM, "\r", "\n", "y", "Y"):
+                    poke = self.active_status_pokemon
+                    if poke and (poke != self.player_pokemon and not getattr(poke, "is_leader", False)):
+                        self.remove_party_member(poke)
+                        self.log_message(f"{poke.name} went away...")
+                        self.summary_context_menu_state = None
+                        self.active_status_pokemon = None
+                        self.render()
+                        return
+                if action in (game_input.QUIT, "n", "N"):
+                    context_state["mode"] = "menu"
+                    self.render()
+                    return
+
+        if action in (game_input.CONFIRM, "\r", "\n"):
+            opts = self.get_summary_context_menu_options(self.active_status_pokemon)
+            if opts:
+                self.summary_context_menu_state = {"mode": "menu", "selected_index": 0, "options": opts}
+                self.render()
+                return
+
+        if action == game_input.QUIT:
+            self.active_status_pokemon = None
+            self.summary_scroll_offset = 0
+            self.summary_context_menu_state = None
+            self.render()
+            return
+
+        if action in (game_input.MOVE_UP, "w", "W", "up", "UP"):
+            self.summary_scroll_offset = max(0, getattr(self, "summary_scroll_offset", 0) - 1)
+            self.render()
+            return
+
+        if action in (game_input.MOVE_DOWN, "s", "S", "down", "DOWN"):
+            total_lines = getattr(self, "_last_summary_total_lines", 46)
+            max_offset = max(0, total_lines - 46)
+            self.summary_scroll_offset = min(max_offset, getattr(self, "summary_scroll_offset", 0) + 1)
+            self.render()
+            return
+
+        poke = self.active_status_pokemon
+        is_leader = (poke == self.player_pokemon or getattr(poke, "is_leader", False))
+
+        slot_idx = None
+        if action in (game_input.USE_MOVE_1, "z", "Z", "1"):
+            slot_idx = 0
+        elif action in (game_input.USE_MOVE_2, "x", "X", "2"):
+            slot_idx = 1
+        elif action in (game_input.USE_MOVE_3, "c", "C", "3"):
+            slot_idx = 2
+        elif action in (game_input.USE_MOVE_4, "v", "V", "4"):
+            slot_idx = 3
+
+        if slot_idx is not None and slot_idx < len(poke.moves):
+            if not is_leader:
+                m = poke.moves[slot_idx]
+                m["enabled"] = not m.get("enabled", True)
+                self.render()
+
     def _run_loop(self):
         #Initial render/message processing
         if self.message_log.has_pending():
@@ -12181,7 +12376,11 @@ class Game:
                 
                 if slot_index is not None:
                     old_move = pokemon.moves[slot_index]
-                    new_move["enabled"] = True
+                    is_leader = (pokemon == self.player_pokemon or getattr(pokemon, "is_leader", False))
+                    if not is_leader and new_move.get("dangerous", False):
+                        new_move["enabled"] = False
+                    else:
+                        new_move["enabled"] = True
                     pokemon.moves[slot_index] = new_move
                     self.move_replacement_queue.pop(0)
                     self.log_message(f"{pokemon.name} forgot {old_move['name']} and learned {new_move['name']}!")
@@ -12332,185 +12531,7 @@ class Game:
                 continue
 
             if getattr(self, "active_status_pokemon", None) is not None:
-                context_state = getattr(self, "summary_context_menu_state", None)
-
-                if context_state is not None:
-                    mode = context_state.get("mode", "menu")
-                    if mode == "menu":
-                        options = context_state.get("options", [])
-                        if action in (game_input.MOVE_UP, "w", "W", "up", "UP"):
-                            context_state["selected_index"] = (context_state.get("selected_index", 0) - 1) % len(options)
-                            self.render()
-                            continue
-                        if action in (game_input.MOVE_DOWN, "s", "S", "down", "DOWN"):
-                            context_state["selected_index"] = (context_state.get("selected_index", 0) + 1) % len(options)
-                            self.render()
-                            continue
-                        if action in (game_input.CONFIRM, "\r", "\n"):
-                            sel_opt = options[context_state.get("selected_index", 0)]
-                            if sel_opt == "Evolve":
-                                target = self.active_status_pokemon
-                                if target and target.can_evolve(game=self):
-                                    eligible = target.get_eligible_evolutions(game=self)
-                                    if len(eligible) == 1:
-                                        target_sp = eligible[0]["to"]
-                                        req_item = eligible[0].get("item", eligible[0].get("evolution_item"))
-                                        target.evolve(target_sp, game=self, consumed_item_name=req_item)
-                                        self.summary_context_menu_state = None
-                                        self.render()
-                                        continue
-                                    elif len(eligible) > 1:
-                                        context_state["mode"] = "evolve_select"
-                                        context_state["options"] = [e["to"] for e in eligible]
-                                        context_state["selected_index"] = 0
-                                        self.render()
-                                        continue
-                            elif sel_opt == "Make Leader":
-                                target = self.active_status_pokemon
-                                if target and self.can_change_leader(target):
-                                    for p in self.party:
-                                        p.is_leader = False
-                                    target.is_leader = True
-                                    self.player_pokemon = target
-                                    for m in target.moves:
-                                        m["enabled"] = True
-                                    if hasattr(target, "x") and hasattr(target, "y"):
-                                        self.player_x = target.x
-                                        self.player_y = target.y
-                                    self.log_message(f"{target.name} became the leader!")
-                                self.summary_context_menu_state = None
-                                self.render()
-                                continue
-                            elif sel_opt == "Switch Places":
-                                context_state["mode"] = "switch_places"
-                                self.render()
-                                continue
-                            elif sel_opt == "Farewell":
-                                context_state["mode"] = "farewell_confirm"
-                                self.render()
-                                continue
-                        if action == game_input.QUIT:
-                            self.summary_context_menu_state = None
-                            self.render()
-                            continue
-
-                    elif mode == "evolve_select":
-                        options = context_state.get("options", [])
-                        if action in (game_input.MOVE_UP, "w", "W", "up", "UP"):
-                            context_state["selected_index"] = (context_state.get("selected_index", 0) - 1) % len(options)
-                            self.render()
-                            continue
-                        if action in (game_input.MOVE_DOWN, "s", "S", "down", "DOWN"):
-                            context_state["selected_index"] = (context_state.get("selected_index", 0) + 1) % len(options)
-                            self.render()
-                            continue
-                        if action in (game_input.CONFIRM, "\r", "\n"):
-                            target = self.active_status_pokemon
-                            if target:
-                                chosen_sp = options[context_state.get("selected_index", 0)]
-                                eligible = target.get_eligible_evolutions(game=self)
-                                req_item = None
-                                for e in eligible:
-                                    if e["to"] == chosen_sp:
-                                        req_item = e.get("item", e.get("evolution_item"))
-                                        break
-                                target.evolve(chosen_sp, game=self, consumed_item_name=req_item)
-                                self.summary_context_menu_state = None
-                                self.render()
-                                continue
-                        if action == game_input.QUIT:
-                            context_state["mode"] = "menu"
-                            context_state["options"] = self.get_summary_context_menu_options(self.active_status_pokemon)
-                            context_state["selected_index"] = 0
-                            self.render()
-                            continue
-
-                    elif mode == "switch_places":
-                        slot_map = {
-                            game_input.STATUS_1: 0, "a": 0, "A": 0, "1": 0,
-                            game_input.STATUS_2: 1, "s": 1, "S": 1, "2": 1,
-                            game_input.STATUS_3: 2, "d": 2, "D": 2, "3": 2,
-                            game_input.STATUS_4: 3, "f": 3, "F": 3, "4": 3,
-                            game_input.STATUS_5: 4, "g": 4, "G": 4, "5": 4,
-                            game_input.STATUS_6: 5, "h": 5, "H": 5, "6": 5,
-                        }
-                        chosen_idx = None
-                        if action in slot_map:
-                            chosen_idx = slot_map[action]
-
-                        if chosen_idx is not None and chosen_idx < len(self.party):
-                            poke1 = self.active_status_pokemon
-                            if poke1 in self.party:
-                                idx1 = self.party.index(poke1)
-                                idx2 = chosen_idx
-                                self.party[idx1], self.party[idx2] = self.party[idx2], self.party[idx1]
-                                self.summary_context_menu_state = None
-                                self.render()
-                                continue
-                        if action == game_input.QUIT:
-                            context_state["mode"] = "menu"
-                            self.render()
-                            continue
-
-                    elif mode == "farewell_confirm":
-                        if action in (game_input.CONFIRM, "\r", "\n", "y", "Y"):
-                            poke = self.active_status_pokemon
-                            if poke and (poke != self.player_pokemon and not getattr(poke, "is_leader", False)):
-                                self.remove_party_member(poke)
-                                self.log_message(f"{poke.name} went away...")
-                                self.summary_context_menu_state = None
-                                self.active_status_pokemon = None
-                                self.render()
-                                continue
-                        if action in (game_input.QUIT, "n", "N"):
-                            context_state["mode"] = "menu"
-                            self.render()
-                            continue
-
-                if action in (game_input.CONFIRM, "\r", "\n"):
-                    opts = self.get_summary_context_menu_options(self.active_status_pokemon)
-                    if opts:
-                        self.summary_context_menu_state = {"mode": "menu", "selected_index": 0, "options": opts}
-                        self.render()
-                        continue
-
-                if action == game_input.QUIT:
-                    self.active_status_pokemon = None
-                    self.summary_scroll_offset = 0
-                    self.summary_context_menu_state = None
-                    self.render()
-                    continue
-
-                if action in (game_input.MOVE_UP, "w", "W", "up", "UP"):
-                    self.summary_scroll_offset = max(0, getattr(self, "summary_scroll_offset", 0) - 1)
-                    self.render()
-                    continue
-
-                if action in (game_input.MOVE_DOWN, "s", "S", "down", "DOWN"):
-                    total_lines = getattr(self, "_last_summary_total_lines", 46)
-                    max_offset = max(0, total_lines - 46)
-                    self.summary_scroll_offset = min(max_offset, getattr(self, "summary_scroll_offset", 0) + 1)
-                    self.render()
-                    continue
-
-                poke = self.active_status_pokemon
-                is_leader = (poke == self.player_pokemon or getattr(poke, "is_leader", False))
-
-                slot_idx = None
-                if action in (game_input.USE_MOVE_1, "z", "Z", "1"):
-                    slot_idx = 0
-                elif action in (game_input.USE_MOVE_2, "x", "X", "2"):
-                    slot_idx = 1
-                elif action in (game_input.USE_MOVE_3, "c", "C", "3"):
-                    slot_idx = 2
-                elif action in (game_input.USE_MOVE_4, "v", "V", "4"):
-                    slot_idx = 3
-
-                if slot_idx is not None and slot_idx < len(poke.moves):
-                    if not is_leader:
-                        m = poke.moves[slot_idx]
-                        m["enabled"] = not m.get("enabled", True)
-                        self.render()
+                self.handle_summary_input(action)
                 continue
 
             if action == game_input.QUIT:

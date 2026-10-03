@@ -280,7 +280,11 @@ def apply_item_effect(item: dict, target, game, is_thrown: bool = False):
         move_info = _get_move_data(move_name)
         if len(target.moves) < 4:
             move_entry = dict(move_info)
-            move_entry["enabled"] = True
+            is_leader = (target == game.player_pokemon or getattr(target, "is_leader", False))
+            if not is_leader and move_entry.get("dangerous", False):
+                move_entry["enabled"] = False
+            else:
+                move_entry["enabled"] = True
             target.moves.append(move_entry)
             game.log_message(f"{target.name} learned {move_info['name']}!")
         else:
