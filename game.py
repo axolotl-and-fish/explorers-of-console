@@ -249,6 +249,7 @@ class Game:
         self.base_weather = "Clear"
         self.weather = "Clear"
         self.weather_turns_left = 0
+        self.floor_visibility_reduction = 0
         self.wonder_room_turns = 0
         self.look_around_mode = False #Game mode used when pressing "l", displays descriptions of items
         self.look_around_cursor = (0, 0)
@@ -611,7 +612,7 @@ class Game:
         self.floor_spawn_list = chosen
 
     def generate_floor_base_weather(self, floor_number: int | None = None) -> str:
-        """Determines the floor's natural base weather using 3 successive rolls."""
+        """Determines the floor's natural base weather."""
         import random
         if floor_number is None:
             floor_number = getattr(self, "floor_number", 1)
@@ -620,16 +621,38 @@ class Game:
         if chance <= 0.0 or random.random() >= chance:
             return "Clear"
 
-        # Roll 1 succeeded
+        #First roll succeeded
         if random.random() >= chance:
             return random.choice(["Sunny", "Cloudy", "Fog", "Snow", "Rain"])
 
-        # Roll 2 succeeded
+        #Second roll succeeded
         if random.random() >= chance:
             return random.choice(["Hail", "Sandstorm", "Blizzard", "Thunderstorm"])
 
-        # Roll 3 succeeded
+        #Third roll succeeded
         return random.choice(["Harsh Sunlight", "Heavy Rain", "Strong Winds", "Shadowy Aura"])
+
+    def generate_floor_visibility_reduction(self, floor_number: int | None = None) -> int:
+        """Determines the natural floor corridor visibility reduction.
+
+        Performs up to two rolls with success chance (N-1)%, where N is the floor number.
+        - First roll succeeds: corridor visibility radius reduced by 1 tile.
+        - Both rolls succeed: corridor visibility radius reduced by 2 tiles.
+        """
+        import random
+        if floor_number is None:
+            floor_number = getattr(self, "floor_number", 1)
+        n = max(0, floor_number - 1)
+        chance = min(1.0, n / 100.0)
+        if chance <= 0.0 or random.random() >= chance:
+            return 0
+
+        #First roll succeeded
+        if random.random() >= chance:
+            return 1
+
+        #Second roll succeeded
+        return 2
 
     def set_weather(self, weather: str, duration: int = 0):
         """Sets the dungeon weather and prints the appropriate message"""
@@ -642,7 +665,7 @@ class Game:
             "Grassy Terrain": "Grass grew to cover the dungeon!",
             "Electric Terrain": "An electric current runs across the dungeon!",
             "Misty Terrain": "Mist swirls around the dungeon!",
-            "Cloudy": "It became cloudy!",
+            "Cloudy": "It became cloudy.",
             "Fog": "A deep fog set in!",
             "Snow": "It began to snow!",
             "Blizzard": "A howling blizzard whipped up!",
@@ -1323,10 +1346,12 @@ class Game:
         dist = max(abs(ex - tx), abs(ey - ty))
         radius = 56 if getattr(self, "floor_luminous", False) else 5
         if not enemy_room_tiles:
+            corr_reduction = getattr(self, "floor_visibility_reduction", 0)
             if getattr(self, "weather", None) == "Cloudy":
-                radius = max(1, radius - 1)
+                corr_reduction += 1
             elif getattr(self, "weather", None) == "Fog":
-                radius = max(1, radius - 2)
+                corr_reduction += 2
+            radius = max(1, radius - corr_reduction)
         if dist <= radius:
             return self._has_line_of_sight(ex, ey, tx, ty)
 
@@ -3341,10 +3366,12 @@ class Game:
             #2. General visibility (radius of 5 normally, 10 when luminous, subject to line-of-sight)
             member_radius = radius
             if not m_room_tiles:
+                corr_reduction = getattr(self, "floor_visibility_reduction", 0)
                 if getattr(self, "weather", None) == "Cloudy":
-                    member_radius = max(1, member_radius - 1)
+                    corr_reduction += 1
                 elif getattr(self, "weather", None) == "Fog":
-                    member_radius = max(1, member_radius - 2)
+                    corr_reduction += 2
+                member_radius = max(1, member_radius - corr_reduction)
 
             for dy in range(-member_radius, member_radius + 1):
                 for dx in range(-member_radius, member_radius + 1):
@@ -10106,6 +10133,7 @@ class Game:
         self.base_weather = "Clear"
         self.weather = "Clear"
         self.weather_turns_left = 0
+        self.floor_visibility_reduction = 0
         self.floor_timer = self.get_initial_floor_timer(self.floor_number)
         self.floor_timer_warned_250 = False
         self.floor_timer_warned_150 = False
@@ -13048,6 +13076,7 @@ class Game:
                         
                         #Reset floor-level states & bindings
                         self.gravity = False
+                        self.floor_visibility_reduction = self.generate_floor_visibility_reduction(self.floor_number)
                         self.base_weather = self.generate_floor_base_weather(self.floor_number)
                         if self.base_weather == "Clear":
                             self.weather = "Clear"
