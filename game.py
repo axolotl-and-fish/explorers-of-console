@@ -1800,7 +1800,8 @@ class Game:
 
         #1. Check for usable moves that can hit other teammates
         ready_moves = []
-        if mon.status_effects.get("Flinch", 0) <= 0 and mon.status_effects.get("Paused", 0) <= 0:
+        all_moves_disabled_manually = mon.has_all_moves_disabled_manually()
+        if not all_moves_disabled_manually and mon.status_effects.get("Flinch", 0) <= 0 and mon.status_effects.get("Paused", 0) <= 0:
             enabled_moves = [m for m in mon.moves if m.get("enabled", True)]
             has_usable_enabled = any(mon.can_use_move(m, game=self) for m in enabled_moves)
             if mon.can_struggle(game=self) or not has_usable_enabled:
@@ -1909,9 +1910,10 @@ class Game:
 
                 #Confusion handling
                 if ally.status_effects.get("Confusion", 0) > 0:
+                    all_moves_disabled_manually = ally.has_all_moves_disabled_manually()
                     enabled_moves = [m for m in ally.moves if m.get("enabled", True)]
                     usable_moves = [m for m in enabled_moves if ally.can_use_move(m, game=self)]
-                    if not usable_moves and (ally.can_struggle(game=self) or not any(ally.can_use_move(m, game=self) for m in enabled_moves)):
+                    if not all_moves_disabled_manually and not usable_moves and (ally.can_struggle(game=self) or not any(ally.can_use_move(m, game=self) for m in enabled_moves)):
                         from pokemon import _get_move_data
                         usable_moves = [_get_move_data("Struggle")]
 
@@ -1993,9 +1995,11 @@ class Game:
                 leader_room = get_room_tiles_at(self.floor, leader_pos[0], leader_pos[1])
                 is_leader_in_same_room = bool(ally_room and leader_room and ally_room == leader_room)
 
+                all_moves_disabled_manually = ally.has_all_moves_disabled_manually()
+
                 #1. Check if any enemy is in attack range
                 ready_moves = []
-                if ally.status_effects.get("Flinch", 0) <= 0 and ally.status_effects.get("Paused", 0) <= 0:
+                if not all_moves_disabled_manually and ally.status_effects.get("Flinch", 0) <= 0 and ally.status_effects.get("Paused", 0) <= 0:
                     enabled_moves = [m for m in ally.moves if m.get("enabled", True)]
                     has_usable_enabled = any(ally.can_use_move(m, game=self) for m in enabled_moves)
                     if ally.can_struggle(game=self) or not has_usable_enabled:
@@ -2054,7 +2058,7 @@ class Game:
                     e for e in self.spawned_pokemon
                     if int(e.current_hp) > 0 and e not in self.party and self.enemy_can_see(ally, e)
                 ]
-                if visible_enemies and (is_leader_in_same_room or self.enemy_can_see(ally, self.player_pokemon)):
+                if not all_moves_disabled_manually and visible_enemies and (is_leader_in_same_room or self.enemy_can_see(ally, self.player_pokemon)):
                     visible_enemies.sort(key=lambda e: max(abs(e.x - ax), abs(e.y - ay)))
                     target_enemy = visible_enemies[0]
                     p_dx = 1 if target_enemy.x > ax else (-1 if target_enemy.x < ax else 0)

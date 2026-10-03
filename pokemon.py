@@ -428,10 +428,17 @@ class Pokemon:
 
         return True
 
+    def has_all_moves_disabled_manually(self) -> bool:
+        """Returns True if the Pokémon has all of its moves are manually disabled."""
+        return bool(self.moves) and all(not m.get("enabled", True) for m in self.moves)
+
     def can_struggle(self, game=None) -> bool:
         """Returns True if the Pokémon has no moves, or if all of its moves are unusable"""
         if not self.moves:
             return True
+        if game is not None and getattr(game, "party", None) and self in game.party and not getattr(self, "is_leader", False):
+            if self.has_all_moves_disabled_manually():
+                return False
         return all(not self.can_use_move(move, game) for move in self.moves)
 
     def use_move(self, move: dict, game=None):
