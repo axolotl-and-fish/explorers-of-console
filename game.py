@@ -9616,8 +9616,7 @@ class Game:
 
         for idx, opt in enumerate(options):
             prefix = " ► " if sel_idx == idx else "   "
-            num_label = f"[{idx + 1}] "
-            rows.append(fmt_line(f"{prefix}{num_label}{opt}"))
+            rows.append(fmt_line(f"{prefix}{opt}"))
 
         rows.append(empty_line)
         rows.append(center_line("[↑/↓] Navigate  [Return] Select  [Esc] Close"))
