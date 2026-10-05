@@ -56,6 +56,9 @@ def main():
     parser.add_argument(
         "--compat", "--compatibility", "--no-color", "--nocolor", "-c", action="store_true", default=False, help="Run in compatibility mode (no ANSI colors)"
     )
+    parser.add_argument(
+        "--debug", action="store_true", default=False, help="Run in debug mode (enables debug features and cheats)"
+    )
     args = parser.parse_args()
 
     try:
@@ -68,7 +71,7 @@ def main():
                     print(f"Error initializing VT100 display: {e}. Expect graphical issues! Try using a different terminal or using the --compat flag to run without ANSI color.")
                     time.sleep(5.0)
                     pass
-            game = Game(width=args.width, compatibility_mode=args.compat)
+            game = Game(width=args.width, compatibility_mode=args.compat, debug_mode=args.debug)
             game.run()
             return
 

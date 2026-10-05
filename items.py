@@ -8,6 +8,7 @@ This code handles items, item effects and item spawning within the dungeon.
 
 import os
 import json
+import contextlib
 from data_utils import get_data_file_path
 
 def load_items_database(filepath: str | None = None) -> dict:
@@ -1150,20 +1151,22 @@ def apply_item_effect(item: dict, target, game, is_thrown: bool = False):
 
             steps = max(abs(tx - ox), abs(ty - oy), 1)
             currently_visible = game._compute_currently_visible()
-            for s in range(1, steps + 1):
-                anim_x = int(ox + (tx - ox) * s / steps)
-                anim_y = int(oy + (ty - oy) * s / steps)
-                if (anim_x, anim_y) in currently_visible:
-                    game.flying_item_animation = {
-                        "x": anim_x,
-                        "y": anim_y,
-                        "char": "*",
-                        "color": "\033[93m"
-                    }
-                    game.render()
-                    if not getattr(game, "suppress_animation_delay", False):
-                        time.sleep(0.01)
-            game.flying_item_animation = None
+            anim_cm = game.animation_pause() if hasattr(game, "animation_pause") else contextlib.nullcontext()
+            with anim_cm:
+                for s in range(1, steps + 1):
+                    anim_x = int(ox + (tx - ox) * s / steps)
+                    anim_y = int(oy + (ty - oy) * s / steps)
+                    if (anim_x, anim_y) in currently_visible:
+                        game.flying_item_animation = {
+                            "x": anim_x,
+                            "y": anim_y,
+                            "char": "*",
+                            "color": "\033[93m"
+                        }
+                        game.render()
+                        if not getattr(game, "suppress_animation_delay", False):
+                            time.sleep(0.01)
+                game.flying_item_animation = None
             game.items_on_floor[(tx, ty)] = item_data
             warped_count += 1
 

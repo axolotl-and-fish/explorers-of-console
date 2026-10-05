@@ -12,6 +12,8 @@ import random
 import os
 import re
 import atexit
+import time
+import contextlib
 from dungeon import DungeonFloor, WALL_CHAR, FLOOR_CHAR, get_target_floor_width
 import input as game_input
 from pokemon import Pokemon  #type: ignore
@@ -143,13 +145,24 @@ def center_ansi(text: str, width: int = 76) -> str:
 class Game:
     """Manages the player state, map coordinates, collision rules and rendering"""
 
-    def __init__(self, width: int | None = None, player_species: str | None = None, player_nickname: str | None = None, compatibility_mode: bool = False, **kwargs):
+    def __init__(self, width: int | None = None, player_species: str | None = None, player_nickname: str | None = None, compatibility_mode: bool = False, debug_mode: bool = False, **kwargs):
         self.compatibility_mode: bool = bool(
             compatibility_mode
             or kwargs.get("compatability_mode", False)
             or os.environ.get("NO_COLOR")
             or os.environ.get("GAME_COMPATIBILITY_MODE")
         )
+        self.debug_mode: bool = bool(
+            debug_mode
+            or kwargs.get("debug_mode", False)
+            or "--debug" in sys.argv
+        )
+        self.cheated: bool = bool(self.debug_mode)
+        self.omniscience_mode: bool = False
+        self.previous_turn_duration: float = 0.0
+        self._turn_timer_start: float | None = None
+        self._turn_animation_time: float = 0.0
+        self._animation_pause_depth: int = 0
         self.floor_number = 1
         self.floor_width_override: int | None = width
         init_width = width if width is not None else self.get_target_floor_width(self.floor_number)
@@ -307,6 +320,55 @@ class Game:
         self.spawn_initial_items()
         self.spawn_initial_enemies()
         self.log_message("You enter the misery dungeon...")
+
+    def get_current_memory_usage_mb(self) -> float:
+        """Returns current process resident memory usage in megabytes"""
+        try:
+            import psutil
+            return psutil.Process().memory_info().rss / (1024 * 1024)
+        except Exception:
+            try:
+                import resource
+                return resource.getrusage(resource.RUSAGE_SELF).ru_maxrss / 1024.0
+            except Exception:
+                return 0.0
+
+    def format_turn_duration(self, dur_seconds: float) -> str:
+        """Formats turn duration into milliseconds or microseconds string"""
+        if dur_seconds >= 0.001:
+            return f"{dur_seconds * 1000:.2f}ms"
+        elif dur_seconds > 0:
+            return f"{dur_seconds * 1_000_000:.1f}µs"
+        else:
+            return "0.00ms"
+
+    @contextlib.contextmanager
+    def animation_pause(self):
+        """Context manager to measure and exclude animation display time from the turn timer"""
+        start = time.perf_counter()
+        prev_depth = getattr(self, "_animation_pause_depth", 0)
+        self._animation_pause_depth = prev_depth + 1
+        try:
+            yield
+        finally:
+            self._animation_pause_depth -= 1
+            if self._animation_pause_depth == 0:
+                elapsed = time.perf_counter() - start
+                self._turn_animation_time = getattr(self, "_turn_animation_time", 0.0) + elapsed
+
+    def _start_turn_timer(self):
+        """Starts timing the current turn logic"""
+        self._turn_timer_start = time.perf_counter()
+        self._turn_animation_time = 0.0
+
+    def _stop_turn_timer(self):
+        """Stops timing the turn and computes duration excluding animation delays"""
+        if getattr(self, "_turn_timer_start", None) is not None:
+            raw_duration = time.perf_counter() - self._turn_timer_start
+            anim_duration = getattr(self, "_turn_animation_time", 0.0)
+            self.previous_turn_duration = max(0.0, raw_duration - anim_duration)
+            self._turn_timer_start = None
+            self._turn_animation_time = 0.0
 
     def register_encountered_species(self, species_name: str, was_defeated: bool = False, is_recruited: bool = False):
         """Tracks encountered species, defeated count, and recruitment count (used for the summary screen)"""
@@ -1045,6 +1107,7 @@ class Game:
             self._message_log_current_turn = self.player_action_number
             self._turn_messages_count = 0
             self.turn_in_progress = True
+            self._start_turn_timer()
 
     def _should_wait_for_more_prompt(self) -> bool:
         if getattr(self, "suppress_animation_delay", False):
@@ -2191,7 +2254,7 @@ class Game:
                 #Target B: Items on floor (if inventory space available or item is money)
                 if not moved and self.items_on_floor:
                     has_inv_space = len(self.inventory) < self.max_inventory_capacity
-                    visible_tiles = self._compute_currently_visible()
+                    visible_tiles = self._compute_currently_visible(ignore_omniscience=True)
                     visible_items = []
                     for (ix, iy), item in self.items_on_floor.items():
                         if item.get("dropped_by_player", False):
@@ -2555,59 +2618,59 @@ class Game:
 
     def play_screen_shake_animation(self, max_offset: int, num_frames: int = 8):
         """Briefly shakes the dungeon map by randomly offsetting it within +/- max_offset on each axis"""
-        import time
-        for _ in range(num_frames):
-            ox = random.randint(-max_offset, max_offset)
-            oy = random.randint(-max_offset, max_offset)
-            self.map_shake_offset = (ox, oy)
+        with self.animation_pause():
+            for _ in range(num_frames):
+                ox = random.randint(-max_offset, max_offset)
+                oy = random.randint(-max_offset, max_offset)
+                self.map_shake_offset = (ox, oy)
+                self.render()
+                if not getattr(self, "suppress_animation_delay", False):
+                    try:
+                        sys.stdout.flush()
+                    except Exception:
+                        pass
+                    time.sleep(0.04)
+            self.map_shake_offset = (0, 0)
             self.render()
-            if not getattr(self, "suppress_animation_delay", False):
-                try:
-                    sys.stdout.flush()
-                except Exception:
-                    pass
-                time.sleep(0.04)
-        self.map_shake_offset = (0, 0)
-        self.render()
 
     def play_floor_collapse_animation(self, num_frames: int = 16):
         """Plays a longer form of the floor shaking animation, where tiles are gradually blanked out. Plays when the floor timer expires"""
-        import time
-        all_tiles = [(x, y) for y in range(self.floor.height) for x in range(self.floor.width)]
-        random.shuffle(all_tiles)
+        with self.animation_pause():
+            all_tiles = [(x, y) for y in range(self.floor.height) for x in range(self.floor.width)]
+            random.shuffle(all_tiles)
 
-        total_tiles = len(all_tiles)
-        tiles_per_frame = (total_tiles + num_frames - 1) // num_frames
+            total_tiles = len(all_tiles)
+            tiles_per_frame = (total_tiles + num_frames - 1) // num_frames
 
-        if not hasattr(self, "collapse_blanked_tiles") or self.collapse_blanked_tiles is None:
-            self.collapse_blanked_tiles = set()
+            if not hasattr(self, "collapse_blanked_tiles") or self.collapse_blanked_tiles is None:
+                self.collapse_blanked_tiles = set()
 
-        for frame in range(num_frames):
-            start_idx = frame * tiles_per_frame
-            end_idx = min(total_tiles, (frame + 1) * tiles_per_frame)
-            self.collapse_blanked_tiles.update(all_tiles[start_idx:end_idx])
+            for frame in range(num_frames):
+                start_idx = frame * tiles_per_frame
+                end_idx = min(total_tiles, (frame + 1) * tiles_per_frame)
+                self.collapse_blanked_tiles.update(all_tiles[start_idx:end_idx])
 
-            ox = random.randint(-3, 3)
-            oy = random.randint(-3, 3)
-            self.map_shake_offset = (ox, oy)
+                ox = random.randint(-3, 3)
+                oy = random.randint(-3, 3)
+                self.map_shake_offset = (ox, oy)
+                self.render()
+                if not getattr(self, "suppress_animation_delay", False):
+                    try:
+                        sys.stdout.flush()
+                    except Exception:
+                        pass
+                    time.sleep(0.05)
+
+            #Ensure all tiles are blanked out and offset is reset
+            self.collapse_blanked_tiles.update(all_tiles)
+            self.map_shake_offset = (0, 0)
             self.render()
             if not getattr(self, "suppress_animation_delay", False):
                 try:
                     sys.stdout.flush()
                 except Exception:
                     pass
-                time.sleep(0.05)
-
-        #Ensure all tiles are blanked out and offset is reset
-        self.collapse_blanked_tiles.update(all_tiles)
-        self.map_shake_offset = (0, 0)
-        self.render()
-        if not getattr(self, "suppress_animation_delay", False):
-            try:
-                sys.stdout.flush()
-            except Exception:
-                pass
-            time.sleep(0.1)
+                time.sleep(0.1)
 
     def handle_floor_collapse(self):
         """Handles the collapse of the floor when the floor timer reaches 0 turns."""
@@ -2695,6 +2758,7 @@ class Game:
         self.player_actions_left -= 1
         if self.player_actions_left > 0 and self.is_running and int(self.player_pokemon.current_hp) > 0:
             self.turn_in_progress = False
+            self._stop_turn_timer()
             return
 
         if not self.is_running or int(self.player_pokemon.current_hp) <= 0:
@@ -2707,6 +2771,7 @@ class Game:
         self.floor_timer = getattr(self, "floor_timer", self.get_initial_floor_timer(self.floor_number)) - 1
         self.check_floor_timer()
         if not self.is_running or getattr(self, "game_ended", False):
+            self._stop_turn_timer()
             return
         
         #1. Deduct belly points and print warnings if needed, then apply hunger effects or natural recovery
@@ -3041,6 +3106,7 @@ class Game:
         #Replenish player actions for the next round
         self.replenish_player_actions()
         self.turn_in_progress = False
+        self._stop_turn_timer()
 
     def handle_bide_unleash(self, p: Pokemon):
         """Unleashes Bide stored damage upon status wearing off"""
@@ -3340,8 +3406,11 @@ class Game:
         """Returns all coordinates belonging to the room a Pokémon is currently inside."""
         return get_room_tiles_at(self.floor, self.player_x, self.player_y)
 
-    def _compute_currently_visible(self) -> set[tuple[int, int]]:
+    def _compute_currently_visible(self, ignore_omniscience: bool = False) -> set[tuple[int, int]]:
         """The backbone of the lighting engine, computes the set of currently visible tile coordinates across all team members."""
+        if getattr(self, "omniscience_mode", False) and not ignore_omniscience:
+            return {(x, y) for y in range(self.floor.height) for x in range(self.floor.width)}
+
         if self.player_pokemon and self.player_pokemon.status_effects.get("Blind", 0) > 0:
             return {(self.player_x, self.player_y)}
 
@@ -3793,22 +3862,22 @@ class Game:
 
     def trigger_damage_flash(self):
         """Displays a brief pop-up over a Pokémon."""
-        import time
         if not self.flash_damages:
             return
-        all_flashes = list(self.flash_damages.items())
-        self.flash_damages.clear()
-        for pos, flash in all_flashes:
-            self.flash_damages[pos] = flash
-            self.render()
-            sys.stdout.flush()
-            if not getattr(self, "suppress_animation_delay", False):
-                time.sleep(0.25)
+        with self.animation_pause():
+            all_flashes = list(self.flash_damages.items())
             self.flash_damages.clear()
-            self.render()
-            sys.stdout.flush()
-            if not getattr(self, "suppress_animation_delay", False):
-                time.sleep(0.1)
+            for pos, flash in all_flashes:
+                self.flash_damages[pos] = flash
+                self.render()
+                sys.stdout.flush()
+                if not getattr(self, "suppress_animation_delay", False):
+                    time.sleep(0.25)
+                self.flash_damages.clear()
+                self.render()
+                sys.stdout.flush()
+                if not getattr(self, "suppress_animation_delay", False):
+                    time.sleep(0.1)
 
     def trigger_explosion(
         self,
@@ -3865,21 +3934,22 @@ class Game:
         color_cycles = ["\033[91m", "\033[93m", "\033[38;5;208m"] #Red, yellow, white
 
         if not getattr(self, "suppress_animation_delay", False):
-            for step in range(radius + 4):
+            with self.animation_pause():
+                for step in range(radius + 4):
+                    self.explosion_overlays = {}
+                    for x, y in affected_tiles:
+                        d = max(abs(x - center_x), abs(y - center_y))
+                        if d <= step:
+                            fade_stage = step - d
+                            if fade_stage < len(shade_chars):
+                                char = shade_chars[fade_stage]
+                                color = color_cycles[(d + fade_stage) % len(color_cycles)]
+                                self.explosion_overlays[(x, y)] = f"{color}{char}\033[0m"
+                    if self.explosion_overlays:
+                        self.render()
+                        sys.stdout.flush()
+                        time.sleep(0.10)
                 self.explosion_overlays = {}
-                for x, y in affected_tiles:
-                    d = max(abs(x - center_x), abs(y - center_y))
-                    if d <= step:
-                        fade_stage = step - d
-                        if fade_stage < len(shade_chars):
-                            char = shade_chars[fade_stage]
-                            color = color_cycles[(d + fade_stage) % len(color_cycles)]
-                            self.explosion_overlays[(x, y)] = f"{color}{char}\033[0m"
-                if self.explosion_overlays:
-                    self.render()
-                    sys.stdout.flush()
-                    time.sleep(0.10)
-            self.explosion_overlays = {}
 
         #3. Wall destruction (excluding floor outer boundaries)
         for x, y in affected_tiles:
@@ -8980,20 +9050,21 @@ class Game:
 
             import time
             currently_visible = self._compute_currently_visible()
-            for anim_x, anim_y, hit_type in trajectory:
-                if (anim_x, anim_y) not in currently_visible:
-                    break
-                self.flying_item_animation = {
-                    "x": anim_x,
-                    "y": anim_y,
-                    "char": flying_char,
-                    "color": color_code
-                }
-                self.render()
-                if not getattr(self, "suppress_animation_delay", False):
-                    time.sleep(0.03)
+            with self.animation_pause():
+                for anim_x, anim_y, hit_type in trajectory:
+                    if (anim_x, anim_y) not in currently_visible:
+                        break
+                    self.flying_item_animation = {
+                        "x": anim_x,
+                        "y": anim_y,
+                        "char": flying_char,
+                        "color": color_code
+                    }
+                    self.render()
+                    if not getattr(self, "suppress_animation_delay", False):
+                        time.sleep(0.03)
 
-            self.flying_item_animation = None
+                self.flying_item_animation = None
 
             if trajectory:
                 is_pierce = bool(self.player_pokemon.status_effects.get("Pierce Throw")) and not is_apricorn
@@ -9436,6 +9507,29 @@ class Game:
                 self.render()
             return
 
+        if sub_screen == "debug_menu":
+            debug_sel = state.get("debug_menu_index", 0)
+            if action in (game_input.MOVE_UP, "w", "W", "up", "UP"):
+                state["debug_menu_index"] = 0
+                self.render()
+                return
+            if action in (game_input.MOVE_DOWN, "s", "S", "down", "DOWN"):
+                state["debug_menu_index"] = 0
+                self.render()
+                return
+            if action in (game_input.QUIT, "\x1b", "ESC", "Esc", "esc"):
+                state["sub_screen"] = None
+                self.render()
+                return
+            if action in (game_input.CONFIRM, "\r", "\n", "z", "Z", "1"):
+                if debug_sel == 0 or action == "1":
+                    self.omniscience_mode = not getattr(self, "omniscience_mode", False)
+                    status_text = "enabled" if self.omniscience_mode else "disabled"
+                    self.log_message(f"Omniscience Mode {status_text}.")
+                    self.render()
+                return
+            return
+
         if confirm_give_up:
             confirm_index = state.get("confirm_index", 0)
             if action in (game_input.MOVE_LEFT, game_input.MOVE_RIGHT, game_input.MOVE_UP, game_input.MOVE_DOWN, "w", "W", "s", "S", "a", "A", "d", "D", "left", "right", "up", "down"):
@@ -9463,14 +9557,15 @@ class Game:
             return
 
         sel = state.get("selected_index", 0)
+        num_options = 5 if getattr(self, "debug_mode", False) else 4
 
         if action in (game_input.MOVE_UP, "w", "W", "up", "UP"):
-            state["selected_index"] = (sel - 1) % 4
+            state["selected_index"] = (sel - 1) % num_options
             self.render()
             return
 
         if action in (game_input.MOVE_DOWN, "s", "S", "down", "DOWN"):
-            state["selected_index"] = (sel + 1) % 4
+            state["selected_index"] = (sel + 1) % num_options
             self.render()
             return
 
@@ -9492,6 +9587,11 @@ class Game:
         if action in ("4", "4"):
             state["selected_index"] = 3
             self._select_pause_menu_option(3)
+            return
+
+        if action in ("5",) and getattr(self, "debug_mode", False):
+            state["selected_index"] = 4
+            self._select_pause_menu_option(4)
             return
 
         if action in (game_input.QUIT, "\x1b", "ESC", "Esc", "esc"):
@@ -9527,6 +9627,10 @@ class Game:
         elif option_index == 3:
             state["confirm_give_up"] = True
             state["confirm_index"] = 0
+            self.render()
+        elif option_index == 4 and getattr(self, "debug_mode", False):
+            state["sub_screen"] = "debug_menu"
+            state["debug_menu_index"] = 0
             self.render()
 
     def _execute_give_up(self):
@@ -9581,6 +9685,21 @@ class Game:
             rows.append(bot_border)
             return rows
 
+        if sub_screen == "debug_menu":
+            debug_sel = state.get("debug_menu_index", 0)
+            rows = [
+                top_border,
+                center_line("DEBUG MENU"),
+                empty_line,
+            ]
+            omni_status = " [ON]" if getattr(self, "omniscience_mode", False) else " [OFF]"
+            prefix = " ► " if debug_sel == 0 else "   "
+            rows.append(fmt_line(f"{prefix}Toggle Omniscience Mode{omni_status}"))
+            rows.append(empty_line)
+            rows.append(center_line("[Return] Toggle  [Esc] Return to Pause Menu"))
+            rows.append(bot_border)
+            return rows
+
         if confirm_give_up:
             confirm_index = state.get("confirm_index", 0)
             no_str = "► No ◄" if confirm_index == 0 else "  No  "
@@ -9607,6 +9726,8 @@ class Game:
             "Save & Quit",
             "Give Up"
         ]
+        if getattr(self, "debug_mode", False):
+            options.append("Debug Menu")
 
         rows = [
             top_border,
@@ -9895,6 +10016,10 @@ class Game:
         for line in p2_lines:
             rows.append(wrap(f"\033[90m{line}\033[0m"))
 
+        if getattr(self, "debug_mode", False):
+            rows.append(empty_line)
+            rows.append(wrap("\033[91mDEBUG MODE ACTIVE! Proceed with caution. High scores are disabled.\033[0m"))
+
         while len(rows) < 47:
             rows.append(empty_line)
 
@@ -9928,8 +10053,13 @@ class Game:
         version_text = f"\033[90m{self.build_string}\033[0m"
         rows.append(wrap(version_text))
 
-        for _ in range(4):
-            rows.append(empty_line)
+        if getattr(self, "debug_mode", False):
+            rows.append(wrap("\033[91mDEBUG MODE ACTIVE! Proceed with caution. High scores are disabled.\033[0m"))
+            for _ in range(3):
+                rows.append(empty_line)
+        else:
+            for _ in range(4):
+                rows.append(empty_line)
 
         #3. Menu options
         sel_idx = state.get("selected_index", 0)
@@ -10120,6 +10250,9 @@ class Game:
         self.title_screen_state = None
         self.starter_select_state = None
         self.high_scores_state = None
+        if getattr(self, "debug_mode", False):
+            self.cheated = True
+        self.omniscience_mode = False
 
         self.player_pokemon = Pokemon(species_name, level=2, nickname=nickname, nature=nature, ivs=ivs, is_leader=True)
         self.player_pokemon.is_leader = True
@@ -10556,8 +10689,8 @@ class Game:
 
     def render_map_to_rows(self) -> list[str]:
         """Compiles the raw dungeon map grid cells into row strings with overlaid entities"""
+        self.explored_tiles.update(self._compute_currently_visible(ignore_omniscience=True))
         currently_visible = self._compute_currently_visible()
-        self.explored_tiles.update(currently_visible)
 
         #Create a mapping from position to pokemon on floor (for spawned pokemon)
         spawned_map = {}
@@ -10792,34 +10925,42 @@ class Game:
         dash_count = max(0, 56 - len(left_part) - len(right_plain))
         left_side_rows.append(f"┌{left_part}{'─' * dash_count}{right_color}┐")
         left_side_rows.extend(map_interior_rows)
-        weather_str = getattr(self, "weather", "Clear") or "Clear"
-        weather_color_map = {
-            "Clear": "\033[90m",
-            "Rain": "\033[94m",
-            "Hail": "\033[97m",
-            "Mist": "\033[97m",
-            "Sandstorm": "\033[33m",
-            "Sunny": "\033[93m",
-            "Electric Terrain": "\033[93m",
-            "Psychic Terrain": "\033[95m",
-            "Grassy Terrain": "\033[92m",
-            "Misty Terrain": "\033[97m",
-            "Snow": "\033[97m",
-            "Harsh Sunlight": "\033[93m",
-            "Heavy Rain": "\033[94m",
-            "Cloudy": "\033[37m",
-            "Fog": "\033[90m",
-            "Blizzard": "\033[96m",
-            "Thunderstorm": "\033[93m",
-            "Strong Winds": "\033[92m",
-            "Shadowy Aura": "\033[35m",
-        }
-        w_color = weather_color_map.get(weather_str, "\033[90m")
-        bot_left_plain = f"─{weather_str}"
-        bot_left_color = f"─{w_color}{weather_str}\033[0m"
+        if getattr(self, "debug_mode", False):
+            turn_time_str = self.format_turn_duration(getattr(self, "previous_turn_duration", 0.0))
+            bot_left_plain = f"─{turn_time_str}"
+            bot_left_color = f"─\033[93m{turn_time_str}\033[0m" if not getattr(self, "compatibility_mode", False) else bot_left_plain
 
-        turn_val = getattr(self, "turn_number", 1)
-        bot_right_plain = f"Turn {turn_val:,}─"
+            mem_mb = self.get_current_memory_usage_mb()
+            bot_right_plain = f"{mem_mb:.1f} MB─"
+        else:
+            weather_str = getattr(self, "weather", "Clear") or "Clear"
+            weather_color_map = {
+                "Clear": "\033[90m",
+                "Rain": "\033[94m",
+                "Hail": "\033[97m",
+                "Mist": "\033[97m",
+                "Sandstorm": "\033[33m",
+                "Sunny": "\033[93m",
+                "Electric Terrain": "\033[93m",
+                "Psychic Terrain": "\033[95m",
+                "Grassy Terrain": "\033[92m",
+                "Misty Terrain": "\033[97m",
+                "Snow": "\033[97m",
+                "Harsh Sunlight": "\033[93m",
+                "Heavy Rain": "\033[94m",
+                "Cloudy": "\033[37m",
+                "Fog": "\033[90m",
+                "Blizzard": "\033[96m",
+                "Thunderstorm": "\033[93m",
+                "Strong Winds": "\033[92m",
+                "Shadowy Aura": "\033[35m",
+            }
+            w_color = weather_color_map.get(weather_str, "\033[90m")
+            bot_left_plain = f"─{weather_str}"
+            bot_left_color = f"─{w_color}{weather_str}\033[0m"
+
+            turn_val = getattr(self, "turn_number", 1)
+            bot_right_plain = f"Turn {turn_val:,}─"
 
         bot_dash_count = max(0, 56 - len(bot_left_plain) - len(bot_right_plain))
         left_side_rows.append(f"└{bot_left_color}{'─' * bot_dash_count}{bot_right_plain}┘")

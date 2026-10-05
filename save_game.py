@@ -419,12 +419,15 @@ def serialize_game_state(game) -> dict:
         "wrap_bindings": [serialize_binding(b) for b in getattr(game, "wrap_bindings", [])],
         "sand_tomb_bindings": [serialize_binding(b) for b in getattr(game, "sand_tomb_bindings", [])],
         "whirlpool_bindings": [serialize_binding(b) for b in getattr(game, "whirlpool_bindings", [])],
+        "cheated": getattr(game, "cheated", False),
     }
 
 
 def apply_game_state(game, state_dict: dict):
     """Restores a Game instance to match the serialized state_dict (when loading a save)"""
     import time
+    game.cheated = bool(state_dict.get("cheated", False) or getattr(game, "debug_mode", False))
+    game.omniscience_mode = False
     game.floor_number = state_dict.get("floor_number", 1)
     default_timer = 500 + 10 * game.floor_number
     game.floor_timer = state_dict.get("floor_timer", default_timer)

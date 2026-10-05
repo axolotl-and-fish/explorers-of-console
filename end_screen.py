@@ -60,28 +60,31 @@ def generate_end_screen_report(game, game_won: bool) -> list[str]:
 
     if game and not getattr(game, "_high_score_saved", False):
         game._high_score_saved = True
-        floor_val = "**" if game_won else floor_num
-        now_iso = datetime.datetime.now().isoformat()
-        try:
-            from high_scores import add_high_score
-            add_high_score(
-                score=final_score,
-                floor=floor_val,
-                turns=turns,
-                dt_iso=datetime.datetime.now().strftime('%Y-%m-%d %H:%M')
-            )
-            floor_str = "**" if str(floor_val) == "**" else f"{int(floor_val):02d}"[:2]
-            game.last_run_score_entry = {
-                "score": min(9999999, max(0, int(final_score))),
-                "floor": floor_str,
-                "turns": min(999999, max(0, int(turns))),
-                "datetime": now_iso
-            }
-        except Exception:
-            pass
+        if not getattr(game, "cheated", False):
+            floor_val = "**" if game_won else floor_num
+            now_iso = datetime.datetime.now().isoformat()
+            try:
+                from high_scores import add_high_score
+                add_high_score(
+                    score=final_score,
+                    floor=floor_val,
+                    turns=turns,
+                    dt_iso=datetime.datetime.now().strftime('%Y-%m-%d %H:%M')
+                )
+                floor_str = "**" if str(floor_val) == "**" else f"{int(floor_val):02d}"[:2]
+                game.last_run_score_entry = {
+                    "score": min(9999999, max(0, int(final_score))),
+                    "floor": floor_str,
+                    "turns": min(999999, max(0, int(turns))),
+                    "datetime": now_iso
+                }
+            except Exception:
+                pass
 
     #Ranks
-    if final_score >= 1000000:
+    if getattr(game, "cheated", False):
+        rank = "Debug Rank"
+    elif final_score >= 1000000:
         rank = "Swampert Loaf Rank"
     elif final_score >= 750000:
         rank = "Grandmaster Rank"
