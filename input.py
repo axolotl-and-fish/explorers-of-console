@@ -157,7 +157,7 @@ def _get_key_windows(timeout: float | None = None) -> str | None:
     except Exception:
         return UNKNOWN
 
-    return KEY_MAP.get(char_str, UNKNOWN)
+    return KEY_MAP.get(char_str, char_str)
 
 
 def _get_key_unix(timeout: float | None = None) -> str | None:
@@ -246,7 +246,7 @@ def _get_key_unix(timeout: float | None = None) -> str | None:
                 return UNKNOWN
             return QUIT  #Standard escape is treated as Quit
 
-        return KEY_MAP.get(ch, UNKNOWN)
+        return KEY_MAP.get(ch, ch)
 
     finally:
         #Restore terminal settings

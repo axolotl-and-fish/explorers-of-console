@@ -159,6 +159,10 @@ class Game:
         )
         self.cheated: bool = bool(self.debug_mode)
         self.omniscience_mode: bool = False
+        self.debug_tile_select_mode: str | None = None
+        self.debug_cursor: tuple[int, int] | None = None
+        self.debug_spawn_pokemon_state: dict | None = None
+        self.debug_spawn_item_state: dict | None = None
         self.previous_turn_duration: float = 0.0
         self._turn_timer_start: float | None = None
         self._turn_animation_time: float = 0.0
@@ -322,7 +326,7 @@ class Game:
         self.log_message("You enter the misery dungeon...")
 
     def get_current_memory_usage_mb(self) -> float:
-        """Returns current process resident memory usage in megabytes"""
+        """Returns current process resident memory usage (in MB) for debug display"""
         try:
             import psutil
             return psutil.Process().memory_info().rss / (1024 * 1024)
@@ -334,7 +338,7 @@ class Game:
                 return 0.0
 
     def format_turn_duration(self, dur_seconds: float) -> str:
-        """Formats turn duration into milliseconds or microseconds string"""
+        """Formats turn processing duration in either milliseconds or microseconds, for debug display"""
         if dur_seconds >= 0.001:
             return f"{dur_seconds * 1000:.2f}ms"
         elif dur_seconds > 0:
@@ -9509,24 +9513,33 @@ class Game:
 
         if sub_screen == "debug_menu":
             debug_sel = state.get("debug_menu_index", 0)
+            num_debug_options = 3
             if action in (game_input.MOVE_UP, "w", "W", "up", "UP"):
-                state["debug_menu_index"] = 0
+                state["debug_menu_index"] = (debug_sel - 1) % num_debug_options
                 self.render()
                 return
             if action in (game_input.MOVE_DOWN, "s", "S", "down", "DOWN"):
-                state["debug_menu_index"] = 0
+                state["debug_menu_index"] = (debug_sel + 1) % num_debug_options
                 self.render()
                 return
             if action in (game_input.QUIT, "\x1b", "ESC", "Esc", "esc"):
                 state["sub_screen"] = None
                 self.render()
                 return
-            if action in (game_input.CONFIRM, "\r", "\n", "z", "Z", "1"):
-                if debug_sel == 0 or action == "1":
-                    self.omniscience_mode = not getattr(self, "omniscience_mode", False)
-                    status_text = "enabled" if self.omniscience_mode else "disabled"
-                    self.log_message(f"Omniscience Mode {status_text}.")
-                    self.render()
+            if action in ("1",):
+                state["debug_menu_index"] = 0
+                self._select_debug_menu_option(0)
+                return
+            if action in ("2",):
+                state["debug_menu_index"] = 1
+                self._select_debug_menu_option(1)
+                return
+            if action in ("3",):
+                state["debug_menu_index"] = 2
+                self._select_debug_menu_option(2)
+                return
+            if action in (game_input.CONFIRM, "\r", "\n", "z", "Z"):
+                self._select_debug_menu_option(debug_sel)
                 return
             return
 
@@ -9633,6 +9646,25 @@ class Game:
             state["debug_menu_index"] = 0
             self.render()
 
+    def _select_debug_menu_option(self, option_index: int):
+        if option_index == 0:
+            self.omniscience_mode = not getattr(self, "omniscience_mode", False)
+            status_text = "enabled" if self.omniscience_mode else "disabled"
+            self.log_message(f"Omniscience Mode {status_text}.")
+            self.render()
+        elif option_index == 1:
+            self.pause_menu_state = None
+            self.debug_tile_select_mode = "pokemon"
+            self.debug_cursor = (self.player_x, self.player_y)
+            self.log_message("Select tile to spawn Pokémon: [Arrows/WASD] Move  [Return] Select  [Esc] Cancel")
+            self.render()
+        elif option_index == 2:
+            self.pause_menu_state = None
+            self.debug_tile_select_mode = "item"
+            self.debug_cursor = (self.player_x, self.player_y)
+            self.log_message("Select tile to spawn Item: [Arrows/WASD] Move  [Return] Select  [Esc] Cancel")
+            self.render()
+
     def _execute_give_up(self):
         self.pause_menu_state = None
         self.game_ended = True
@@ -9693,10 +9725,14 @@ class Game:
                 empty_line,
             ]
             omni_status = " [ON]" if getattr(self, "omniscience_mode", False) else " [OFF]"
-            prefix = " ► " if debug_sel == 0 else "   "
-            rows.append(fmt_line(f"{prefix}Toggle Omniscience Mode{omni_status}"))
+            p0 = " ► " if debug_sel == 0 else "   "
+            p1 = " ► " if debug_sel == 1 else "   "
+            p2 = " ► " if debug_sel == 2 else "   "
+            rows.append(fmt_line(f"{p0}1. Toggle Omniscience Mode{omni_status}"))
+            rows.append(fmt_line(f"{p1}2. Spawn Pokémon"))
+            rows.append(fmt_line(f"{p2}3. Spawn Item"))
             rows.append(empty_line)
-            rows.append(center_line("[Return] Toggle  [Esc] Return to Pause Menu"))
+            rows.append(center_line("[Return] Select  [Esc] Return to Pause Menu"))
             rows.append(bot_border)
             return rows
 
@@ -9741,6 +9777,1263 @@ class Game:
 
         rows.append(empty_line)
         rows.append(center_line("[↑/↓] Navigate  [Return] Select  [Esc] Close"))
+        rows.append(bot_border)
+        return self.sanitize_rendered_rows(rows)
+
+    def handle_debug_tile_select_input(self, action: str):
+        """Handles cursor movement and confirmation for debug tile selection."""
+        if getattr(self, "debug_tile_select_mode", None) is None:
+            return
+        if not getattr(self, "debug_cursor", None):
+            self.debug_cursor = (self.player_x, self.player_y)
+
+        cx, cy = self.debug_cursor
+        dx, dy = 0, 0
+
+        if action in (game_input.MOVE_UP, "UP", "w", "W", "k", "K", "8"):
+            dy = -1
+        elif action in (game_input.MOVE_DOWN, "DOWN", "s", "S", "j", "J", "2"):
+            dy = 1
+        elif action in (game_input.MOVE_LEFT, "LEFT", "a", "A", "h", "H", "4"):
+            dx = -1
+        elif action in (game_input.MOVE_RIGHT, "RIGHT", "d", "D", "l", "L", "6"):
+            dx = 1
+        elif action in (game_input.MOVE_UP_LEFT, "UP_LEFT", "7"):
+            dx, dy = -1, -1
+        elif action in (game_input.MOVE_UP_RIGHT, "UP_RIGHT", "9"):
+            dx, dy = 1, -1
+        elif action in (game_input.MOVE_DOWN_LEFT, "DOWN_LEFT", "1"):
+            dx, dy = -1, 1
+        elif action in (game_input.MOVE_DOWN_RIGHT, "DOWN_RIGHT", "3"):
+            dx, dy = 1, 1
+        elif action in (game_input.CONFIRM, "CONFIRM", "ENTER", "\r", "\n", " "):
+            target_tile = (cx, cy)
+            mode = self.debug_tile_select_mode
+            self.debug_tile_select_mode = None
+            self.debug_cursor = None
+            if mode == "pokemon":
+                self.open_debug_spawn_pokemon_menu(tile=target_tile)
+            elif mode == "item":
+                self.open_debug_spawn_item_menu(tile=target_tile)
+            self.render()
+            return
+        elif action in (game_input.QUIT, "QUIT", "ESC", "Esc", "esc", "\x1b"):
+            self.debug_tile_select_mode = None
+            self.debug_cursor = None
+            self.render()
+            return
+
+        nx = max(0, min(self.floor.width - 1, cx + dx))
+        ny = max(0, min(self.floor.height - 1, cy + dy))
+        self.debug_cursor = (nx, ny)
+        self.render()
+
+    def open_debug_spawn_pokemon_menu(self, tile: tuple[int, int]):
+        """Opens the debug menu for spawning a Pokémon at the specified tile."""
+        species_set = set()
+        if hasattr(self, "pokemon_db") and self.pokemon_db:
+            for p in self.pokemon_db:
+                if isinstance(p, dict) and "name" in p:
+                    species_set.add(p["name"])
+        if hasattr(self, "all_species_names") and self.all_species_names:
+            species_set.update(self.all_species_names)
+        if not species_set:
+            species_set = {"Bulbasaur", "Charmander", "Squirtle", "Pikachu"}
+
+        species_list = sorted(list(species_set))
+        self.debug_spawn_pokemon_state = {
+            "tile": tile,
+            "all_species": species_list,
+            "filtered_species": list(species_list),
+            "filter_text": "",
+            "filter_mode": False,
+            "selected_index": 0,
+            "scroll_offset": 0,
+            "sub_screen": None,
+            "custom_params": None,
+            "iv_sel": 0,
+            "ev_sel": 0,
+            "move_slot_sel": 0,
+            "pick_move_list": [],
+            "pick_move_filtered": [],
+            "pick_move_sel": 0,
+            "pick_move_scroll": 0,
+            "move_filter_text": "",
+            "move_filter_mode": False,
+        }
+        self.render()
+
+    def _update_debug_pokemon_filter(self):
+        """Filters the species list according to filter_text."""
+        state = getattr(self, "debug_spawn_pokemon_state", None)
+        if not state:
+            return
+        query = state.get("filter_text", "").strip().lower()
+        if not query:
+            state["filtered_species"] = list(state["all_species"])
+        else:
+            state["filtered_species"] = [s for s in state["all_species"] if query in s.lower()]
+        total = len(state["filtered_species"])
+        state["selected_index"] = max(0, min(state.get("selected_index", 0), total - 1)) if total > 0 else 0
+
+    def _init_debug_custom_pokemon(self, species: str) -> dict:
+        """Initializes default customization parameters for a given species."""
+        lvl = getattr(self, "floor_number", 1)
+        moves = []
+        try:
+            temp = Pokemon(species, level=lvl)
+            moves = [m["name"] for m in temp.moves if isinstance(m, dict) and "name" in m]
+        except Exception:
+            moves = []
+        return {
+            "species": species,
+            "level": lvl,
+            "napping": False,
+            "nature": None,
+            "ivs": None,
+            "evs": None,
+            "moves": moves[:4],
+        }
+
+    def _update_debug_move_filter(self):
+        """Filters the pick move list according to move_filter_text."""
+        state = getattr(self, "debug_spawn_pokemon_state", None)
+        if not state:
+            return
+        query = state.get("move_filter_text", "").strip().lower()
+        if not query:
+            state["pick_move_filtered"] = list(state["pick_move_list"])
+        else:
+            state["pick_move_filtered"] = [m for m in state["pick_move_list"] if query in m.lower()]
+        total = len(state["pick_move_filtered"])
+        state["pick_move_sel"] = max(0, min(state.get("pick_move_sel", 0), total - 1)) if total > 0 else 0
+
+    def spawn_debug_pokemon(self, species: str, tile: tuple[int, int], custom_params: dict | None = None) -> Pokemon:
+        """Spawns an instance of the specified Pokémon at the target tile with optional custom parameters."""
+        lvl = getattr(self, "floor_number", 1)
+        if custom_params and "level" in custom_params:
+            lvl = custom_params["level"]
+        nature = custom_params.get("nature") if custom_params else None
+        ivs = custom_params.get("ivs") if custom_params else None
+
+        enemy = Pokemon(species, level=lvl, nature=nature, ivs=ivs)
+
+        if custom_params:
+            if custom_params.get("evs") is not None:
+                enemy.evs = dict(custom_params["evs"])
+            if "napping" in custom_params and custom_params["napping"] is not None:
+                enemy.napping = bool(custom_params["napping"])
+            else:
+                enemy.napping = False
+            if custom_params.get("moves") is not None:
+                from pokemon import _get_move_data
+                custom_moves = []
+                for m in custom_params["moves"]:
+                    if isinstance(m, dict):
+                        custom_moves.append(dict(m))
+                    elif isinstance(m, str) and m.strip():
+                        try:
+                            custom_moves.append(_get_move_data(m.strip()))
+                        except Exception:
+                            pass
+                if custom_moves:
+                    enemy.moves = custom_moves[:4]
+        else:
+            enemy.napping = False
+            enemy.moves = enemy.moves[-4:]
+
+        enemy.recalculate_stats()
+        enemy.current_hp = float(enemy.stats["HP"])
+        enemy.x = tile[0]
+        enemy.y = tile[1]
+        self.spawned_pokemon.append(enemy)
+        self.register_encountered_species(species)
+        state_str = "inactive (napping)" if enemy.napping else "active"
+        self.log_message(f"[Debug] Spawned {species} ({state_str}) at {tile}.")
+        return enemy
+
+    def handle_debug_spawn_pokemon_input(self, action: str):
+        """Handles key input for the Spawn Pokémon screen and all its sub-screens."""
+        state = getattr(self, "debug_spawn_pokemon_state", None)
+        if state is None:
+            return
+
+        sub_screen = state.get("sub_screen")
+        stat_keys = ["HP", "Attack", "Defense", "Special_Attack", "Special_Defense", "Speed"]
+
+        #Sub-screen: Pick Move
+        if sub_screen == "pick_move":
+            custom = state["custom_params"]
+            if state.get("move_filter_mode", False):
+                if action in ("ENTER", "\r", "\n", game_input.CONFIRM, "CONFIRM"):
+                    state["move_filter_mode"] = False
+                    self.render()
+                    return
+                if action in ("ESC", "Esc", "\x1b", game_input.QUIT, "QUIT"):
+                    state["move_filter_mode"] = False
+                    self.render()
+                    return
+                if action in ("BACKSPACE", "\x08", "\x7f"):
+                    state["move_filter_text"] = state.get("move_filter_text", "")[:-1]
+                    self._update_debug_move_filter()
+                    self.render()
+                    return
+                if len(action) == 1 and action.isprintable():
+                    state["move_filter_text"] = state.get("move_filter_text", "") + action
+                    self._update_debug_move_filter()
+                    self.render()
+                    return
+                return
+
+            if action in ("f", "F", game_input.STATUS_4):
+                state["move_filter_mode"] = True
+                self.render()
+                return
+            if action in (game_input.MOVE_UP, "UP", "w", "W", "k", "K"):
+                total = len(state.get("pick_move_filtered", []))
+                if total > 0:
+                    state["pick_move_sel"] = (state.get("pick_move_sel", 0) - 1) % total
+                self.render()
+                return
+            if action in (game_input.MOVE_DOWN, "DOWN", "s", "S", "j", "J"):
+                total = len(state.get("pick_move_filtered", []))
+                if total > 0:
+                    state["pick_move_sel"] = (state.get("pick_move_sel", 0) + 1) % total
+                self.render()
+                return
+            if action in (game_input.CONFIRM, "CONFIRM", "ENTER", "\r", "\n"):
+                filtered = state.get("pick_move_filtered", [])
+                sel = state.get("pick_move_sel", 0)
+                if 0 <= sel < len(filtered):
+                    chosen = filtered[sel]
+                    slot = state.get("move_slot_sel", 0)
+                    while len(custom["moves"]) <= slot:
+                        custom["moves"].append("")
+                    custom["moves"][slot] = chosen
+                    custom["moves_customized"] = True
+                state["sub_screen"] = "edit_moves"
+                self.render()
+                return
+            if action in (game_input.QUIT, "QUIT", "ESC", "Esc", "esc", "\x1b"):
+                if state.get("move_filter_text"):
+                    state["move_filter_text"] = ""
+                    self._update_debug_move_filter()
+                else:
+                    state["sub_screen"] = "edit_moves"
+                self.render()
+                return
+            return
+
+        #Sub-screen: Edit Moves
+        if sub_screen == "edit_moves":
+            custom = state["custom_params"]
+            moves = custom.setdefault("moves", [])
+            if action in (game_input.MOVE_UP, "UP", "w", "W", "k", "K"):
+                state["move_slot_sel"] = (state.get("move_slot_sel", 0) - 1) % 4
+                self.render()
+                return
+            if action in (game_input.MOVE_DOWN, "DOWN", "s", "S", "j", "J"):
+                state["move_slot_sel"] = (state.get("move_slot_sel", 0) + 1) % 4
+                self.render()
+                return
+            if action in ("c", "C", game_input.USE_MOVE_3, game_input.CONFIRM, "CONFIRM", "ENTER", "\r", "\n"):
+                all_moves = sorted(list(getattr(self, "all_move_names", [])))
+                if not all_moves and hasattr(self, "moves_db"):
+                    all_moves = sorted([m["name"] for m in self.moves_db if isinstance(m, dict) and "name" in m])
+                state["pick_move_list"] = all_moves
+                state["pick_move_filtered"] = list(all_moves)
+                state["pick_move_sel"] = 0
+                state["pick_move_scroll"] = 0
+                state["move_filter_text"] = ""
+                state["move_filter_mode"] = False
+                state["sub_screen"] = "pick_move"
+                self.render()
+                return
+            if action in ("d", "D", game_input.STATUS_3, "x", "X", game_input.USE_MOVE_2, "BACKSPACE", "\x08", "\x7f"):
+                slot = state.get("move_slot_sel", 0)
+                if slot < len(moves):
+                    moves.pop(slot)
+                    custom["moves_customized"] = True
+                self.render()
+                return
+            if action in (game_input.QUIT, "QUIT", "ESC", "Esc", "esc", "\x1b"):
+                state["sub_screen"] = "customize"
+                self.render()
+                return
+            return
+
+        #Sub-screen: Edit IVs
+        if sub_screen == "edit_ivs":
+            custom = state["custom_params"]
+            if custom.get("ivs") is None:
+                custom["ivs"] = {s: 31 for s in stat_keys}
+            ivs = custom["ivs"]
+            iv_sel = state.get("iv_sel", 0)
+
+            if action in (game_input.MOVE_UP, "UP", "w", "W", "k", "K"):
+                state["iv_sel"] = (iv_sel - 1) % len(stat_keys)
+                self.render()
+                return
+            if action in (game_input.MOVE_DOWN, "DOWN", "s", "S", "j", "J"):
+                state["iv_sel"] = (iv_sel + 1) % len(stat_keys)
+                self.render()
+                return
+            if action in (game_input.MOVE_LEFT, "LEFT", "-", "_"):
+                st = stat_keys[iv_sel]
+                ivs[st] = max(0, ivs.get(st, 31) - 1)
+                self.render()
+                return
+            if action in (game_input.MOVE_RIGHT, "RIGHT", "+", "="):
+                st = stat_keys[iv_sel]
+                ivs[st] = min(31, ivs.get(st, 31) + 1)
+                self.render()
+                return
+            if action in ("1", game_input.MOVE_DOWN_LEFT):
+                for s in stat_keys:
+                    ivs[s] = 31
+                self.render()
+                return
+            if action in ("2", game_input.MOVE_DOWN):
+                for s in stat_keys:
+                    ivs[s] = 0
+                self.render()
+                return
+            if action in ("3", game_input.MOVE_DOWN_RIGHT):
+                custom["ivs"] = None
+                self.render()
+                return
+            if action in (game_input.CONFIRM, "CONFIRM", "ENTER", "\r", "\n", game_input.QUIT, "QUIT", "ESC", "Esc", "esc", "\x1b"):
+                state["sub_screen"] = "customize"
+                self.render()
+                return
+            return
+
+        #Sub-screen: Edit EVs
+        if sub_screen == "edit_evs":
+            custom = state["custom_params"]
+            if custom.get("evs") is None:
+                custom["evs"] = {s: 0 for s in stat_keys}
+            evs = custom["evs"]
+            ev_sel = state.get("ev_sel", 0)
+
+            if action in (game_input.MOVE_UP, "UP", "w", "W", "k", "K"):
+                state["ev_sel"] = (ev_sel - 1) % len(stat_keys)
+                self.render()
+                return
+            if action in (game_input.MOVE_DOWN, "DOWN", "s", "S", "j", "J"):
+                state["ev_sel"] = (ev_sel + 1) % len(stat_keys)
+                self.render()
+                return
+            if action in (game_input.MOVE_LEFT, "LEFT", "-", "_"):
+                st = stat_keys[ev_sel]
+                evs[st] = max(0, evs.get(st, 0) - 1)
+                self.render()
+                return
+            if action in (game_input.MOVE_RIGHT, "RIGHT", "+", "="):
+                st = stat_keys[ev_sel]
+                evs[st] = min(9999, evs.get(st, 0) + 1)
+                self.render()
+                return
+            if action in ("1", game_input.MOVE_DOWN_LEFT):
+                for s in stat_keys:
+                    evs[s] = 0
+                evs["Attack"] = 255
+                evs["Speed"] = 255
+                evs["HP"] = 255
+                evs["Defense"] = 255
+                evs["Speed"] = 255
+                evs["Special_Attack"] = 255
+                evs["Special_Defense"] = 255
+                self.render()
+                return
+            if action == "2":
+                for s in stat_keys:
+                    evs[s] = 0
+                self.render()
+                return
+            if action in (game_input.CONFIRM, "CONFIRM", "ENTER", "\r", "\n", game_input.QUIT, "QUIT", "ESC", "Esc", "esc", "\x1b"):
+                state["sub_screen"] = "customize"
+                self.render()
+                return
+            return
+
+        #Sub-screen: Customize Main
+        if sub_screen == "customize":
+            custom = state["custom_params"]
+            from natures import NATURE_NAMES
+
+            if state.get("level_input_mode", False):
+                if action in ("ENTER", "\r", "\n", game_input.CONFIRM, "CONFIRM"):
+                    txt = state.get("level_input_text", "").strip()
+                    if txt:
+                        try:
+                            new_lvl = max(1, min(99, int(txt)))
+                            custom["level"] = new_lvl
+                            if not custom.get("moves_customized", False):
+                                try:
+                                    temp = Pokemon(custom["species"], level=new_lvl)
+                                    custom["moves"] = [m["name"] for m in temp.moves if isinstance(m, dict) and "name" in m][:4]
+                                except Exception:
+                                    pass
+                        except ValueError:
+                            pass
+                    state["level_input_mode"] = False
+                    state["level_input_text"] = ""
+                    self.render()
+                    return
+                if action in ("ESC", "Esc", "\x1b", game_input.QUIT, "QUIT"):
+                    state["level_input_mode"] = False
+                    state["level_input_text"] = ""
+                    self.render()
+                    return
+                if action in ("BACKSPACE", "\x08", "\x7f"):
+                    state["level_input_text"] = state.get("level_input_text", "")[:-1]
+                    self.render()
+                    return
+                if action in "0123456789":
+                    if len(state.get("level_input_text", "")) < 3:
+                        state["level_input_text"] = state.get("level_input_text", "") + action
+                    self.render()
+                    return
+                return
+
+            if action in ("l", "L", game_input.LOOK_AROUND):
+                state["level_input_mode"] = True
+                state["level_input_text"] = ""
+                self.render()
+                return
+
+            if action in ("+", "=", "PAGE_UP", "page_up"):
+                step = 10 if action in ("PAGE_UP", "page_up") else 1
+                cur_lvl = custom.get("level", getattr(self, "floor_number", 1))
+                new_lvl = min(100, cur_lvl + step)
+                custom["level"] = new_lvl
+                if not custom.get("moves_customized", False):
+                    try:
+                        temp = Pokemon(custom["species"], level=new_lvl)
+                        custom["moves"] = [m["name"] for m in temp.moves if isinstance(m, dict) and "name" in m][:4]
+                    except Exception:
+                        pass
+                self.render()
+                return
+
+            if action in ("-", "_", "PAGE_DOWN", "page_down"):
+                step = 10 if action in ("PAGE_DOWN", "page_down") else 1
+                cur_lvl = custom.get("level", getattr(self, "floor_number", 1))
+                new_lvl = max(1, cur_lvl - step)
+                custom["level"] = new_lvl
+                if not custom.get("moves_customized", False):
+                    try:
+                        temp = Pokemon(custom["species"], level=new_lvl)
+                        custom["moves"] = [m["name"] for m in temp.moves if isinstance(m, dict) and "name" in m][:4]
+                    except Exception:
+                        pass
+                self.render()
+                return
+
+            if action in ("a", "A", game_input.STATUS_1, " "):
+                custom["napping"] = not custom.get("napping", False)
+                self.render()
+                return
+
+            if action in ("n", "N", game_input.MOVE_RIGHT, "RIGHT"):
+                cur_nat = custom.get("nature")
+                if cur_nat not in NATURE_NAMES:
+                    idx = 0
+                else:
+                    idx = (NATURE_NAMES.index(cur_nat) + 1) % len(NATURE_NAMES)
+                custom["nature"] = NATURE_NAMES[idx]
+                self.render()
+                return
+
+            if action in (game_input.MOVE_LEFT, "LEFT"):
+                cur_nat = custom.get("nature")
+                if cur_nat not in NATURE_NAMES:
+                    idx = 0
+                else:
+                    idx = (NATURE_NAMES.index(cur_nat) - 1) % len(NATURE_NAMES)
+                custom["nature"] = NATURE_NAMES[idx]
+                self.render()
+                return
+
+            if action in ("i", "I", game_input.INVENTORY):
+                state["sub_screen"] = "edit_ivs"
+                state["iv_sel"] = 0
+                self.render()
+                return
+
+            if action in ("e", "E"):
+                state["sub_screen"] = "edit_evs"
+                state["ev_sel"] = 0
+                self.render()
+                return
+
+            if action in ("m", "M"):
+                state["sub_screen"] = "edit_moves"
+                state["move_slot_sel"] = 0
+                self.render()
+                return
+
+            if action in ("r", "R"):
+                sp = custom["species"]
+                state["custom_params"] = self._init_debug_custom_pokemon(sp)
+                state["custom_params"]["nature"] = None
+                state["custom_params"]["ivs"] = None
+                state["custom_params"]["evs"] = None
+                state["custom_params"]["napping"] = False
+                state["custom_params"]["moves_customized"] = False
+                self.render()
+                return
+
+            if action in (game_input.CONFIRM, "CONFIRM", "ENTER", "\r", "\n"):
+                self.spawn_debug_pokemon(custom["species"], state["tile"], custom_params=custom)
+                self.debug_spawn_pokemon_state = None
+                self.render()
+                return
+
+            if action in (game_input.QUIT, "QUIT", "ESC", "Esc", "esc", "\x1b"):
+                state["sub_screen"] = None
+                self.render()
+                return
+            return
+
+        #Main Species List Screen
+        if state.get("filter_mode", False):
+            if action in ("ENTER", "\r", "\n", game_input.CONFIRM, "CONFIRM"):
+                state["filter_mode"] = False
+                self.render()
+                return
+            if action in ("ESC", "Esc", "\x1b", game_input.QUIT, "QUIT"):
+                state["filter_mode"] = False
+                self.render()
+                return
+            if action in ("BACKSPACE", "\x08", "\x7f"):
+                state["filter_text"] = state.get("filter_text", "")[:-1]
+                self._update_debug_pokemon_filter()
+                self.render()
+                return
+            if len(action) == 1 and action.isprintable():
+                state["filter_text"] = state.get("filter_text", "") + action
+                self._update_debug_pokemon_filter()
+                self.render()
+                return
+            return
+
+        #Normal browsing of species list
+        if action in ("f", "F", game_input.STATUS_4):
+            state["filter_mode"] = True
+            self.render()
+            return
+        if action in (game_input.MOVE_UP, "UP", "w", "W", "k", "K"):
+            total = len(state.get("filtered_species", []))
+            if total > 0:
+                state["selected_index"] = (state.get("selected_index", 0) - 1) % total
+            self.render()
+            return
+        if action in (game_input.MOVE_DOWN, "DOWN", "s", "S", "j", "J"):
+            total = len(state.get("filtered_species", []))
+            if total > 0:
+                state["selected_index"] = (state.get("selected_index", 0) + 1) % total
+            self.render()
+            return
+        if action in ("PAGE_UP", "page_up"):
+            total = len(state.get("filtered_species", []))
+            if total > 0:
+                state["selected_index"] = max(0, state.get("selected_index", 0) - 10)
+            self.render()
+            return
+        if action in ("PAGE_DOWN", "page_down"):
+            total = len(state.get("filtered_species", []))
+            if total > 0:
+                state["selected_index"] = min(total - 1, state.get("selected_index", 0) + 10)
+            self.render()
+            return
+        if action in ("c", "C", game_input.USE_MOVE_3):
+            filtered = state.get("filtered_species", [])
+            sel = state.get("selected_index", 0)
+            if 0 <= sel < len(filtered):
+                sp = filtered[sel]
+                state["custom_params"] = self._init_debug_custom_pokemon(sp)
+                state["sub_screen"] = "customize"
+            self.render()
+            return
+        if action in (game_input.CONFIRM, "CONFIRM", "ENTER", "\r", "\n"):
+            filtered = state.get("filtered_species", [])
+            sel = state.get("selected_index", 0)
+            if 0 <= sel < len(filtered):
+                sp = filtered[sel]
+                self.spawn_debug_pokemon(sp, state["tile"], custom_params=None)
+                self.debug_spawn_pokemon_state = None
+            self.render()
+            return
+        if action in (game_input.QUIT, "QUIT", "ESC", "Esc", "esc", "\x1b"):
+            if state.get("filter_text"):
+                state["filter_text"] = ""
+                self._update_debug_pokemon_filter()
+            else:
+                self.debug_spawn_pokemon_state = None
+            self.render()
+            return
+
+    @staticmethod
+    def _debug_fmt_overlay_line(content: str, inner_w: int = 62, align: str = "left") -> str:
+        """Pads and constrains an overlay box line to fit inner_w printable characters."""
+        import re
+        ansi_escape = re.compile(r'\x1b\[[0-9;]*[a-zA-Z]')
+        vis_len = len(ansi_escape.sub('', content))
+        target_max = inner_w - 2 if align == "left" else inner_w
+        if vis_len > target_max:
+            chars = []
+            cur_len = 0
+            i = 0
+            while i < len(content):
+                m = ansi_escape.match(content, i)
+                if m:
+                    chars.append(m.group(0))
+                    i = m.end()
+                else:
+                    if cur_len < target_max:
+                        chars.append(content[i])
+                        cur_len += 1
+                    i += 1
+            chars.append("\033[0m")
+            content = "".join(chars)
+            vis_len = len(ansi_escape.sub('', content))
+
+        if align == "left":
+            right_pad = max(0, inner_w - 2 - vis_len)
+            return "│ " + content + " " * right_pad + " │"
+        else:
+            total_pad = max(0, inner_w - vis_len)
+            left_pad = total_pad // 2
+            right_pad = total_pad - left_pad
+            return "│" + " " * left_pad + content + " " * right_pad + "│"
+
+    def render_debug_spawn_pokemon_screen(self) -> list[str]:
+        """Renders the Spawn Pokémon screen or active sub-screen."""
+        state = getattr(self, "debug_spawn_pokemon_state", None)
+        if state is None:
+            return []
+
+        sub_screen = state.get("sub_screen")
+        if sub_screen == "customize":
+            return self._render_debug_custom_pokemon_screen(state)
+        if sub_screen == "edit_ivs":
+            return self._render_debug_edit_ivs_screen(state)
+        if sub_screen == "edit_evs":
+            return self._render_debug_edit_evs_screen(state)
+        if sub_screen == "edit_moves":
+            return self._render_debug_edit_moves_screen(state)
+        if sub_screen == "pick_move":
+            return self._render_debug_pick_move_screen(state)
+
+        width = 64
+        inner_w = width - 2
+        top_border = "┌" + "─" * inner_w + "┐"
+        bot_border = "└" + "─" * inner_w + "┘"
+        divider = "├" + "─" * inner_w + "┤"
+        empty_line = "│" + " " * inner_w + "│"
+
+        def fmt_left(c: str) -> str:
+            return self._debug_fmt_overlay_line(c, inner_w, "left")
+
+        def fmt_center(c: str) -> str:
+            return self._debug_fmt_overlay_line(c, inner_w, "center")
+
+        tile = state.get("tile", (0, 0))
+        filtered = state.get("filtered_species", [])
+        total = len(filtered)
+        sel = state.get("selected_index", 0)
+
+        rows = [
+            top_border,
+            fmt_center("\033[1;96mSPAWN POKÉMON\033[0m"),
+            fmt_center(f"\033[90mTarget Tile: {tile}\033[0m"),
+            divider,
+        ]
+
+        if state.get("filter_mode", False):
+            ft = state.get("filter_text", "")
+            rows.append(fmt_left(f"\033[1;93mFilter:\033[0m {ft}\033[7m \033[0m  \033[90m[Return: done, Esc: cancel]\033[0m"))
+        else:
+            ft = state.get("filter_text", "")
+            ft_display = f"\033[1;97m{ft}\033[0m" if ft else "\033[90m(none)\033[0m"
+            rows.append(fmt_left(f"Filter: {ft_display}  \033[90m(Press [F])\033[0m"))
+
+        rows.append(divider)
+
+        # Build species type lookup
+        species_types = {}
+        if hasattr(self, "pokemon_db") and self.pokemon_db:
+            for p in self.pokemon_db:
+                if isinstance(p, dict) and "name" in p:
+                    species_types[p["name"]] = "/".join(p.get("types", []))
+
+        visible_count = 12
+        scroll = state.get("scroll_offset", 0)
+        if sel < scroll:
+            scroll = sel
+        elif sel >= scroll + visible_count:
+            scroll = sel - visible_count + 1
+        state["scroll_offset"] = scroll
+
+        if total == 0:
+            rows.append(empty_line)
+            rows.append(fmt_center("\033[91mNo matching species found.\033[0m"))
+            rows.append(empty_line)
+            for _ in range(visible_count - 3):
+                rows.append(empty_line)
+        else:
+            for i in range(scroll, min(total, scroll + visible_count)):
+                sp_name = filtered[i]
+                t_str = species_types.get(sp_name, "")
+                type_tag = f" \033[36m[{t_str}]\033[0m" if t_str else ""
+                if i == sel:
+                    line = f"\033[1;93m ► {sp_name}\033[0m{type_tag}"
+                else:
+                    line = f"    \033[37m{sp_name}\033[0m{type_tag}"
+                rows.append(fmt_left(line))
+
+            for _ in range(visible_count - (min(total, scroll + visible_count) - scroll)):
+                rows.append(empty_line)
+
+        rows.append(divider)
+        rows.append(fmt_center("\033[97m[↑/↓] Browse   [Return] Spawn  [C] Customize\033[0m"))
+        rows.append(fmt_center("\033[90m[F] Filter Search   [Esc] Cancel / Close\033[0m"))
+        rows.append(bot_border)
+        return self.sanitize_rendered_rows(rows)
+
+    def _render_debug_custom_pokemon_screen(self, state: dict) -> list[str]:
+        """Renders the Pokémon customization sub-screen."""
+        width = 64
+        inner_w = width - 2
+        top_border = "┌" + "─" * inner_w + "┐"
+        bot_border = "└" + "─" * inner_w + "┘"
+        divider = "├" + "─" * inner_w + "┤"
+        empty_line = "│" + " " * inner_w + "│"
+        def fmt_left(c: str) -> str:
+            return self._debug_fmt_overlay_line(c, inner_w, "left")
+
+        def fmt_center(c: str) -> str:
+            return self._debug_fmt_overlay_line(c, inner_w, "center")
+
+        custom = state["custom_params"]
+        sp = custom["species"]
+        lvl = custom.get("level", getattr(self, "floor_number", 1))
+        tile = state.get("tile", (0, 0))
+
+        state_str = "\033[91mInactive\033[0m" if custom.get("napping", False) else "\033[92mActive\033[0m"
+        nat = custom.get("nature")
+        nat_str = f"\033[1;97m{nat}\033[0m" if nat else "\033[90mDefault (Random)\033[0m"
+
+        ivs = custom.get("ivs")
+        if ivs:
+            ivs_str = f"\033[1;97m{ivs.get('HP', 0)}/{ivs.get('Attack', 0)}/{ivs.get('Defense', 0)}/{ivs.get('Special_Attack', 0)}/{ivs.get('Special_Defense', 0)}/{ivs.get('Speed', 0)}\033[0m"
+        else:
+            ivs_str = "\033[90mDefault (Random)\033[0m"
+
+        evs = custom.get("evs")
+        if evs:
+            evs_str = f"\033[1;97m{evs.get('HP', 0)}/{evs.get('Attack', 0)}/{evs.get('Defense', 0)}/{evs.get('Special_Attack', 0)}/{evs.get('Special_Defense', 0)}/{evs.get('Speed', 0)}\033[0m"
+        else:
+            evs_str = "\033[90mDefault (All 0)\033[0m"
+
+        moves = custom.get("moves")
+        if moves:
+            m_names = [m["name"] if isinstance(m, dict) else str(m) for m in moves if m]
+            raw_joined = ", ".join(m_names) if m_names else "(None)"
+            if len(raw_joined) > 26:
+                raw_joined = raw_joined[:23] + "..."
+            moves_str = f"\033[1;97m{raw_joined}\033[0m"
+        else:
+            moves_str = "\033[90mDefault (Level-up moves)\033[0m"
+
+        if state.get("level_input_mode", False):
+            lvl_in = state.get("level_input_text", "")
+            lvl_line = f" [L] Level:  \033[1;93m{lvl_in}\033[7m \033[0m \033[90m(1-99, Return: ok, Esc: cancel)\033[0m"
+        else:
+            lvl_line = f" [L] Level:  \033[1;97m{lvl:<3d}\033[0m \033[90m(Press L or [+/-] to adjust)\033[0m"
+
+        rows = [
+            top_border,
+            fmt_center("\033[1;96mCUSTOMIZE POKÉMON\033[0m"),
+            fmt_center(f"\033[1;93m{sp}\033[0m (Lv {lvl})  \033[90mTarget: {tile}\033[0m"),
+            divider,
+            empty_line,
+            fmt_left(lvl_line),
+            fmt_left(f" [A] State:  {state_str} \033[0m"),
+            fmt_left(f" [N] Nature: {nat_str}  \033[0m"),
+            fmt_left(f" [I] IVs:    {ivs_str}  \033[0m"),
+            fmt_left(f" [E] EVs:    {evs_str}  \033[0m"),
+            fmt_left(f" [M] Moves:  {moves_str}  \033[0m"),
+            empty_line,
+            fmt_left(" [R] Reset All Settings to Default"),
+            empty_line,
+            divider,
+            fmt_center("\033[1;92m[Return] Spawn Pokémon\033[0m"),
+            fmt_center("\033[90m[Esc] Back\033[0m"),
+            bot_border,
+        ]
+        return self.sanitize_rendered_rows(rows)
+
+    def _render_debug_edit_ivs_screen(self, state: dict) -> list[str]:
+        """Renders the IV editing sub-screen."""
+        width = 64
+        inner_w = width - 2
+        top_border = "┌" + "─" * inner_w + "┐"
+        bot_border = "└" + "─" * inner_w + "┘"
+        divider = "├" + "─" * inner_w + "┤"
+        def fmt_left(c: str) -> str:
+            return self._debug_fmt_overlay_line(c, inner_w, "left")
+
+        def fmt_center(c: str) -> str:
+            return self._debug_fmt_overlay_line(c, inner_w, "center")
+
+        custom = state["custom_params"]
+        if custom.get("ivs") is None:
+            custom["ivs"] = {s: 31 for s in ["HP", "Attack", "Defense", "Special_Attack", "Special_Defense", "Speed"]}
+        ivs = custom["ivs"]
+        iv_sel = state.get("iv_sel", 0)
+        stat_keys = ["HP", "Attack", "Defense", "Special_Attack", "Special_Defense", "Speed"]
+
+        rows = [
+            top_border,
+            fmt_center("\033[1;96mEDIT IVs\033[0m"),
+            divider,
+        ]
+        for idx, st in enumerate(stat_keys):
+            val = ivs.get(st, 31)
+            prefix = "\033[1;93m ► " if idx == iv_sel else "   "
+            suffix = "\033[0m" if idx == iv_sel else ""
+            st_disp = st.replace("_", " ")
+            line = f"{prefix}{st_disp:<16}: {val:2d} / 31 {suffix}"
+            rows.append(fmt_left(line))
+
+        rows.append(divider)
+        rows.append(fmt_left(" Presets: [1] All 31 (Max)   [2] All 0 (Min)   [3] Random"))
+        rows.append(fmt_center("[↑/↓] Select Stat   [←/→] Adjust   [Return/Esc] Done"))
+        rows.append(bot_border)
+        return self.sanitize_rendered_rows(rows)
+
+    def _render_debug_edit_evs_screen(self, state: dict) -> list[str]:
+        """Renders the EV editing sub-screen."""
+        width = 64
+        inner_w = width - 2
+        top_border = "┌" + "─" * inner_w + "┐"
+        bot_border = "└" + "─" * inner_w + "┘"
+        divider = "├" + "─" * inner_w + "┤"
+        def fmt_left(c: str) -> str:
+            return self._debug_fmt_overlay_line(c, inner_w, "left")
+
+        def fmt_center(c: str) -> str:
+            return self._debug_fmt_overlay_line(c, inner_w, "center")
+
+        custom = state["custom_params"]
+        if custom.get("evs") is None:
+            custom["evs"] = {s: 0 for s in ["HP", "Attack", "Defense", "Special_Attack", "Special_Defense", "Speed"]}
+        evs = custom["evs"]
+        ev_sel = state.get("ev_sel", 0)
+        stat_keys = ["HP", "Attack", "Defense", "Special_Attack", "Special_Defense", "Speed"]
+
+        rows = [
+            top_border,
+            fmt_center("\033[1;96mEDIT EVs\033[0m"),
+            divider,
+        ]
+        for idx, st in enumerate(stat_keys):
+            val = evs.get(st, 0)
+            prefix = "\033[1;93m ► " if idx == ev_sel else "   "
+            suffix = "\033[0m" if idx == ev_sel else ""
+            st_disp = st.replace("_", " ")
+            line = f"{prefix}{st_disp:<16}: {val:3d} {suffix}"
+            rows.append(fmt_left(line))
+
+        rows.append(divider)
+        rows.append(fmt_left(" Presets: [1] All 255  [2] All 0"))
+        rows.append(fmt_center("[↑/↓] Select Stat   [←/→] Adjust  [Return/Esc] Done"))
+        rows.append(bot_border)
+        return self.sanitize_rendered_rows(rows)
+
+    def _render_debug_edit_moves_screen(self, state: dict) -> list[str]:
+        """Renders the Move editing sub-screen."""
+        width = 64
+        inner_w = width - 2
+        top_border = "┌" + "─" * inner_w + "┐"
+        bot_border = "└" + "─" * inner_w + "┘"
+        divider = "├" + "─" * inner_w + "┤"
+        def fmt_left(c: str) -> str:
+            return self._debug_fmt_overlay_line(c, inner_w, "left")
+
+        def fmt_center(c: str) -> str:
+            return self._debug_fmt_overlay_line(c, inner_w, "center")
+
+        custom = state["custom_params"]
+        moves = custom.setdefault("moves", [])
+        slot_sel = state.get("move_slot_sel", 0)
+
+        rows = [
+            top_border,
+            fmt_center("\033[1;96mEDIT MOVES\033[0m"),
+            divider,
+        ]
+        for slot in range(4):
+            prefix = "\033[1;93m ► " if slot == slot_sel else "   "
+            suffix = "\033[0m" if slot == slot_sel else ""
+            if slot < len(moves) and moves[slot]:
+                m = moves[slot]
+                name = m["name"] if isinstance(m, dict) else str(m)
+                line = f"{prefix}Slot {slot + 1}: \033[1;97m{name}\033[0m{suffix}"
+            else:
+                line = f"{prefix}Slot {slot + 1}: \033[90m(Empty)\033[0m{suffix}"
+            rows.append(fmt_left(line))
+
+        rows.append(divider)
+        rows.append(fmt_center("[↑/↓] Select Slot   [Return/C] Pick Move   [D] Clear   [Esc] Done"))
+        rows.append(bot_border)
+        return self.sanitize_rendered_rows(rows)
+
+    def _render_debug_pick_move_screen(self, state: dict) -> list[str]:
+        """Renders the Move picking and filtering sub-screen."""
+        width = 64
+        inner_w = width - 2
+        top_border = "┌" + "─" * inner_w + "┐"
+        bot_border = "└" + "─" * inner_w + "┘"
+        divider = "├" + "─" * inner_w + "┤"
+        empty_line = "│" + " " * inner_w + "│"
+        def fmt_left(c: str) -> str:
+            return self._debug_fmt_overlay_line(c, inner_w, "left")
+
+        def fmt_center(c: str) -> str:
+            return self._debug_fmt_overlay_line(c, inner_w, "center")
+
+        slot = state.get("move_slot_sel", 0) + 1
+        filtered = state.get("pick_move_filtered", [])
+        total = len(filtered)
+        sel = state.get("pick_move_sel", 0)
+
+        rows = [
+            top_border,
+            fmt_center(f"\033[1;96mSELECT MOVE FOR SLOT {slot}\033[0m"),
+            divider,
+        ]
+
+        if state.get("move_filter_mode", False):
+            ft = state.get("move_filter_text", "")
+            rows.append(fmt_left(f"\033[1;93mFilter (typing):\033[0m {ft}\033[7m \033[0m  \033[90m[Return: done, Esc: cancel]\033[0m"))
+        else:
+            ft = state.get("move_filter_text", "")
+            ft_display = f"\033[1;97m{ft}\033[0m" if ft else "\033[90m(none)\033[0m"
+            rows.append(fmt_left(f"Filter: {ft_display}  \033[90m(Press [F] to filter, Matches: {total})\033[0m"))
+
+        rows.append(divider)
+
+        visible_count = 10
+        scroll = state.get("pick_move_scroll", 0)
+        if sel < scroll:
+            scroll = sel
+        elif sel >= scroll + visible_count:
+            scroll = sel - visible_count + 1
+        state["pick_move_scroll"] = scroll
+
+        if total == 0:
+            rows.append(empty_line)
+            rows.append(fmt_center("\033[91mNo matching moves found.\033[0m"))
+            rows.append(empty_line)
+            for _ in range(visible_count - 3):
+                rows.append(empty_line)
+        else:
+            for i in range(scroll, min(total, scroll + visible_count)):
+                m_name = filtered[i]
+                if i == sel:
+                    line = f"\033[1;93m ► {m_name}\033[0m"
+                else:
+                    line = f"    \033[37m{m_name}\033[0m"
+                rows.append(fmt_left(line))
+
+            for _ in range(visible_count - (min(total, scroll + visible_count) - scroll)):
+                rows.append(empty_line)
+
+        rows.append(divider)
+        rows.append(fmt_center("[↑/↓] Browse   [Return] Select Move   [F] Filter   [Esc] Cancel"))
+        rows.append(bot_border)
+        return self.sanitize_rendered_rows(rows)
+
+    def open_debug_spawn_item_menu(self, tile: tuple[int, int]):
+        """Opens the debug menu for spawning an item at the specified tile."""
+        item_keys = set(items.ITEMS_DB.keys())
+        item_keys.add("Poké")
+        sorted_items = sorted(list(item_keys))
+
+        self.debug_spawn_item_state = {
+            "tile": tile,
+            "all_items": sorted_items,
+            "filtered_items": list(sorted_items),
+            "filter_text": "",
+            "filter_mode": False,
+            "selected_index": 0,
+            "scroll_offset": 0,
+            "count": 5,
+            "count_input_mode": False,
+            "count_input_text": "",
+        }
+        self.render()
+
+    def _update_debug_item_filter(self):
+        """Filters the items list according to filter_text."""
+        state = getattr(self, "debug_spawn_item_state", None)
+        if not state:
+            return
+        query = state.get("filter_text", "").strip().lower()
+        if not query:
+            state["filtered_items"] = list(state["all_items"])
+        else:
+            state["filtered_items"] = [item for item in state["all_items"] if query in item.lower()]
+        total = len(state["filtered_items"])
+        state["selected_index"] = max(0, min(state.get("selected_index", 0), total - 1)) if total > 0 else 0
+
+    def spawn_debug_item(self, item_name: str, tile: tuple[int, int], count: int = 1) -> dict:
+        """Spawns an item on the floor at the target tile."""
+        if item_name == "Poké":
+            item_data = {
+                "name": "Poké",
+                "type": "Money",
+                "amount": max(1, count),
+                "symbol": "P",
+                "appearance": "P",
+                "color": "\033[30;43m",
+                "rarity": "Common",
+            }
+        else:
+            base_item = items.ITEMS_DB.get(item_name, {})
+            item_data = dict(base_item)
+            if item_data.get("stackable", False):
+                item_data["count"] = max(1, count)
+            else:
+                item_data["count"] = 1
+
+        self.items_on_floor[tile] = item_data
+        count_tag = f" x{count}" if (item_data.get("stackable") or item_name == "Poké") else ""
+        self.log_message(f"[Debug] Spawned {item_name}{count_tag} at {tile}.")
+        return item_data
+
+    def handle_debug_spawn_item_input(self, action: str):
+        """Handles key input for the Spawn Item screen."""
+        state = getattr(self, "debug_spawn_item_state", None)
+        if state is None:
+            return
+
+        filtered = state.get("filtered_items", [])
+        sel = state.get("selected_index", 0)
+        curr_item = filtered[sel] if 0 <= sel < len(filtered) else ""
+        is_stackable = items.ITEMS_DB.get(curr_item, {}).get("stackable", False) or (curr_item == "Poké")
+
+        #Typing in filter mode
+        if state.get("filter_mode", False):
+            if action in ("ENTER", "\r", "\n", game_input.CONFIRM, "CONFIRM"):
+                state["filter_mode"] = False
+                self.render()
+                return
+            if action in ("ESC", "Esc", "\x1b", game_input.QUIT, "QUIT"):
+                state["filter_mode"] = False
+                self.render()
+                return
+            if action in ("BACKSPACE", "\x08", "\x7f"):
+                state["filter_text"] = state.get("filter_text", "")[:-1]
+                self._update_debug_item_filter()
+                self.render()
+                return
+            if len(action) == 1 and action.isprintable():
+                state["filter_text"] = state.get("filter_text", "") + action
+                self._update_debug_item_filter()
+                self.render()
+                return
+            return
+
+        #Typing in count input mode
+        if state.get("count_input_mode", False):
+            if action in ("ENTER", "\r", "\n", game_input.CONFIRM, "CONFIRM"):
+                txt = state.get("count_input_text", "").strip()
+                if txt:
+                    try:
+                        state["count"] = max(1, min(9999 if curr_item == "Poké" else 99, int(txt)))
+                    except ValueError:
+                        pass
+                state["count_input_mode"] = False
+                state["count_input_text"] = ""
+                self.render()
+                return
+            if action in ("ESC", "Esc", "\x1b", game_input.QUIT, "QUIT"):
+                state["count_input_mode"] = False
+                state["count_input_text"] = ""
+                self.render()
+                return
+            if action in ("BACKSPACE", "\x08", "\x7f"):
+                state["count_input_text"] = state.get("count_input_text", "")[:-1]
+                self.render()
+                return
+            if action in "0123456789":
+                if len(state.get("count_input_text", "")) < 4:
+                    state["count_input_text"] = state.get("count_input_text", "") + action
+                self.render()
+                return
+            return
+
+        #Normal browsing
+        if action in ("f", "F", game_input.STATUS_4):
+            state["filter_mode"] = True
+            self.render()
+            return
+        if action in (game_input.MOVE_UP, "UP", "w", "W", "k", "K"):
+            total = len(filtered)
+            if total > 0:
+                state["selected_index"] = (sel - 1) % total
+            self.render()
+            return
+        if action in (game_input.MOVE_DOWN, "DOWN", "s", "S", "j", "J"):
+            total = len(filtered)
+            if total > 0:
+                state["selected_index"] = (sel + 1) % total
+            self.render()
+            return
+        if action in ("PAGE_UP", "page_up"):
+            total = len(filtered)
+            if total > 0:
+                state["selected_index"] = max(0, sel - 10)
+            self.render()
+            return
+        if action in ("PAGE_DOWN", "page_down"):
+            total = len(filtered)
+            if total > 0:
+                state["selected_index"] = min(total - 1, sel + 10)
+            self.render()
+            return
+        if is_stackable and action in ("+", "=", game_input.MOVE_RIGHT, "RIGHT"):
+            step = 10 if curr_item == "Poké" else 1
+            max_val = 9999 if curr_item == "Poké" else 99
+            state["count"] = min(max_val, state.get("count", 1) + step)
+            self.render()
+            return
+        if is_stackable and action in ("-", "_", game_input.MOVE_LEFT, "LEFT"):
+            step = 10 if curr_item == "Poké" else 1
+            state["count"] = max(1, state.get("count", 1) - step)
+            self.render()
+            return
+        if is_stackable and action in ("c", "C", game_input.USE_MOVE_3):
+            state["count_input_mode"] = True
+            state["count_input_text"] = ""
+            self.render()
+            return
+        if is_stackable and action in "0123456789":
+            state["count_input_mode"] = True
+            state["count_input_text"] = action
+            self.render()
+            return
+        if action in (game_input.CONFIRM, "CONFIRM", "ENTER", "\r", "\n"):
+            if 0 <= sel < len(filtered):
+                chosen_item = filtered[sel]
+                cnt = state.get("count", 1) if is_stackable else 1
+                self.spawn_debug_item(chosen_item, state["tile"], count=cnt)
+                self.debug_spawn_item_state = None
+            self.render()
+            return
+        if action in (game_input.QUIT, "QUIT", "ESC", "Esc", "esc", "\x1b"):
+            if state.get("filter_text"):
+                state["filter_text"] = ""
+                self._update_debug_item_filter()
+            else:
+                self.debug_spawn_item_state = None
+            self.render()
+            return
+
+    def render_debug_spawn_item_screen(self) -> list[str]:
+        """Renders the Spawn Item screen overlay."""
+        state = getattr(self, "debug_spawn_item_state", None)
+        if state is None:
+            return []
+
+        width = 64
+        inner_w = width - 2
+        top_border = "┌" + "─" * inner_w + "┐"
+        bot_border = "└" + "─" * inner_w + "┘"
+        divider = "├" + "─" * inner_w + "┤"
+        empty_line = "│" + " " * inner_w + "│"
+        def fmt_left(c: str) -> str:
+            return self._debug_fmt_overlay_line(c, inner_w, "left")
+
+        def fmt_center(c: str) -> str:
+            return self._debug_fmt_overlay_line(c, inner_w, "center")
+
+        tile = state.get("tile", (0, 0))
+        filtered = state.get("filtered_items", [])
+        total = len(filtered)
+        sel = state.get("selected_index", 0)
+
+        rows = [
+            top_border,
+            fmt_center("\033[1;96mSPAWN ITEM\033[0m"),
+            fmt_center(f"\033[90mTarget Tile: {tile}\033[0m"),
+            divider,
+        ]
+
+        if state.get("filter_mode", False):
+            ft = state.get("filter_text", "")
+            rows.append(fmt_left(f"\033[1;93mFilter (typing):\033[0m {ft}\033[7m \033[0m  \033[90m[Return: done, Esc: cancel]\033[0m"))
+        else:
+            ft = state.get("filter_text", "")
+            ft_display = f"\033[1;97m{ft}\033[0m" if ft else "\033[90m(none)\033[0m"
+            rows.append(fmt_left(f"Filter: {ft_display}  \033[90m(Press [F])\033[0m"))
+
+        rows.append(divider)
+
+        visible_count = 12
+        scroll = state.get("scroll_offset", 0)
+        if sel < scroll:
+            scroll = sel
+        elif sel >= scroll + visible_count:
+            scroll = sel - visible_count + 1
+        state["scroll_offset"] = scroll
+
+        if total == 0:
+            rows.append(empty_line)
+            rows.append(fmt_center("\033[91mNo matching items found.\033[0m"))
+            rows.append(empty_line)
+            for _ in range(visible_count - 3):
+                rows.append(empty_line)
+        else:
+            for i in range(scroll, min(total, scroll + visible_count)):
+                it_name = filtered[i]
+                is_stk = items.ITEMS_DB.get(it_name, {}).get("stackable", False) or (it_name == "Poké")
+                stk_tag = " \033[33m(Stackable)\033[0m" if is_stk else ""
+                rarity = items.ITEMS_DB.get(it_name, {}).get("rarity", "")
+                r_tag = f" \033[36m[{rarity}]\033[0m" if rarity else ""
+                if i == sel:
+                    line = f"\033[1;93m ► {it_name}\033[0m{r_tag}{stk_tag}"
+                else:
+                    line = f"    \033[37m{it_name}\033[0m{r_tag}{stk_tag}"
+                rows.append(fmt_left(line))
+
+            for _ in range(visible_count - (min(total, scroll + visible_count) - scroll)):
+                rows.append(empty_line)
+
+        rows.append(divider)
+
+        # Quantity display
+        curr_item = filtered[sel] if 0 <= sel < total else ""
+        is_cur_stackable = items.ITEMS_DB.get(curr_item, {}).get("stackable", False) or (curr_item == "Poké")
+
+        if is_cur_stackable:
+            if state.get("count_input_mode", False):
+                cit = state.get("count_input_text", "")
+                rows.append(fmt_left(f" \033[1;93mSet Quantity:\033[0m {cit}\033[7m \033[0m  \033[90m[Return: confirm, Esc: cancel]\033[0m"))
+            else:
+                cnt = state.get("count", 1)
+                rows.append(fmt_left(f" \033[1;92mSpawn Quantity:\033[0m \033[1;97m{cnt}\033[0m  \033[90m([+/-] Adjust, [C] Type number)\033[0m"))
+        else:
+            rows.append(fmt_left(" \033[90mSpawn Quantity: 1 (Non-stackable)\033[0m"))
+
+        rows.append(divider)
+        rows.append(fmt_center("\033[97m[↑/↓] Browse   [Return] Spawn Item   [+/-] Quantity\033[0m"))
+        rows.append(fmt_center("\033[90m[F] Filter Search   [Esc] Cancel / Close\033[0m"))
         rows.append(bot_border)
         return self.sanitize_rendered_rows(rows)
 
@@ -10777,6 +12070,8 @@ class Game:
                     row_chars.append(f"{anim['color']}{anim['char']}\033[0m")
                 elif getattr(self, "look_around_mode", False) and src_x == self.look_around_cursor[0] and src_y == self.look_around_cursor[1] and getattr(self, "look_around_cursor_visible", True):
                     row_chars.append("\033[93mX\033[0m")
+                elif getattr(self, "debug_tile_select_mode", None) is not None and getattr(self, "debug_cursor", None) and src_x == self.debug_cursor[0] and src_y == self.debug_cursor[1]:
+                    row_chars.append("\033[1;95mX\033[0m")
                 elif (src_x, src_y) in flash_popups:
                     dmg_str, color = flash_popups[(src_x, src_y)]
                     row_chars.append(f"{color}{dmg_str}\033[0m")
@@ -11053,6 +12348,38 @@ class Game:
                 start_x = max(0, (base_width - overlay_width) // 2)
                 start_y = max(0, (len(base_rows) - overlay_height) // 2)
                 rows = self.overlay_rows_on_base(base_rows, pause_rows, start_x, start_y)
+
+        elif getattr(self, "debug_spawn_pokemon_state", None) is not None:
+            screen_view = "debug_spawn_pokemon"
+            poke_rows = self.render_debug_spawn_pokemon_screen()
+            if poke_rows:
+                base_rows = self.render_main_interface_rows()
+                import re
+                ansi_escape = re.compile(r'\x1b\[[0-9;]*[a-zA-Z]')
+                base_width = len(ansi_escape.sub('', base_rows[0])) if base_rows else 76
+                overlay_width = 64
+                overlay_height = len(poke_rows)
+                start_x = max(0, (base_width - overlay_width) // 2)
+                start_y = max(0, (len(base_rows) - overlay_height) // 2)
+                rows = self.overlay_rows_on_base(base_rows, poke_rows, start_x, start_y)
+            else:
+                rows = self.render_main_interface_rows()
+
+        elif getattr(self, "debug_spawn_item_state", None) is not None:
+            screen_view = "debug_spawn_item"
+            item_rows = self.render_debug_spawn_item_screen()
+            if item_rows:
+                base_rows = self.render_main_interface_rows()
+                import re
+                ansi_escape = re.compile(r'\x1b\[[0-9;]*[a-zA-Z]')
+                base_width = len(ansi_escape.sub('', base_rows[0])) if base_rows else 76
+                overlay_width = 64
+                overlay_height = len(item_rows)
+                start_x = max(0, (base_width - overlay_width) // 2)
+                start_y = max(0, (len(base_rows) - overlay_height) // 2)
+                rows = self.overlay_rows_on_base(base_rows, item_rows, start_x, start_y)
+            else:
+                rows = self.render_main_interface_rows()
 
         elif getattr(self, "replace_recruit_state", None) is not None:
             screen_view = "replace_recruit"
@@ -12627,6 +13954,52 @@ class Game:
                 if action is None:
                     continue
                 self.handle_pause_menu_input(action)
+                continue
+
+            if getattr(self, "debug_spawn_pokemon_state", None) is not None:
+                state = self.debug_spawn_pokemon_state
+                try:
+                    if (
+                        state.get("filter_mode")
+                        or (state.get("sub_screen") == "pick_move" and state.get("move_filter_mode"))
+                        or (state.get("sub_screen") == "customize" and state.get("level_input_mode"))
+                    ):
+                        char_in = game_input.get_char_input(timeout=None)
+                        if char_in is not None:
+                            self.handle_debug_spawn_pokemon_input(char_in)
+                    else:
+                        action = game_input.get_key(timeout=None)
+                        if action is not None:
+                            self.handle_debug_spawn_pokemon_input(action)
+                except (StopIteration, RuntimeError):
+                    self.is_running = False
+                    break
+                continue
+
+            if getattr(self, "debug_spawn_item_state", None) is not None:
+                state = self.debug_spawn_item_state
+                try:
+                    if state.get("filter_mode") or state.get("count_input_mode"):
+                        char_in = game_input.get_char_input(timeout=None)
+                        if char_in is not None:
+                            self.handle_debug_spawn_item_input(char_in)
+                    else:
+                        action = game_input.get_key(timeout=None)
+                        if action is not None:
+                            self.handle_debug_spawn_item_input(action)
+                except (StopIteration, RuntimeError):
+                    self.is_running = False
+                    break
+                continue
+
+            if getattr(self, "debug_tile_select_mode", None) is not None:
+                try:
+                    action = game_input.get_key(timeout=None)
+                except (StopIteration, RuntimeError):
+                    self.is_running = False
+                    break
+                if action is not None:
+                    self.handle_debug_tile_select_input(action)
                 continue
 
             if getattr(self, "replace_recruit_state", None) is not None:
