@@ -589,7 +589,7 @@ class Game:
             if getattr(self, "compatibility_mode", False):
                 rows = self.sanitize_rendered_rows(rows)
             try:
-                sys.stdout.write("\033[2J\033[H")
+                sys.stdout.write("\033[2J\033[3J\033[H")
                 sys.stdout.write("\n".join(rows) + "\n")
                 sys.stdout.flush()
             except Exception:
@@ -613,7 +613,7 @@ class Game:
             if getattr(self, "compatibility_mode", False):
                 rows = self.sanitize_rendered_rows(rows)
             try:
-                sys.stdout.write("\033[2J\033[H")
+                sys.stdout.write("\033[2J\033[3J\033[H")
                 sys.stdout.write("\n".join(rows) + "\n")
                 sys.stdout.flush()
             except Exception:
@@ -12438,11 +12438,9 @@ class Game:
         if rows:
             if getattr(self, "compatibility_mode", False):
                 rows = self.sanitize_rendered_rows(rows)
-            prev_screen = getattr(self, "_last_rendered_screen", None)
-            screen_changed = (prev_screen != screen_view)
             self._last_rendered_screen = screen_view
 
-            prefix = "\033[2J\033[H" if (screen_changed or screen_view in ("title", "starter_select", "high_scores", "load_game", "disclaimer", "move_replacement")) else "\033[H"
+            prefix = "\033[2J\033[3J\033[H"
             output_buffer = prefix + "\n".join(rows) + "\n\033[J"
             try:
                 sys.stdout.write(output_buffer)
