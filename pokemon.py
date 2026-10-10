@@ -496,6 +496,11 @@ class Pokemon:
         return self.nickname if self.nickname else self.species_data["name"]
 
     @property
+    def species(self) -> str:
+        """Returns the species name of the Pokémon."""
+        return self.species_data.get("name", "")
+
+    @property
     def level(self) -> int:
         """Returns the Pokémon's current level."""
         return self._level

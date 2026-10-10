@@ -65,6 +65,27 @@ SCINTILLATING_COLORS = [
     "\033[36m",  #cyan
 ]
 
+WEATHER_CONDITIONS = [
+    "Clear",
+    "Sunny",
+    "Rain",
+    "Hail",
+    "Sandstorm",
+    "Cloudy",
+    "Fog",
+    "Snow",
+    "Blizzard",
+    "Thunderstorm",
+    "Heavy Rain",
+    "Harsh Sunlight",
+    "Strong Winds",
+    "Shadowy Aura",
+    "Grassy Terrain",
+    "Electric Terrain",
+    "Misty Terrain",
+    "Psychic Terrain",
+]
+
 GAME_LOGO_LINES = [
     "                                      █                                 ",
     "       ███            ██            ███                                 ",
@@ -159,6 +180,8 @@ class Game:
         )
         self.cheated: bool = bool(self.debug_mode)
         self.omniscience_mode: bool = False
+        self.degreelessness_mode: bool = False
+        self.always_recruit_pokemon: bool = False
         self.debug_tile_select_mode: str | None = None
         self.debug_cursor: tuple[int, int] | None = None
         self.debug_spawn_pokemon_state: dict | None = None
@@ -444,6 +467,8 @@ class Game:
 
                 if src == "Crushed by falling debris":
                     fate_str = "Crushed by falling debris"
+                elif src == "Erased from existence by a cruel debugging monster":
+                    fate_str = "Erased from existence by a cruel debugging monster"
                 elif src == "poison":
                     fate_str = f"Succumbed to poison on {floor_num}F on turn {turns}"
                 elif src == "burn":
@@ -7795,7 +7820,25 @@ class Game:
 
     def attempt_revive_member(self, member: Pokemon) -> bool:
         """Checks if a revival item is in inventory to revive a defeated teammate. Priority: Reviver Seed > Tiny Reviver Seed > Posess Orb"""
-        if member not in self.party or getattr(member, "cannot_be_revived", False):
+        if member not in self.party:
+            return False
+
+        if getattr(self, "degreelessness_mode", False):
+            member.cannot_be_revived = False
+            member.current_hp = float(member.stats["HP"])
+            member.status_effects = {k: (0 if isinstance(v, int) else False) for k, v in member.status_effects.items()}
+            if hasattr(member, "moves"):
+                for m in member.moves:
+                    m["current_pp"] = m.get("max_pp", 10)
+            if hasattr(member, "current_belly") and hasattr(member, "max_belly"):
+                member.current_belly = member.max_belly
+            for st in getattr(member, "stat_modifiers", {}):
+                if member.stat_modifiers[st] < 0:
+                    member.stat_modifiers[st] = 0
+            self.log_message(f"{member.name} was revived by Degreelessness Mode!", important=True)
+            return True
+
+        if getattr(member, "cannot_be_revived", False):
             return False
 
         reviver_idx = None
@@ -9175,10 +9218,17 @@ class Game:
         Returns True if target was adjacent to leader, consuming the Apricorn, or False otherwise.
         """
         tx, ty = target.x, target.y
-        px, py = self.player_pokemon.x, self.player_pokemon.y
-        is_adjacent = max(abs(tx - px), abs(ty - py)) == 1
+        if hasattr(self, "player_pokemon") and self.player_pokemon:
+            px, py = self.player_pokemon.x, self.player_pokemon.y
+            is_adjacent = max(abs(tx - px), abs(ty - py)) == 1
+        else:
+            is_adjacent = True
 
-        if not is_adjacent or target in self.party:
+        always_recruit = getattr(self, "always_recruit_pokemon", False)
+        if target in self.party:
+            return False
+
+        if not is_adjacent and not always_recruit:
             self.log_message(f"{target.name} dodged the thrown {apricorn_item['name']}!")
             return False
 
@@ -9224,7 +9274,7 @@ class Game:
         chance = hp_term * rate_term * status_bonus * type_bonus * friendly_bonus
         roll = random.random()
 
-        if chance >= 1.0 or roll < chance:
+        if always_recruit or chance >= 1.0 or roll < chance:
             self.clear_pokemon_bindings(target)
             target.current_hp = float(target.stats["HP"])
             target.current_pp = target.max_pp
@@ -9511,9 +9561,69 @@ class Game:
                 self.render()
             return
 
+        if sub_screen == "forecast_weather":
+            weather_sel = state.get("weather_menu_index", 0)
+            total = len(WEATHER_CONDITIONS)
+            if action in (game_input.MOVE_UP, "w", "W", "up", "UP", "k", "K"):
+                state["weather_menu_index"] = (weather_sel - 1) % total
+                self.render()
+                return
+            if action in (game_input.MOVE_DOWN, "s", "S", "down", "DOWN", "j", "J"):
+                state["weather_menu_index"] = (weather_sel + 1) % total
+                self.render()
+                return
+            if action in (game_input.QUIT, "\x1b", "ESC", "Esc", "esc"):
+                state["sub_screen"] = "debug_menu"
+                self.render()
+                return
+            if action in (game_input.CONFIRM, "\r", "\n", "z", "Z", "ENTER"):
+                chosen = WEATHER_CONDITIONS[weather_sel]
+                self.base_weather = chosen
+                self.set_weather(chosen, duration=0)
+                self.weather = chosen
+                self.weather_turns_left = 0
+                self.pause_menu_state = None
+                self.log_message(f"[Debug] The weather is now {chosen}.", important=True)
+                self.render()
+                return
+            return
+
+        if sub_screen == "change_floor":
+            if action in (game_input.QUIT, "\x1b", "ESC", "Esc", "esc", "QUIT"):
+                state["sub_screen"] = "debug_menu"
+                self.render()
+                return
+            if action in ("BACKSPACE", "\x08", "\x7f"):
+                state["floor_input_text"] = state.get("floor_input_text", "")[:-1]
+                self.render()
+                return
+            if action in (game_input.CONFIRM, "\r", "\n", "z", "Z", "ENTER"):
+                raw_txt = state.get("floor_input_text", "").strip()
+                if raw_txt:
+                    try:
+                        f_num = int(raw_txt)
+                        if 1 <= f_num <= 50:
+                            self.pause_menu_state = None
+                            self.regenerate_floor(f_num)
+                            self.render()
+                            return
+                        else:
+                            self.log_message("[Debug] Floor number must be between 1 and 50.")
+                            self.render()
+                            return
+                    except ValueError:
+                        pass
+                return
+            if len(action) == 1 and action in "0123456789":
+                if len(state.get("floor_input_text", "")) < 2:
+                    state["floor_input_text"] = state.get("floor_input_text", "") + action
+                self.render()
+                return
+            return
+
         if sub_screen == "debug_menu":
             debug_sel = state.get("debug_menu_index", 0)
-            num_debug_options = 3
+            num_debug_options = 11
             if action in (game_input.MOVE_UP, "w", "W", "up", "UP"):
                 state["debug_menu_index"] = (debug_sel - 1) % num_debug_options
                 self.render()
@@ -9538,7 +9648,35 @@ class Game:
                 state["debug_menu_index"] = 2
                 self._select_debug_menu_option(2)
                 return
-            if action in (game_input.CONFIRM, "\r", "\n", "z", "Z"):
+            if action in ("4",):
+                state["debug_menu_index"] = 3
+                self._select_debug_menu_option(3)
+                return
+            if action in ("5",):
+                state["debug_menu_index"] = 4
+                self._select_debug_menu_option(4)
+                return
+            if action in ("6",):
+                state["debug_menu_index"] = 5
+                self._select_debug_menu_option(5)
+                return
+            if action in ("7",):
+                state["debug_menu_index"] = 6
+                self._select_debug_menu_option(6)
+                return
+            if action in ("8",):
+                state["debug_menu_index"] = 7
+                self._select_debug_menu_option(7)
+                return
+            if action in ("9",):
+                state["debug_menu_index"] = 8
+                self._select_debug_menu_option(8)
+                return
+            if action in ("0",):
+                state["debug_menu_index"] = 9
+                self._select_debug_menu_option(9)
+                return
+            if action in (game_input.CONFIRM, "\r", "\n", "z", "Z", "ENTER"):
                 self._select_debug_menu_option(debug_sel)
                 return
             return
@@ -9664,6 +9802,286 @@ class Game:
             self.debug_cursor = (self.player_x, self.player_y)
             self.log_message("Select tile to spawn Item: [Arrows/WASD] Move  [Return] Select  [Esc] Cancel")
             self.render()
+        elif option_index == 3:
+            self.pause_menu_state = None
+            self.debug_tile_select_mode = "edit_pokemon"
+            self.debug_cursor = (self.player_x, self.player_y)
+            self.log_message("Select Pokémon to edit: [↑/↓/←/→] Move  [Return] Select  [Esc] Cancel")
+            self.render()
+        elif option_index == 4:
+            self.pause_menu_state = None
+            self._execute_debug_stress_test()
+            self.render()
+        elif option_index == 5:
+            self.pause_menu_state = None
+            self._execute_debug_violate_geneva_convention()
+            self.render()
+        elif option_index == 6:
+            self.pause_menu_state = None
+            self._execute_debug_print_info()
+            self.render()
+        elif option_index == 7:
+            state = getattr(self, "pause_menu_state", None)
+            if state:
+                state["sub_screen"] = "forecast_weather"
+                state["weather_menu_index"] = 0
+                state["weather_scroll_offset"] = 0
+            self.render()
+        elif option_index == 8:
+            state = getattr(self, "pause_menu_state", None)
+            if state:
+                state["sub_screen"] = "change_floor"
+                state["floor_input_text"] = ""
+            self.render()
+        elif option_index == 9:
+            self.degreelessness_mode = not getattr(self, "degreelessness_mode", False)
+            status_text = "enabled" if self.degreelessness_mode else "disabled"
+            self.log_message(f"Degreelessness Mode {status_text}.")
+            self.render()
+        elif option_index == 10:
+            self.always_recruit_pokemon = not getattr(self, "always_recruit_pokemon", False)
+            status_text = "enabled" if self.always_recruit_pokemon else "disabled"
+            self.log_message(f"Always Recruit Pokémon {status_text}.")
+            self.render()
+
+    def _execute_debug_stress_test(self):
+        """Spawns randomly generated Pokémon on all unoccupied empty floor tiles on the current floor."""
+        import random
+        species_pool = getattr(self, "floor_spawn_list", None) or getattr(self, "all_species_names", None)
+        if not species_pool and hasattr(self, "pokemon_db") and self.pokemon_db:
+            species_pool = [p["name"] for p in self.pokemon_db if isinstance(p, dict) and "name" in p]
+        if not species_pool:
+            species_pool = ["Bulbasaur", "Charmander", "Squirtle", "Pikachu"]
+
+        occupied = {get_pokemon_position(self, p) for p in self.party + self.spawned_pokemon if int(getattr(p, "current_hp", 0)) > 0}
+        occupied.add((self.player_x, self.player_y))
+        count = 0
+        lvl = getattr(self, "floor_number", 1)
+
+        for y in range(self.floor.height):
+            for x in range(self.floor.width):
+                if self.floor.grid[y][x] == FLOOR_CHAR and (x, y) not in occupied:
+                    species = random.choice(species_pool)
+                    enemy = Pokemon(species, level=lvl)
+                    enemy.x = x
+                    enemy.y = y
+                    enemy.napping = False
+                    enemy.moves = enemy.moves[-4:]
+                    self.spawned_pokemon.append(enemy)
+                    self.register_encountered_species(species)
+                    occupied.add((x, y))
+                    count += 1
+
+        self.log_message(f"[Debug] Spawned {count} Pokémon.", important=True)
+
+    def _execute_debug_violate_geneva_convention(self):
+        """Deletes all non-team Pokémon from the floor."""
+        initial_count = len(self.spawned_pokemon)
+        self.spawned_pokemon = [p for p in self.spawned_pokemon if self.is_team_pokemon(p)]
+        deleted_count = initial_count - len(self.spawned_pokemon)
+        self.log_message(f"[Debug] Deleted {deleted_count} Pokémon.", important=True)
+
+    def _execute_debug_print_info(self):
+        """Prints raw values of normally unseen variables to the message log."""
+        self.log_message(f"player_position: {(self.player_x, self.player_y)}")
+        self.log_message(f"stairs_position: {getattr(self, 'stairs_position', None)}")
+        self.log_message(f"wonder_tile_position: {getattr(self, 'wonder_tile_position', None)}")
+        self.log_message(f"floor_timer: {getattr(self, 'floor_timer', None)}")
+        self.log_message(f"start_time: {getattr(self, 'start_time', None)}")
+        self.log_message(f"session_start_time: {getattr(self, 'session_start_time', None)}")
+        self.log_message(f"accumulated_play_time: {getattr(self, 'accumulated_play_time', None)}")
+        self.log_message(f"total_recruited_count: {getattr(self, 'total_recruited_count', None)}")
+        self.log_message(f"player_actions_left: {getattr(self, 'player_actions_left', None)}")
+        self.log_message(f"weather_turns_left: {getattr(self, 'weather_turns_left', None)}")
+        self.log_message(f"floor_visibility_reduction: {getattr(self, 'floor_visibility_reduction', None)}")
+
+    def _debug_erase_pokemon(self, target: Pokemon):
+        """Deletes the selected Pokémon from existence."""
+        if target is None:
+            return
+
+        is_team = self.is_team_pokemon(target)
+        if is_team:
+            target.last_damage_source = "Erased from existence by a cruel debugging monster"
+            target.current_hp = 0
+            self.record_team_member_defeat(target, damage_source="Erased from existence by a cruel debugging monster")
+            poke_id = getattr(target, "id", None)
+            for entry in getattr(self, "all_team_members", []):
+                if entry.get("pokemon") is target or (poke_id and entry.get("pokemon_id") == poke_id):
+                    entry["fate"] = "Erased from existence by a cruel debugging monster"
+
+            if target in getattr(self, "party", []):
+                is_leader = (target == self.player_pokemon or getattr(target, "is_leader", False))
+                target.is_leader = False
+                self.party.remove(target)
+                if is_leader:
+                    if len(self.party) > 0:
+                        new_leader = self.party[0]
+                        new_leader.is_leader = True
+                        self.player_pokemon = new_leader
+                        for m in new_leader.moves:
+                            m["enabled"] = True
+                        if hasattr(new_leader, "x") and hasattr(new_leader, "y"):
+                            self.player_x = new_leader.x
+                            self.player_y = new_leader.y
+                        self.log_message(f"{new_leader.name} took over as team leader!", important=True)
+                    else:
+                        self.log_message("The team was wiped out...", important=True)
+                        self.game_ended = True
+                        self.game_won = False
+                        self.is_running = False
+                self.check_over_capacity_inventory_drop(target)
+
+        if target in getattr(self, "spawned_pokemon", []):
+            self.spawned_pokemon.remove(target)
+
+        self.log_message(f"[Debug] Deleted {target.name}.", important=True)
+        self.debug_spawn_pokemon_state = None
+        self.render()
+
+    def regenerate_floor(self, new_floor_number: int):
+        """Regenerates the current floor in place for the specified floor number (1-50)."""
+        new_floor_number = max(1, min(50, new_floor_number))
+        self.floor_number = new_floor_number
+        self.floor_timer = self.get_initial_floor_timer(self.floor_number)
+        self.floor_timer_warned_250 = False
+        self.floor_timer_warned_150 = False
+        self.floor_timer_warned_50 = False
+        self.floor_timer_collapsed = False
+        self.map_shake_offset = (0, 0)
+        self.collapse_blanked_tiles.clear()
+
+        # Generate new floor geometry
+        new_width = getattr(self, "floor_width_override", None)
+        if new_width is None:
+            new_width = self.get_target_floor_width(self.floor_number)
+        self.floor = DungeonFloor(width=new_width)
+        self.explored_tiles.clear()
+        self.radar_active = False
+        self.scanner_active = False
+        self.stairs_revealed = False
+        self.floor_luminous = False
+
+        # Place player & party
+        self.player_x, self.player_y = self._get_starting_position()
+        if hasattr(self, "player_pokemon") and self.player_pokemon:
+            self.player_pokemon.x, self.player_pokemon.y = self.player_x, self.player_y
+        self.spawn_party_members()
+
+        # Place stairs and wonder tile
+        self.spawn_stairs()
+        self.spawn_wonder_tile()
+
+        # Clear spawned enemies and items, spawn new
+        self.spawned_pokemon.clear()
+        self.generate_floor_spawn_list()
+        self.items_on_floor.clear()
+        self.spawn_initial_items()
+        self.spawn_initial_enemies()
+
+        # Reset floor effects
+        self.gravity = False
+        self.floor_visibility_reduction = self.generate_floor_visibility_reduction(self.floor_number)
+        self.base_weather = self.generate_floor_base_weather(self.floor_number)
+        if self.base_weather == "Clear":
+            self.weather = "Clear"
+            self.weather_turns_left = 0
+        else:
+            self.set_weather(self.base_weather, duration=0)
+        self.wonder_room_turns = 0
+        self.leech_seed_sources.clear()
+        self.taunt_sources.clear()
+        self.fire_spin_bindings.clear()
+        self.wrap_bindings.clear()
+        self.sand_tomb_bindings.clear()
+        self.whirlpool_bindings.clear()
+
+        # Cure status effects on party
+        for member in getattr(self, "party", []):
+            member.fake_out_used_this_floor = False
+            member.disable_move_effect = None
+            member.imprisoned_moves.clear()
+            member.temp_types = None
+            member.status_effects = {k: (0 if isinstance(v, int) else False) for k, v in member.status_effects.items()}
+            for stat in member.stat_modifiers:
+                member.stat_modifiers[stat] = 0
+            member.movement_speed_stage = 0
+            member.movement_speed_duration = 0
+            member.slow_turn_toggle = False
+
+            if getattr(member, "mimic_original_state", None) is not None:
+                state = member.mimic_original_state
+                slot = state["slot"]
+                if slot < len(member.moves) and member.moves[slot]["name"] == state["copied_move"]["name"]:
+                    member.moves[slot] = state["original_move"]
+                member.mimic_original_state = None
+
+            if getattr(member, "transform_original_state", None) is not None:
+                orig = member.transform_original_state
+                member.species = orig["species"]
+                member.name = orig["name"]
+                member.types = list(orig["types"])
+                member.moves = [dict(m) for m in orig["moves"]]
+                member.stats = dict(orig["stats"])
+                member.transform_original_state = None
+
+        if hasattr(self, "player_pokemon") and self.player_pokemon:
+            self.player_actions_left = self.get_pokemon_actions_this_turn(self.player_pokemon)
+
+        self.log_message(f"[Debug] Floor was changed to {self.floor_number}F.", important=True)
+
+    def get_pokemon_at_tile(self, tile: tuple[int, int]) -> Pokemon | None:
+        """Finds any team or non-team Pokémon currently located at tile."""
+        tx, ty = tile
+        if getattr(self, "player_pokemon", None) and (self.player_x, self.player_y) == (tx, ty):
+            return self.player_pokemon
+        for p in getattr(self, "party", []):
+            if p is not self.player_pokemon:
+                px, py = get_pokemon_position(self, p)
+                if (px, py) == (tx, ty):
+                    return p
+        for p in getattr(self, "spawned_pokemon", []):
+            px, py = get_pokemon_position(self, p)
+            if (px, py) == (tx, ty):
+                return p
+        return None
+
+    def open_debug_edit_pokemon_menu(self, pokemon: Pokemon):
+        """Opens the customize menu directly on an existing Pokémon for editing or deletion."""
+        moves = [m["name"] if isinstance(m, dict) else str(m) for m in getattr(pokemon, "moves", []) if m]
+        custom_params = {
+            "species": pokemon.species,
+            "level": pokemon.level,
+            "napping": getattr(pokemon, "napping", False),
+            "nature": getattr(pokemon, "nature", None),
+            "ivs": dict(pokemon.ivs) if getattr(pokemon, "ivs", None) else None,
+            "evs": dict(pokemon.evs) if getattr(pokemon, "evs", None) else None,
+            "moves": moves[:4],
+        }
+        pos = get_pokemon_position(self, pokemon)
+        species_list = sorted(list(self.all_species_names)) if getattr(self, "all_species_names", None) else [pokemon.species]
+        self.debug_spawn_pokemon_state = {
+            "tile": pos,
+            "all_species": species_list,
+            "filtered_species": list(species_list),
+            "filter_text": "",
+            "filter_mode": False,
+            "selected_index": 0,
+            "scroll_offset": 0,
+            "sub_screen": "customize",
+            "custom_params": custom_params,
+            "editing_pokemon": pokemon,
+            "iv_sel": 0,
+            "ev_sel": 0,
+            "move_slot_sel": 0,
+            "pick_move_list": [],
+            "pick_move_filtered": [],
+            "pick_move_sel": 0,
+            "pick_move_scroll": 0,
+            "move_filter_text": "",
+            "move_filter_mode": False,
+        }
+        self.render()
 
     def _execute_give_up(self):
         self.pause_menu_state = None
@@ -9717,6 +10135,51 @@ class Game:
             rows.append(bot_border)
             return rows
 
+        if sub_screen == "forecast_weather":
+            weather_sel = state.get("weather_menu_index", 0)
+            rows = [
+                top_border,
+                center_line("FORECAST WEATHER"),
+                empty_line,
+            ]
+            visible_count = 10
+            scroll = state.get("weather_scroll_offset", 0)
+            if weather_sel < scroll:
+                scroll = weather_sel
+            elif weather_sel >= scroll + visible_count:
+                scroll = weather_sel - visible_count + 1
+            state["weather_scroll_offset"] = scroll
+
+            for idx in range(scroll, min(len(WEATHER_CONDITIONS), scroll + visible_count)):
+                w_name = WEATHER_CONDITIONS[idx]
+                prefix = " ► " if weather_sel == idx else "   "
+                cur_marker = " (Current)" if w_name == getattr(self, "weather", "") else ""
+                rows.append(fmt_line(f"{prefix}{w_name}{cur_marker}"))
+
+            for _ in range(visible_count - (min(len(WEATHER_CONDITIONS), scroll + visible_count) - scroll)):
+                rows.append(empty_line)
+
+            rows.append(empty_line)
+            rows.append(center_line("[↑/↓] Browse  [Return] Select  [Esc] Back"))
+            rows.append(bot_border)
+            return rows
+
+        if sub_screen == "change_floor":
+            txt = state.get("floor_input_text", "")
+            rows = [
+                top_border,
+                center_line("REGENERATE / CHANGE FLOOR"),
+                empty_line,
+                center_line(f"Current Floor: {self.floor_number}F"),
+                empty_line,
+                fmt_line(f" Enter Floor (1-50): {txt}_"),
+                empty_line,
+                center_line("[Return] Confirm"),
+                center_line("[Esc] Back to Debug Menu"),
+                bot_border,
+            ]
+            return rows
+
         if sub_screen == "debug_menu":
             debug_sel = state.get("debug_menu_index", 0)
             rows = [
@@ -9725,12 +10188,24 @@ class Game:
                 empty_line,
             ]
             omni_status = " [ON]" if getattr(self, "omniscience_mode", False) else " [OFF]"
-            p0 = " ► " if debug_sel == 0 else "   "
-            p1 = " ► " if debug_sel == 1 else "   "
-            p2 = " ► " if debug_sel == 2 else "   "
-            rows.append(fmt_line(f"{p0}1. Toggle Omniscience Mode{omni_status}"))
-            rows.append(fmt_line(f"{p1}2. Spawn Pokémon"))
-            rows.append(fmt_line(f"{p2}3. Spawn Item"))
+            degreeless_status = " [ON]" if getattr(self, "degreelessness_mode", False) else " [OFF]"
+            recruit_status = " [ON]" if getattr(self, "always_recruit_pokemon", False) else " [OFF]"
+            debug_opts = [
+                f"Toggle Omniscience Mode{omni_status}",
+                "Spawn Pokémon",
+                "Spawn Item",
+                "Edit Pokémon",
+                "Stress Test",
+                "Violate Geneva Convention",
+                "Print Debug Information",
+                "Forecast Weather",
+                "Regenerate/Change Floor",
+                f"Toggle Degreelessness Mode{degreeless_status}",
+                f"Toggle Always Recruit Pokémon{recruit_status}",
+            ]
+            for idx, opt_str in enumerate(debug_opts):
+                pfx = " ► " if debug_sel == idx else "   "
+                rows.append(fmt_line(f"{pfx}{opt_str}"))
             rows.append(empty_line)
             rows.append(center_line("[Return] Select  [Esc] Return to Pause Menu"))
             rows.append(bot_border)
@@ -9809,14 +10284,29 @@ class Game:
         elif action in (game_input.CONFIRM, "CONFIRM", "ENTER", "\r", "\n", " "):
             target_tile = (cx, cy)
             mode = self.debug_tile_select_mode
-            self.debug_tile_select_mode = None
-            self.debug_cursor = None
             if mode == "pokemon":
+                self.debug_tile_select_mode = None
+                self.debug_cursor = None
                 self.open_debug_spawn_pokemon_menu(tile=target_tile)
+                self.render()
+                return
             elif mode == "item":
+                self.debug_tile_select_mode = None
+                self.debug_cursor = None
                 self.open_debug_spawn_item_menu(tile=target_tile)
-            self.render()
-            return
+                self.render()
+                return
+            elif mode == "edit_pokemon":
+                target_mon = self.get_pokemon_at_tile(target_tile)
+                if target_mon is None:
+                    self.log_message("No Pokémon found on that tile.")
+                    self.render()
+                    return
+                self.debug_tile_select_mode = None
+                self.debug_cursor = None
+                self.open_debug_edit_pokemon_menu(target_mon)
+                self.render()
+                return
         elif action in (game_input.QUIT, "QUIT", "ESC", "Esc", "esc", "\x1b"):
             self.debug_tile_select_mode = None
             self.debug_cursor = None
@@ -10285,14 +10775,53 @@ class Game:
                 self.render()
                 return
 
-            if action in (game_input.CONFIRM, "CONFIRM", "ENTER", "\r", "\n"):
-                self.spawn_debug_pokemon(custom["species"], state["tile"], custom_params=custom)
-                self.debug_spawn_pokemon_state = None
-                self.render()
+            if state.get("editing_pokemon") and action in ("x", "X"):
+                self._debug_erase_pokemon(state["editing_pokemon"])
                 return
 
+            if action in (game_input.CONFIRM, "CONFIRM", "ENTER", "\r", "\n"):
+                if state.get("editing_pokemon"):
+                    target = state["editing_pokemon"]
+                    lvl = custom.get("level", getattr(target, "level", 1))
+                    target.level = lvl
+                    if "napping" in custom and custom["napping"] is not None:
+                        target.napping = bool(custom["napping"])
+                    if custom.get("nature"):
+                        target.nature = custom["nature"]
+                    if custom.get("ivs") is not None:
+                        target.ivs = dict(custom["ivs"])
+                    if custom.get("evs") is not None:
+                        target.evs = dict(custom["evs"])
+                    if custom.get("moves") is not None:
+                        from pokemon import _get_move_data
+                        custom_moves = []
+                        for m in custom["moves"]:
+                            if isinstance(m, dict):
+                                custom_moves.append(dict(m))
+                            elif isinstance(m, str) and m.strip():
+                                try:
+                                    custom_moves.append(_get_move_data(m.strip()))
+                                except Exception:
+                                    pass
+                        if custom_moves:
+                            target.moves = custom_moves[:4]
+                    target.recalculate_stats()
+                    target.current_hp = min(float(target.stats["HP"]), max(1.0, float(getattr(target, "current_hp", 1.0))))
+                    self.log_message(f"[Debug] Modified {target.species} (Lv {target.level}).")
+                    self.debug_spawn_pokemon_state = None
+                    self.render()
+                    return
+                else:
+                    self.spawn_debug_pokemon(custom["species"], state["tile"], custom_params=custom)
+                    self.debug_spawn_pokemon_state = None
+                    self.render()
+                    return
+
             if action in (game_input.QUIT, "QUIT", "ESC", "Esc", "esc", "\x1b"):
-                state["sub_screen"] = None
+                if state.get("editing_pokemon"):
+                    self.debug_spawn_pokemon_state = None
+                else:
+                    state["sub_screen"] = None
                 self.render()
                 return
             return
@@ -10554,9 +11083,12 @@ class Game:
         else:
             lvl_line = f" [L] Level:  \033[1;97m{lvl:<3d}\033[0m \033[90m(Press L or [+/-] to adjust)\033[0m"
 
+        is_editing = state.get("editing_pokemon") is not None
+        title = "EDIT POKÉMON" if is_editing else "CUSTOMIZE POKÉMON"
+
         rows = [
             top_border,
-            fmt_center("\033[1;96mCUSTOMIZE POKÉMON\033[0m"),
+            fmt_center(f"\033[1;96m{title}\033[0m"),
             fmt_center(f"\033[1;93m{sp}\033[0m (Lv {lvl})  \033[90mTarget: {tile}\033[0m"),
             divider,
             empty_line,
@@ -10568,12 +11100,18 @@ class Game:
             fmt_left(f" [M] Moves:  {moves_str}  \033[0m"),
             empty_line,
             fmt_left(" [R] Reset All Settings to Default"),
+        ]
+        if is_editing:
+            rows.append(fmt_left(" \033[91m[X] Erase Pokémon\033[0m"))
+        else:
+            rows.append(empty_line)
+        rows.extend([
             empty_line,
             divider,
-            fmt_center("\033[1;92m[Return] Spawn Pokémon\033[0m"),
-            fmt_center("\033[90m[Esc] Back\033[0m"),
+            fmt_center("\033[1;92m[Return] Save Changes\033[0m" if is_editing else "\033[1;92m[Return] Spawn Pokémon\033[0m"),
+            fmt_center("\033[90m[Esc] Cancel / Back\033[0m"),
             bot_border,
-        ]
+        ])
         return self.sanitize_rendered_rows(rows)
 
     def _render_debug_edit_ivs_screen(self, state: dict) -> list[str]:
@@ -11546,6 +12084,8 @@ class Game:
         if getattr(self, "debug_mode", False):
             self.cheated = True
         self.omniscience_mode = False
+        self.degreelessness_mode = False
+        self.always_recruit_pokemon = False
 
         self.player_pokemon = Pokemon(species_name, level=2, nickname=nickname, nature=nature, ivs=ivs, is_leader=True)
         self.player_pokemon.is_leader = True
@@ -13944,14 +14484,19 @@ class Game:
                 continue
 
             if getattr(self, "pause_menu_state", None) is not None:
+                state = self.pause_menu_state
                 try:
-                    action = game_input.get_key(timeout=None)
+                    if state.get("sub_screen") == "change_floor":
+                        char_in = game_input.get_char_input(timeout=None)
+                        if char_in is not None:
+                            self.handle_pause_menu_input(char_in)
+                    else:
+                        action = game_input.get_key(timeout=None)
+                        if action is not None:
+                            self.handle_pause_menu_input(action)
                 except (StopIteration, RuntimeError):
                     self.is_running = False
                     break
-                if action is None:
-                    continue
-                self.handle_pause_menu_input(action)
                 continue
 
             if getattr(self, "debug_spawn_pokemon_state", None) is not None:

@@ -428,6 +428,8 @@ def apply_game_state(game, state_dict: dict):
     import time
     game.cheated = bool(state_dict.get("cheated", False) or getattr(game, "debug_mode", False))
     game.omniscience_mode = False
+    game.degreelessness_mode = False
+    game.always_recruit_pokemon = False
     game.floor_number = state_dict.get("floor_number", 1)
     default_timer = 500 + 10 * game.floor_number
     game.floor_timer = state_dict.get("floor_timer", default_timer)
