@@ -1554,7 +1554,7 @@
     "name": "Transform Orb",
     "edible": false,
     "usable": true,
-    "description": "Temporarily ransforms the user into a different species.",
+    "description": "Temporarily transforms the user into a different species.",
     "appearance": "•",
     "color": "blue",
     "value": 400,
