@@ -13116,7 +13116,7 @@ class Game:
                 #Line 2: HP (9) + HP gauge (7)
                 curr_hp = int(pokemon.current_hp)
                 max_hp = pokemon.stats["HP"]
-                curr_hp_str = f"{curr_hp:>3}" if curr_hp <= 999 else "???"
+                curr_hp_str = f"{curr_hp:>3}" if curr_hp <= 999 and curr_hp >= -99 else "???"
                 max_hp_str = f"{max_hp:>3}" if max_hp <= 999 else "???"
                 hp_text = f"HP{curr_hp_str}/{max_hp_str}"
 
