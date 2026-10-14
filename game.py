@@ -14,6 +14,7 @@ import re
 import atexit
 import time
 import contextlib
+import math
 from dungeon import DungeonFloor, WALL_CHAR, FLOOR_CHAR, get_target_floor_width
 import input as game_input
 from pokemon import Pokemon  #type: ignore
@@ -85,6 +86,31 @@ WEATHER_CONDITIONS = [
     "Misty Terrain",
     "Psychic Terrain",
 ]
+
+ANIMATED_PARTICLE_WEATHERS = {
+    "Rain",
+    "Hail",
+    "Sandstorm",
+    "Snow",
+    "Blizzard",
+    "Heavy Rain",
+    "Thunderstorm",
+    "Strong Winds",
+}
+
+TERRAIN_WEATHERS = {
+    "Grassy Terrain",
+    "Electric Terrain",
+    "Psychic Terrain",
+    "Misty Terrain",
+}
+
+TERRAIN_COLORS = {
+    "Grassy Terrain": "\033[92m",
+    "Electric Terrain": "\033[93m",
+    "Psychic Terrain": "\033[35m",
+    "Misty Terrain": "\033[95m",
+}
 
 GAME_LOGO_LINES = [
     "                                      █                                 ",
@@ -289,6 +315,13 @@ class Game:
         self.base_weather = "Clear"
         self.weather = "Clear"
         self.weather_turns_left = 0
+        self.weather_particles: list[dict] = []
+        self._current_particle_weather: str | None = None
+        self.thunderstorm_flash: bool = False
+        self._thunderstorm_flash_cooldown: int = 0
+        self.terrain_spread_radius: int | None = None
+        self.terrain_spread_center: tuple[int, int] | None = None
+        self.terrain_spread_color: str | None = None
         self.floor_visibility_reduction = 0
         self.wonder_room_turns = 0
         self.look_around_mode = False #Game mode used when pressing "l", displays descriptions of items
@@ -745,7 +778,7 @@ class Game:
         #Second roll succeeded
         return 2
 
-    def set_weather(self, weather: str, duration: int = 0):
+    def set_weather(self, weather: str, duration: int = 0, source: Pokemon | tuple[int, int] | None = None):
         """Sets the dungeon weather and prints the appropriate message"""
         msg_map = {
             "Sunny": "The sunlight turned harsh!",
@@ -755,6 +788,7 @@ class Game:
             "Clear": "The weather cleared up.",
             "Grassy Terrain": "Grass grew to cover the dungeon!",
             "Electric Terrain": "An electric current runs across the dungeon!",
+            "Psychic Terrain": "Strange sensations enveloped the dungeon!",
             "Misty Terrain": "Mist swirls around the dungeon!",
             "Cloudy": "It became cloudy.",
             "Fog": "A deep fog set in!",
@@ -773,6 +807,18 @@ class Game:
         self.weather_turns_left = duration
         if weather in msg_map:
             self.log_message(msg_map[weather])
+
+        if weather in ANIMATED_PARTICLE_WEATHERS:
+            self._current_particle_weather = weather
+            self.init_weather_particles(weather)
+        else:
+            self.weather_particles = []
+            self._current_particle_weather = None
+            self.thunderstorm_flash = False
+
+        if source is not None and weather in TERRAIN_WEATHERS:
+            self.animate_terrain_spread(weather, source)
+
         if weather == "Misty Terrain":
             from combat import is_pokemon_grounded
             all_pokes = list(getattr(self, "party", [])) + list(getattr(self, "spawned_pokemon", []))
@@ -791,6 +837,160 @@ class Game:
             for p in all_pokes:
                 if p.status_effects.get("Burn"):
                     p.cure_status("Burn", self)
+
+    def get_weather_particle_density(self, weather: str) -> int:
+        """Returns the target particle count for animated weather"""
+        if weather in ("Blizzard", "Heavy Rain", "Thunderstorm"):
+            return 36
+        elif weather == "Sandstorm":
+            return 24
+        elif weather in ("Rain", "Hail", "Snow", "Strong Winds"):
+            return 18
+        return 0
+
+    def create_weather_particle(self, weather: str, x: int | None = None, y: int | None = None) -> dict | None:
+        """Creates a single particle dict for the given weather"""
+        w = getattr(self.floor, "width", 56) if hasattr(self, "floor") and self.floor else 56
+        h = getattr(self.floor, "height", 32) if hasattr(self, "floor") and self.floor else 32
+
+        if weather in ("Rain", "Heavy Rain", "Thunderstorm"):
+            char = ","
+            color = "\033[94m"
+            is_fast = weather in ("Heavy Rain", "Thunderstorm")
+            dy = 2 if is_fast else 1
+            dx = random.choice([-2, -1, 0, 1, 2]) if is_fast else random.choice([-1, 0, 1])
+            spawn_x = random.randint(0, max(0, w - 1)) if x is None else x
+            spawn_y = 0 if y is None else y
+            return {"x": spawn_x, "y": spawn_y, "char": char, "color": color, "dx": dx, "dy": dy}
+        elif weather == "Hail":
+            char = "•"
+            color = "\033[97m"
+            dy = 1
+            dx = random.choice([-1, 0, 1])
+            spawn_x = random.randint(0, max(0, w - 1)) if x is None else x
+            spawn_y = 0 if y is None else y
+            return {"x": spawn_x, "y": spawn_y, "char": char, "color": color, "dx": dx, "dy": dy}
+        elif weather in ("Snow", "Blizzard"):
+            char = "☼"
+            color = "\033[97m"
+            is_fast = weather == "Blizzard"
+            dy = 2 if is_fast else 1
+            dx = random.choice([-2, -1, 0, 1, 2]) if is_fast else random.choice([-1, 0, 1])
+            spawn_x = random.randint(0, max(0, w - 1)) if x is None else x
+            spawn_y = 0 if y is None else y
+            return {"x": spawn_x, "y": spawn_y, "char": char, "color": color, "dx": dx, "dy": dy}
+        elif weather == "Sandstorm":
+            char = random.choice(["░", "▒", "▓"])
+            color = "\033[93m"
+            dx = random.choice([1, 2])
+            dy = random.choice([-1, 0, 1])
+            spawn_x = 0 if x is None else x
+            spawn_y = random.randint(0, max(0, h - 1)) if y is None else y
+            return {"x": spawn_x, "y": spawn_y, "char": char, "color": color, "dx": dx, "dy": dy}
+        elif weather == "Strong Winds":
+            char = "¬"
+            color = "\033[97m"
+            dx = random.choice([2, 3])
+            dy = random.choice([-1, 0, 1])
+            spawn_x = 0 if x is None else x
+            spawn_y = random.randint(0, max(0, h - 1)) if y is None else y
+            return {"x": spawn_x, "y": spawn_y, "char": char, "color": color, "dx": dx, "dy": dy}
+        return None
+
+    def init_weather_particles(self, weather: str):
+        """Initializes particles distributed across the map for the given weather"""
+        self.weather_particles = []
+        if weather not in ANIMATED_PARTICLE_WEATHERS:
+            return
+        w = getattr(self.floor, "width", 56) if hasattr(self, "floor") and self.floor else 56
+        h = getattr(self.floor, "height", 32) if hasattr(self, "floor") and self.floor else 32
+        count = self.get_weather_particle_density(weather)
+        for _ in range(count):
+            p = self.create_weather_particle(
+                weather,
+                x=random.randint(0, max(0, w - 1)),
+                y=random.randint(0, max(0, h - 1))
+            )
+            if p:
+                self.weather_particles.append(p)
+
+    def update_weather_particles(self):
+        """Updates weather particle positions, spawns new ones, and handles weather flashes"""
+        weather = getattr(self, "weather", "Clear")
+        if weather not in ANIMATED_PARTICLE_WEATHERS:
+            self.weather_particles = []
+            self._current_particle_weather = None
+            self.thunderstorm_flash = False
+            return
+
+        if self._current_particle_weather != weather:
+            self._current_particle_weather = weather
+            self.init_weather_particles(weather)
+            return
+
+        w = getattr(self.floor, "width", 56) if hasattr(self, "floor") and self.floor else 56
+        h = getattr(self.floor, "height", 32) if hasattr(self, "floor") and self.floor else 32
+
+        # Advance existing particles
+        remaining = []
+        for p in self.weather_particles:
+            p["x"] += p["dx"]
+            p["y"] += p["dy"]
+            if 0 <= p["x"] < w and 0 <= p["y"] < h:
+                remaining.append(p)
+        self.weather_particles = remaining
+
+        # Replenish particles up to target density
+        target_count = self.get_weather_particle_density(weather)
+        needed = target_count - len(self.weather_particles)
+        for _ in range(max(0, needed)):
+            p = self.create_weather_particle(weather)
+            if p:
+                self.weather_particles.append(p)
+
+        # Thunderstorm lightning flash handling
+        if weather == "Thunderstorm":
+            self._thunderstorm_flash_cooldown -= 1
+            if self._thunderstorm_flash_cooldown <= 0:
+                if random.random() < 0.25:
+                    self.thunderstorm_flash = True
+                    self._thunderstorm_flash_cooldown = random.randint(6, 12)
+                else:
+                    self._thunderstorm_flash_cooldown = random.randint(2, 5)
+
+    def animate_terrain_spread(self, weather: str, source: Pokemon | tuple[int, int] | None = None):
+        """Animates a circle of terrain color spreading from the source across the dungeon"""
+        color = TERRAIN_COLORS.get(weather)
+        if not color or not hasattr(self, "floor") or self.floor is None:
+            return
+
+        cx, cy = self.player_x, self.player_y
+        if isinstance(source, Pokemon):
+            pos = get_pokemon_position(self, source)
+            if pos:
+                cx, cy = pos
+        elif isinstance(source, (tuple, list)) and len(source) >= 2:
+            cx, cy = source[0], source[1]
+
+        w = self.floor.width
+        h = self.floor.height
+        max_dist = int(math.ceil(math.hypot(max(cx, w - 1 - cx), max(cy, h - 1 - cy))))
+
+        self.terrain_spread_center = (cx, cy)
+        self.terrain_spread_color = color
+
+        with self.animation_pause():
+            step_size = 2
+            for r in range(0, max_dist + step_size + 1, step_size):
+                self.terrain_spread_radius = r
+                self.render()
+                sys.stdout.flush()
+                if not getattr(self, "suppress_animation_delay", False):
+                    time.sleep(0.04)
+
+        self.terrain_spread_radius = None
+        self.terrain_spread_center = None
+        self.terrain_spread_color = None
 
     def get_status_line(self, pokemon: Pokemon, max_len: int = 56) -> str:
         """Formats the status line of a Pokémon's party window, truncated to fit max_len"""
@@ -4218,7 +4418,7 @@ class Game:
                 duration = effect.get("duration", 0)
                 if duration <= 0 and weather_name != "Clear":
                     duration = random.randint(10, 20)
-                self.set_weather(weather_name, duration)
+                self.set_weather(weather_name, duration, source=attacker)
             elif eff_type == "rapid_spin_clear":
                 eff_target.cure_status("Leech Seed", self)
             elif eff_type == "cure_all_statuses":
@@ -6081,7 +6281,7 @@ class Game:
 
         #Electric Terrain custom handling
         if move.get("name") == "Electric Terrain":
-            self.set_weather("Electric Terrain", duration=random.randint(10, 20))
+            self.set_weather("Electric Terrain", duration=random.randint(10, 20), source=attacker)
             for p in list(self.party + self.spawned_pokemon):
                 p_types = getattr(p, "temp_types", None) or p.species_data.get("types", [])
                 if "Flying" not in p_types:
@@ -12588,6 +12788,24 @@ class Game:
         shake_x, shake_y = getattr(self, "map_shake_offset", (0, 0))
         blanked_tiles: set[tuple[int, int]] = getattr(self, "collapse_blanked_tiles", set())
 
+        weather_particle_map = {
+            (p["x"], p["y"]): p for p in getattr(self, "weather_particles", [])
+        }
+        active_weather = getattr(self, "weather", "Clear")
+        current_terrain_color = TERRAIN_COLORS.get(active_weather, None)
+        spread_radius = getattr(self, "terrain_spread_radius", None)
+        spread_center = getattr(self, "terrain_spread_center", None)
+        spread_color = getattr(self, "terrain_spread_color", None)
+        memory_color = "\033[35m" if active_weather == "Shadowy Aura" else "\033[90m"
+
+        def get_tile_terrain_color(tx: int, ty: int) -> str | None:
+            if spread_radius is not None and spread_center is not None:
+                dist = math.hypot(tx - spread_center[0], ty - spread_center[1])
+                if dist <= spread_radius:
+                    return spread_color
+                return None
+            return current_terrain_color
+
         for y in range(self.floor.height):
             row_chars = []
             skip_x = 0
@@ -12689,24 +12907,31 @@ class Game:
                         else:
                             item = self.items_on_floor[(src_x, src_y)]
                             row_chars.append(self.get_item_render_char(item, is_visible=True))
+                    elif (src_x, src_y) in weather_particle_map:
+                        p = weather_particle_map[(src_x, src_y)]
+                        row_chars.append(f"{p['color']}{p['char']}\033[0m")
                     else:
                         grid_char = self.floor.grid[src_y][src_x]
                         if is_hallucinating:
                             row_chars.append(f"{random.choice(SCINTILLATING_COLORS)}{grid_char}\033[0m")
                         else:
-                            row_chars.append(grid_char)
+                            t_color = get_tile_terrain_color(src_x, src_y)
+                            if t_color:
+                                row_chars.append(f"{t_color}{grid_char}\033[0m")
+                            else:
+                                row_chars.append(grid_char)
                 elif (src_x, src_y) in self.explored_tiles or getattr(self, "scanner_active", False) or getattr(self, "stairs_revealed", False):
                     is_hallucinating = bool(getattr(self.player_pokemon, "status_effects", {}).get("Hallucinating", 0) > 0)
                     if (src_x, src_y) == getattr(self, "stairs_position", None) and ((src_x, src_y) in self.explored_tiles or getattr(self, "stairs_revealed", False)):
                         if is_hallucinating:
                             row_chars.append(f"{random.choice(SCINTILLATING_COLORS)}>\033[0m")
                         else:
-                            row_chars.append("\033[93m>\033[0m" if getattr(self, "stairs_revealed", False) else "\033[90m>\033[0m")
+                            row_chars.append("\033[93m>\033[0m" if getattr(self, "stairs_revealed", False) else f"{memory_color}>\033[0m")
                     elif (src_x, src_y) == getattr(self, "wonder_tile_position", None) and (src_x, src_y) in self.explored_tiles:
                         if is_hallucinating:
                             row_chars.append(f"{random.choice(SCINTILLATING_COLORS)}↑\033[0m")
                         else:
-                            row_chars.append("\033[90m↑\033[0m")
+                            row_chars.append(f"{memory_color}↑\033[0m")
                     elif (src_x, src_y) in self.items_on_floor and ((src_x, src_y) in self.explored_tiles or getattr(self, "scanner_active", False)):
                         if is_hallucinating:
                             fake_item = random.choice(list(items.ITEMS_DB.values()))
@@ -12714,16 +12939,27 @@ class Game:
                         else:
                             item = self.items_on_floor[(src_x, src_y)]
                             row_chars.append(self.get_item_render_char(item, is_visible=False))
+                    elif (src_x, src_y) in weather_particle_map:
+                        p = weather_particle_map[(src_x, src_y)]
+                        row_chars.append(f"{p['color']}{p['char']}\033[0m")
                     elif (src_x, src_y) in self.explored_tiles:
                         grid_char = self.floor.grid[src_y][src_x]
                         if is_hallucinating:
                             row_chars.append(f"{random.choice(SCINTILLATING_COLORS)}{grid_char}\033[0m")
                         else:
-                            row_chars.append(f"\033[90m{grid_char}\033[0m")
+                            t_color = get_tile_terrain_color(src_x, src_y) if spread_radius is not None else None
+                            if t_color:
+                                row_chars.append(f"{t_color}{grid_char}\033[0m")
+                            else:
+                                row_chars.append(f"{memory_color}{grid_char}\033[0m")
                     else:
                         row_chars.append(" ")
                 else:
-                    row_chars.append(" ")
+                    if (src_x, src_y) in weather_particle_map:
+                        p = weather_particle_map[(src_x, src_y)]
+                        row_chars.append(f"{p['color']}{p['char']}\033[0m")
+                    else:
+                        row_chars.append(" ")
             output_rows.append("".join(row_chars))
         return self.sanitize_rendered_rows(output_rows)
 
@@ -12779,7 +13015,7 @@ class Game:
                 "Electric Terrain": "\033[93m",
                 "Psychic Terrain": "\033[95m",
                 "Grassy Terrain": "\033[92m",
-                "Misty Terrain": "\033[97m",
+                "Misty Terrain": "\033[95m",
                 "Snow": "\033[97m",
                 "Harsh Sunlight": "\033[93m",
                 "Heavy Rain": "\033[94m",
@@ -12982,6 +13218,19 @@ class Game:
 
             prefix = "\033[2J\033[3J\033[H"
             output_buffer = prefix + "\n".join(rows) + "\n\033[J"
+            if getattr(self, "thunderstorm_flash", False) and screen_view == "gameplay":
+                flash_rows = [f"\033[7m{r}\033[0m" for r in rows]
+                flash_buffer = prefix + "\n".join(flash_rows) + "\n\033[J"
+                try:
+                    sys.stdout.write(flash_buffer)
+                except UnicodeEncodeError:
+                    clean_rows = [r.encode("ascii", "replace").decode("ascii") for r in flash_rows]
+                    sys.stdout.write(prefix + "\n".join(clean_rows) + "\n\033[J")
+                sys.stdout.flush()
+                self.thunderstorm_flash = False
+                if not getattr(self, "suppress_animation_delay", False):
+                    time.sleep(0.04)
+
             try:
                 sys.stdout.write(output_buffer)
             except UnicodeEncodeError:
@@ -14742,10 +14991,16 @@ class Game:
                     needs_flash = True
                     break
 
+            has_weather_anim = getattr(self, "weather", "Clear") in ANIMATED_PARTICLE_WEATHERS
             if getattr(self, "active_status_pokemon", None) is not None:
                 timeout = None
             else:
-                timeout = 0.5 if (needs_flash or getattr(self, "look_around_mode", False)) else None
+                if has_weather_anim:
+                    timeout = 0.1
+                elif needs_flash or getattr(self, "look_around_mode", False):
+                    timeout = 0.5
+                else:
+                    timeout = None
             self.party_start_positions = {p: get_pokemon_position(self, p) for p in self.party}
             try:
                 action = game_input.get_key(timeout=timeout)
@@ -14757,6 +15012,8 @@ class Game:
                 #Timeout occurred - re-render to update warning flashing states
                 if getattr(self, "look_around_mode", False):
                     self.look_around_cursor_visible = not self.look_around_cursor_visible
+                if has_weather_anim:
+                    self.update_weather_particles()
                 self.render()
                 continue
 
