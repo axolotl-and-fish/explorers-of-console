@@ -7835,7 +7835,7 @@ class Game:
             for st in getattr(member, "stat_modifiers", {}):
                 if member.stat_modifiers[st] < 0:
                     member.stat_modifiers[st] = 0
-            self.log_message(f"{member.name} was revived by Degreelessness Mode!", important=True)
+            self.log_message(f"{member.name} was revived!", important=True)
             return True
 
         if getattr(member, "cannot_be_revived", False):
@@ -13116,7 +13116,7 @@ class Game:
                 #Line 2: HP (9) + HP gauge (7)
                 curr_hp = int(pokemon.current_hp)
                 max_hp = pokemon.stats["HP"]
-                curr_hp_str = f"{curr_hp:>3}" if curr_hp <= 999 and curr_hp >= -99 else "???"
+                curr_hp_str = f"{curr_hp:>3}" if curr_hp <= 999 else "???"
                 max_hp_str = f"{max_hp:>3}" if max_hp <= 999 else "???"
                 hp_text = f"HP{curr_hp_str}/{max_hp_str}"
 

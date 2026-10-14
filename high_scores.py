@@ -12,7 +12,7 @@ Manages the HIGHSCORES file, which stores high scores (duh), and also handles re
 
 import os
 import json
-import base64
+import zlib
 import hashlib
 import datetime
 
@@ -49,28 +49,37 @@ def load_high_scores() -> list[dict]:
         return []
 
     try:
-        with open(filepath, "r", encoding="utf-8") as f:
-            content = f.read().strip()
+        with open(filepath, "rb") as f:
+            raw_bytes = f.read()
 
-        if not content:
+        if not raw_bytes:
             return []
 
-        #Decode outer container
-        container_bytes = base64.b64decode(content)
-        container = json.loads(container_bytes.decode("utf-8"))
+        container_json = zlib.decompress(raw_bytes).decode("utf-8")
+        container = json.loads(container_json)
 
         stored_checksum = container.get("checksum")
-        encoded_payload = container.get("payload")
+        payload = container.get("payload")
 
-        if not stored_checksum or not encoded_payload:
+        if not stored_checksum or payload is None:
             wipe_high_scores()
             return []
 
-        raw_json_bytes = base64.b64decode(encoded_payload)
-        raw_json = raw_json_bytes.decode("utf-8")
-
-        expected_checksum = compute_checksum(raw_json)
-        if stored_checksum != expected_checksum:
+        raw_json = None
+        if isinstance(payload, str):
+            if compute_checksum(payload) == stored_checksum:
+                raw_json = payload
+            else:
+                wipe_high_scores()
+                return []
+        elif isinstance(payload, list):
+            cand_json = json.dumps(payload, separators=(",", ":"))
+            if compute_checksum(cand_json) == stored_checksum:
+                raw_json = cand_json
+            else:
+                wipe_high_scores()
+                return []
+        else:
             wipe_high_scores()
             return []
 
@@ -92,32 +101,30 @@ def load_high_scores() -> list[dict]:
 
 
 def save_high_scores(scores: list[dict]):
-    """Saves high scores into save_data/HIGHSCORES with encoding and checksum. Up to 50 can be stored."""
+    """Saves high scores into save_data/HIGHSCORES with compression and checksum. Up to 50 can be stored."""
     filepath = get_high_scores_filepath()
     os.makedirs(os.path.dirname(filepath), exist_ok=True)
 
-    #Sort descending by score
+    # Sort descending by score
     scores = sorted(scores, key=lambda x: int(x.get("score", 0)), reverse=True)
 
-    #Cap at top 50 scores 
-    #This limit is arbitrary and can be increased, though it will increase the size of the HIGHSCORE file, and in extreme cases lead to extra decoding time. The High Score screen is only designed for 50 at most anyway.
+    # Cap at top 50 scores 
+    # This limit is arbitrary and can be increased, though it will increase the size of the HIGHSCORE file, and in extreme cases lead to extra decoding time. The High Score screen is only designed for 50 at most anyway.
     scores = scores[:50]
 
     raw_json = json.dumps(scores, separators=(",", ":"))
     checksum = compute_checksum(raw_json)
-    encoded_payload = base64.b64encode(raw_json.encode("utf-8")).decode("utf-8")
 
     container = {
         "checksum": checksum,
-        "payload": encoded_payload
+        "payload": raw_json
     }
 
     container_json = json.dumps(container, separators=(",", ":"))
-    content = base64.b64encode(container_json.encode("utf-8")).decode("utf-8")
+    compressed_bytes = zlib.compress(container_json.encode("utf-8"), level=9)
 
-    filepath = get_high_scores_filepath()
-    with open(filepath, "w", encoding="utf-8") as f:
-        f.write(content)
+    with open(filepath, "wb") as f:
+        f.write(compressed_bytes)
 
 
 def add_high_score(score: int, floor: str | int, turns: int, dt_iso: str | None = None) -> list[dict]:

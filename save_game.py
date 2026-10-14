@@ -12,7 +12,7 @@ Handles everything to do with saving and loading games; saving, encoding, valida
 
 import os
 import json
-import base64
+import zlib
 import hashlib
 import uuid
 import datetime
@@ -42,8 +42,13 @@ def serialize_pokemon(poke: Pokemon) -> dict:
     moves_data = []
     if hasattr(poke, "moves") and poke.moves:
         for m in poke.moves:
-            if isinstance(m, dict):
-                moves_data.append(dict(m))
+            if isinstance(m, dict) and "name" in m:
+                if m.get("enabled") is False:
+                    moves_data.append({"name": m["name"], "enabled": False})
+                else:
+                    moves_data.append(m["name"])
+            elif isinstance(m, str):
+                moves_data.append(m)
 
     damaged_by = {}
     for p, turn in getattr(poke, "damaged_by_pokemons", {}).items():
@@ -126,7 +131,7 @@ def serialize_pokemon(poke: Pokemon) -> dict:
         "original_species_name": getattr(poke, "original_species_name", None),
         "original_name": getattr(poke, "original_name", None),
         "original_stats": dict(poke.original_stats) if poke.original_stats is not None else None,
-        "original_moves": list(poke.original_moves) if poke.original_moves is not None else None,
+        "original_moves": [m["name"] if isinstance(m, dict) and "name" in m else str(m) for m in poke.original_moves] if poke.original_moves is not None else None,
     }
 
 
@@ -183,7 +188,27 @@ def deserialize_pokemon(data: dict) -> Pokemon | None:
     poke.slow_turn_toggle = data.get("slow_turn_toggle", False)
 
     if "moves" in data and isinstance(data["moves"], list):
-        poke.moves = [dict(m) for m in data["moves"]]
+        from pokemon import _get_move_data
+        restored_moves = []
+        for m in data["moves"]:
+            if isinstance(m, str):
+                try:
+                    restored_moves.append(_get_move_data(m))
+                except Exception:
+                    restored_moves.append({"name": m})
+            elif isinstance(m, dict):
+                name = m.get("name")
+                if name and len(m) <= 2:
+                    try:
+                        base = _get_move_data(name)
+                        if "enabled" in m:
+                            base["enabled"] = m["enabled"]
+                        restored_moves.append(base)
+                    except Exception:
+                        restored_moves.append(dict(m))
+                else:
+                    restored_moves.append(dict(m))
+        poke.moves = restored_moves
 
     poke.fake_out_used_this_floor = data.get("fake_out_used_this_floor", False)
     poke.disable_move_effect = data.get("disable_move_effect")
@@ -230,7 +255,20 @@ def deserialize_pokemon(data: dict) -> Pokemon | None:
     poke.original_species_name = data.get("original_species_name")
     poke.original_name = data.get("original_name")
     poke.original_stats = dict(data["original_stats"]) if data.get("original_stats") else None
-    poke.original_moves = list(data["original_moves"]) if data.get("original_moves") else None
+    if data.get("original_moves"):
+        from pokemon import _get_move_data
+        restored_orig = []
+        for m in data["original_moves"]:
+            if isinstance(m, str):
+                try:
+                    restored_orig.append(_get_move_data(m))
+                except Exception:
+                    restored_orig.append({"name": m})
+            elif isinstance(m, dict):
+                restored_orig.append(dict(m))
+        poke.original_moves = restored_orig
+    else:
+        poke.original_moves = None
 
     return poke
 
@@ -427,9 +465,6 @@ def apply_game_state(game, state_dict: dict):
     """Restores a Game instance to match the serialized state_dict (when loading a save)"""
     import time
     game.cheated = bool(state_dict.get("cheated", False) or getattr(game, "debug_mode", False))
-    game.omniscience_mode = False
-    game.degreelessness_mode = False
-    game.always_recruit_pokemon = False
     game.floor_number = state_dict.get("floor_number", 1)
     default_timer = 500 + 10 * game.floor_number
     game.floor_timer = state_dict.get("floor_timer", default_timer)
@@ -667,7 +702,7 @@ def apply_game_state(game, state_dict: dict):
 
 
 def save_game(game) -> str:
-    """Serializes and saves the game state to a PECSAV file (it's just plaintext)"""
+    """Serializes, compresses, and saves the game state to a PECSAV file using raw binary."""
     save_dir = get_save_dir()
     dt_str = datetime.datetime.now().strftime("%Y%m%d%H%M%S")
     filename = f"save-{dt_str}.pecsav"
@@ -685,10 +720,10 @@ def save_game(game) -> str:
     }
 
     container_json = json.dumps(container, sort_keys=True, separators=(",", ":"))
-    encoded_bytes = base64.b64encode(container_json.encode("utf-8"))
+    compressed_bytes = zlib.compress(container_json.encode("utf-8"), level=9)
 
     with open(filepath, "wb") as f:
-        f.write(encoded_bytes)
+        f.write(compressed_bytes)
 
     return filepath
 
@@ -699,9 +734,12 @@ def validate_save_file(filepath: str) -> tuple[bool, dict | None]:
         return False, None
     try:
         with open(filepath, "rb") as f:
-            encoded_bytes = f.read()
+            raw_bytes = f.read()
 
-        container_json = base64.b64decode(encoded_bytes).decode("utf-8")
+        if not raw_bytes:
+            return False, None
+
+        container_json = zlib.decompress(raw_bytes).decode("utf-8")
         container = json.loads(container_json)
 
         checksum = container.get("checksum")
