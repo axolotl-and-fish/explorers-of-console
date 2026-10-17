@@ -100,7 +100,13 @@ def load_moves_database(filepath: str | None = None) -> list[dict]:
             if not (0 <= accuracy <= 100):
                 raise ValueError(f"Field 'accuracy' must be between 0 and 100, got {accuracy} in '{entry['name']}'")
 
-        #6. Effects list structure check
+        #6. Animation ID Check (optional field, must be a non-empty string if present)
+        if "animation" in entry:
+            anim = entry["animation"]
+            if not isinstance(anim, str) or not anim.strip():
+                raise ValueError(f"Field 'animation' must be a non-empty string in '{entry['name']}'")
+
+        #7. Effects list structure check
         effects = entry["effects"]
         for index, eff in enumerate(effects):
             if not isinstance(eff, dict):

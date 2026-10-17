@@ -346,6 +346,7 @@ class Game:
         self.flying_item_animation: dict | None = None #Airborne items play an animation
         self.suppress_animation_delay: bool = False #TODO: Add a settings screen that allows this to be toggled at any time
         self.explosion_overlays: dict[tuple[int, int], str] = {}
+        self.move_animation_overlays: dict[tuple[int, int], str] = {}
         self.exp_batching_active: bool = False
         self.pending_team_exp: int = 0
         self.pending_member_exp: dict = {}
@@ -3889,6 +3890,7 @@ class Game:
                 self.log_message(f"Error! {str(e)}")
                 return
             self.start_player_action()
+            self.play_move_animation(self.player_pokemon, [], move)
             self.floor_luminous = True
             self.log_message(f"{self.player_pokemon.name} used Flash!")
             self.log_message("The floor was illuminated!")
@@ -4251,6 +4253,58 @@ class Game:
                     self.spawned_pokemon.remove(target)
                 elif target in self.party:
                     self.remove_party_member(target)
+
+    def play_move_animation(self, attacker: Pokemon, targets: Pokemon | list[Pokemon] | None, move: dict) -> None:
+        """Plays a move's animation before damage or status effects are applied.
+        """
+        if not move:
+            return
+        move_name = move.get("name", "")
+        #Explosion, Self-Destruct, and Terrain moves already have dedicated animations
+        if move_name in ("Explosion", "Self-Destruct", "Grassy Terrain", "Electric Terrain", "Psychic Terrain", "Misty Terrain"):
+            return
+
+        import move_animations
+        frames = move_animations.get_move_animation_frames(self, attacker, targets, move)
+        if not frames:
+            return
+
+        #Visibility check: if no frame overlay is visible to the player, skip delay
+        currently_visible = self._compute_currently_visible()
+        all_anim_tiles = set().union(*(frame.overlays.keys() for frame in frames))
+        any_visible = any(tile in currently_visible for tile in all_anim_tiles)
+        if not any_visible:
+            return
+
+        is_suppressed = getattr(self, "suppress_animation_delay", False)
+
+        with self.animation_pause():
+            try:
+                for frame in frames:
+                    self.move_animation_overlays = frame.overlays
+                    if frame.shake > 0 and not is_suppressed:
+                        ox = random.choice([-frame.shake, frame.shake])
+                        oy = random.choice([-frame.shake, frame.shake])
+                        self.map_shake_offset = (ox, oy)
+                    else:
+                        self.map_shake_offset = (0, 0)
+
+                    self.render()
+                    if not is_suppressed:
+                        try:
+                            sys.stdout.flush()
+                        except Exception:
+                            pass
+                        time.sleep(frame.delay)
+            finally:
+                self.move_animation_overlays = {}
+                self.map_shake_offset = (0, 0)
+                if not is_suppressed:
+                    self.render()
+                    try:
+                        sys.stdout.flush()
+                    except Exception:
+                        pass
                     
     def find_nearest_empty_tile(self, start_x: int, start_y: int, exclude_pokemon: Pokemon | None = None) -> tuple[int, int]:
         """Finds the nearest walkable tile that is not occupied by another Pokémon using BFS."""
@@ -7729,6 +7783,7 @@ class Game:
             valid_snore = [d for d in adj_enemies if int(getattr(d, "current_hp", 0)) > 0]
             is_multi_snore = len(valid_snore) > 1
             if valid_snore:
+                self.play_move_animation(attacker, valid_snore, move)
                 for defender in valid_snore:
                     self._process_single_target_hit(attacker, defender, move, is_multi_target=is_multi_snore, free=True)
             else:
@@ -7738,6 +7793,8 @@ class Game:
 
         valid_targets = [d for d in target_list if int(getattr(d, "current_hp", 0)) > 0]
         is_multi = len(valid_targets) > 1
+
+        self.play_move_animation(attacker, target_list, move)
 
         for defender in list(target_list):
             if int(defender.current_hp) > 0:
@@ -12824,6 +12881,8 @@ class Game:
                 anim = self.flying_item_animation
                 if (src_x, src_y) in getattr(self, "explosion_overlays", {}):
                     row_chars.append(self.explosion_overlays[(src_x, src_y)])
+                elif (src_x, src_y) in getattr(self, "move_animation_overlays", {}) and (src_x, src_y) in currently_visible:
+                    row_chars.append(self.move_animation_overlays[(src_x, src_y)])
                 elif anim is not None and (src_x, src_y) == (anim["x"], anim["y"]) and (src_x, src_y) in currently_visible:
                     row_chars.append(f"{anim['color']}{anim['char']}\033[0m")
                 elif getattr(self, "look_around_mode", False) and src_x == self.look_around_cursor[0] and src_y == self.look_around_cursor[1] and getattr(self, "look_around_cursor_visible", True):
