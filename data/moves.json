@@ -19,7 +19,7 @@
     "accuracy": 100,
     "range": "All enemies in room",
     "pp_cost": 1,
-	"sound_based": true,
+    "sound_based": true,
     "effects": [
       {
         "effect_type": "stat_change",
@@ -27,7 +27,8 @@
         "stages": -1,
         "chance": 1.0
       }
-    ]
+    ],
+    "animation": "status_wave"
   },
   {
     "name": "Vine Whip",
@@ -38,7 +39,8 @@
     "accuracy": 100,
     "range": "Enemy up to 2 tiles away",
     "pp_cost": 4,
-    "effects": []
+    "effects": [],
+    "animation": "vine_whip"
   },
   {
     "name": "Growth",
@@ -74,7 +76,8 @@
     "range": "Adjacent enemy",
     "pp_cost": 7,
     "cuts_corners": true,
-    "effects": []
+    "effects": [],
+    "animation": "seed_bomb"
   },
   {
     "name": "Power Whip",
@@ -102,7 +105,8 @@
         "status": "Leech Seed",
         "chance": 1.0
       }
-    ]
+    ],
+    "animation": "leech_seed"
   },
   {
     "name": "Razor Leaf",
@@ -114,7 +118,8 @@
     "range": "Straight line",
     "pp_cost": 4,
     "high_crit_ratio": true,
-    "effects": []
+    "effects": [],
+    "animation": "razor_leaf"
   },
   {
     "name": "Poison Powder",
@@ -183,7 +188,8 @@
         "stages": -1,
         "chance": 1.0
       }
-    ]
+    ],
+    "animation": "status_wave"
   },
   {
     "name": "Synthesis",
@@ -218,7 +224,8 @@
         "status": "Sleepless",
         "chance": 1.0
       }
-    ]
+    ],
+    "animation": "worry_seed"
   },
   {
     "name": "Solar Beam",
@@ -230,7 +237,8 @@
     "range": "Straight line up to 4 tiles",
     "cuts_corners": true,
     "pp_cost": 6,
-    "effects": []
+    "effects": [],
+    "animation": "solar_beam"
   },
   {
     "name": "Petal Blizzard",
@@ -241,7 +249,8 @@
     "accuracy": 90,
     "range": "All enemies in room",
     "pp_cost": 8,
-    "effects": []
+    "effects": [],
+    "animation": "petal_blizzard"
   },
   {
     "name": "Petal Dance",
@@ -283,7 +292,8 @@
         "status": "Flinch",
         "chance": 0.3
       }
-    ]
+    ],
+    "animation": "slash"
   },
   {
     "name": "Ember",
@@ -301,7 +311,8 @@
         "status": "Burn",
         "chance": 0.1
       }
-    ]
+    ],
+    "animation": "ember"
   },
   {
     "name": "Smokescreen",
@@ -330,7 +341,8 @@
     "accuracy": 100,
     "range": "Adjacent enemy",
     "pp_cost": 5,
-    "effects": []
+    "effects": [],
+    "animation": "slash"
   },
   {
     "name": "Heat Wave",
@@ -347,7 +359,8 @@
         "status": "Burn",
         "chance": 0.1
       }
-    ]
+    ],
+    "animation": "heat_wave"
   },
   {
     "name": "Blizzard",
@@ -364,7 +377,8 @@
         "status": "Frozen",
         "chance": 0.1
       }
-    ]
+    ],
+    "animation": "blizzard"
   },
   {
     "name": "Dragon Breath",
@@ -376,14 +390,15 @@
     "range": "Straight line up to 4 tiles",
     "cuts_corners": true,
     "pp_cost": 6,
-	"sound_based": true,
+    "sound_based": true,
     "effects": [
       {
         "effect_type": "status_apply",
         "status": "Paralysis",
         "chance": 0.3
       }
-    ]
+    ],
+    "animation": "dragon_breath"
   },
   {
     "name": "Fire Fang",
@@ -394,7 +409,7 @@
     "accuracy": 95,
     "range": "Adjacent enemy",
     "pp_cost": 6,
-	"sound_based": true,
+    "sound_based": true,
     "effects": [
       {
         "effect_type": "status_apply",
@@ -406,7 +421,8 @@
         "status": "Flinch",
         "chance": 0.1
       }
-    ]
+    ],
+    "animation": "bite"
   },
   {
     "name": "Slash",
@@ -418,7 +434,8 @@
     "range": "Adjacent enemy",
     "pp_cost": 5,
     "high_crit_ratio": true,
-    "effects": []
+    "effects": [],
+    "animation": "slash"
   },
   {
     "name": "Flamethrower",
@@ -435,7 +452,8 @@
         "status": "Burn",
         "chance": 0.1
       }
-    ]
+    ],
+    "animation": "flamethrower"
   },
   {
     "name": "Scary Face",
@@ -536,7 +554,8 @@
     "accuracy": 100,
     "range": "Enemy up to 2 tiles away",
     "pp_cost": 4,
-    "effects": []
+    "effects": [],
+    "animation": "water_gun"
   },
   {
     "name": "Harden",
@@ -584,14 +603,15 @@
     "accuracy": 100,
     "range": "Adjacent enemy",
     "pp_cost": 6,
-	"sound_based": true,
+    "sound_based": true,
     "effects": [
       {
         "effect_type": "status_apply",
         "status": "Flinch",
         "chance": 0.3
       }
-    ]
+    ],
+    "animation": "bite"
   },
   {
     "name": "Water Pulse",
@@ -609,7 +629,8 @@
         "status": "Confusion",
         "chance": 0.2
       }
-    ]
+    ],
+    "animation": "water_pulse"
   },
   {
     "name": "Aqua Tail",
@@ -620,7 +641,8 @@
     "accuracy": 90,
     "range": "Adjacent enemy",
     "pp_cost": 6,
-    "effects": []
+    "effects": [],
+    "animation": "slash"
   },
   {
     "name": "Shell Smash",
@@ -697,7 +719,8 @@
     "range": "Straight line piercing",
     "cuts_corners": true,
     "pp_cost": 10,
-    "effects": []
+    "effects": [],
+    "animation": "hydro_pump"
   },
   {
     "name": "Wave Crash",
@@ -796,7 +819,7 @@
     "accuracy": 100,
     "range": "Adjacent enemy",
     "pp_cost": 5,
-	"sound_based": true,
+    "sound_based": true,
     "effects": []
   },
   {
@@ -860,7 +883,8 @@
         "status": "Confusion",
         "chance": 0.1
       }
-    ]
+    ],
+    "animation": "psybeam"
   },
   {
     "name": "Bug Buzz",
@@ -879,7 +903,8 @@
         "stages": -1,
         "chance": 0.1
       }
-    ]
+    ],
+    "animation": "bug_buzz"
   },
   {
     "name": "Tailwind",
@@ -896,7 +921,8 @@
         "status": "2x Speed",
         "chance": 1.0
       }
-    ]
+    ],
+    "animation": "buff_aura"
   },
   {
     "name": "Quiver Dance",
@@ -944,7 +970,8 @@
         "status": "Poison",
         "chance": 0.3
       }
-    ]
+    ],
+    "animation": "pin_missile"
   },
   {
     "name": "Fury Attack",
@@ -980,7 +1007,8 @@
         "max_hits": 5,
         "chance": 1.0
       }
-    ]
+    ],
+    "animation": "pin_missile"
   },
   {
     "name": "Poison Jab",
@@ -1020,7 +1048,8 @@
         "stages": 1,
         "chance": 1.0
       }
-    ]
+    ],
+    "animation": "buff_aura"
   },
   {
     "name": "Hurricane",
@@ -1068,7 +1097,8 @@
     "range": "Enemy up to 2 tiles away",
     "cuts_corners": true,
     "pp_cost": 3,
-    "effects": []
+    "effects": [],
+    "animation": "quick_attack"
   },
   {
     "name": "Twister",
@@ -1161,7 +1191,8 @@
         "status": "Flinch",
         "chance": 0.3
       }
-    ]
+    ],
+    "animation": "slash"
   },
   {
     "name": "Swords Dance",
@@ -1190,7 +1221,7 @@
     "accuracy": 100,
     "range": "Adjacent enemy",
     "pp_cost": 6,
-	"sound_based": true,
+    "sound_based": true,
     "effects": [
       {
         "effect_type": "stat_change",
@@ -1198,7 +1229,8 @@
         "stages": -1,
         "chance": 0.2
       }
-    ]
+    ],
+    "animation": "bite"
   },
   {
     "name": "Sucker Punch",
@@ -1209,7 +1241,8 @@
     "accuracy": 100,
     "range": "Enemy up to 2 tiles away",
     "pp_cost": 5,
-    "effects": []
+    "effects": [],
+    "animation": "sucker_punch"
   },
   {
     "name": "Double-Edge",
@@ -1237,7 +1270,7 @@
     "accuracy": 100,
     "range": "Adjacent enemy",
     "pp_cost": 5,
-	"sound_based": true,
+    "sound_based": true,
     "effects": []
   },
   {
@@ -1249,7 +1282,7 @@
     "accuracy": 100,
     "range": "Adjacent enemy",
     "pp_cost": 2,
-	"sound_based": true,
+    "sound_based": true,
     "effects": []
   },
   {
@@ -1268,7 +1301,8 @@
         "stages": -1,
         "chance": 1.0
       }
-    ]
+    ],
+    "animation": "status_wave"
   },
   {
     "name": "Drill Peck",
@@ -1279,7 +1313,7 @@
     "accuracy": 100,
     "range": "Adjacent enemy",
     "pp_cost": 5,
-	"sound_based": true,
+    "sound_based": true,
     "effects": []
   },
   {
@@ -1314,7 +1348,8 @@
         "status": "Flinch",
         "chance": 0.1
       }
-    ]
+    ],
+    "animation": "bite"
   },
   {
     "name": "Thunder Fang",
@@ -1336,7 +1371,8 @@
         "status": "Flinch",
         "chance": 0.1
       }
-    ]
+    ],
+    "animation": "bite"
   },
   {
     "name": "Glare",
@@ -1365,7 +1401,7 @@
     "range": "Adjacent enemy",
     "cuts_corners": true,
     "pp_cost": 2,
-	"sound_based": true,
+    "sound_based": true,
     "effects": [
       {
         "effect_type": "stat_change",
@@ -1461,7 +1497,8 @@
         "status": "Poison",
         "chance": 0.3
       }
-    ]
+    ],
+    "animation": "sludge_bomb"
   },
   {
     "name": "Coil",
@@ -1508,7 +1545,8 @@
         "status": "Poison",
         "chance": 0.3
       }
-    ]
+    ],
+    "animation": "gunk_shot"
   },
   {
     "name": "Play Nice",
@@ -1543,7 +1581,8 @@
         "status": "Paralysis",
         "chance": 0.1
       }
-    ]
+    ],
+    "animation": "punch"
   },
   {
     "name": "Nuzzle",
@@ -1607,7 +1646,7 @@
     "accuracy": 75,
     "range": "Adjacent enemy",
     "pp_cost": 2,
-	"sound_based": true,
+    "sound_based": true,
     "effects": [
       {
         "effect_type": "status_apply",
@@ -1666,7 +1705,8 @@
         "status": "Paralysis",
         "chance": 0.1
       }
-    ]
+    ],
+    "animation": "thunderbolt"
   },
   {
     "name": "Double Team",
@@ -1719,7 +1759,8 @@
         "stages": -1,
         "chance": 0.3
       }
-    ]
+    ],
+    "animation": "slash"
   },
   {
     "name": "Discharge",
@@ -1736,7 +1777,8 @@
         "status": "Paralysis",
         "chance": 0.3
       }
-    ]
+    ],
+    "animation": "discharge"
   },
   {
     "name": "Thunder",
@@ -1771,7 +1813,8 @@
         "stages": -1,
         "chance": 0.5
       }
-    ]
+    ],
+    "animation": "slash"
   },
   {
     "name": "Defense Curl",
@@ -1806,7 +1849,8 @@
         "status": "Slow",
         "chance": 1.0
       }
-    ]
+    ],
+    "animation": "bulldoze"
   },
   {
     "name": "Swift",
@@ -1818,7 +1862,8 @@
     "range": "Adjacent enemy",
     "cuts_corners": true,
     "pp_cost": 4,
-    "effects": []
+    "effects": [],
+    "animation": "swift"
   },
   {
     "name": "Fury Swipes",
@@ -1836,7 +1881,8 @@
         "max_hits": 5,
         "chance": 1.0
       }
-    ]
+    ],
+    "animation": "slash"
   },
   {
     "name": "Sandstorm",
@@ -1865,7 +1911,8 @@
     "accuracy": 100,
     "range": "All enemies and allies in room",
     "pp_cost": 10,
-    "effects": []
+    "effects": [],
+    "animation": "earthquake"
   },
   {
     "name": "Superpower",
@@ -1933,7 +1980,8 @@
         "stages": 1,
         "chance": 1.0
       }
-    ]
+    ],
+    "animation": "buff_aura"
   },
   {
     "name": "Toxic",
@@ -1991,7 +2039,8 @@
         "stages": -1,
         "chance": 0.1
       }
-    ]
+    ],
+    "animation": "earth_power"
   },
   {
     "name": "Megahorn",
@@ -2019,7 +2068,8 @@
         "status": "Poison",
         "chance": 0.1
       }
-    ]
+    ],
+    "animation": "sludge_wave"
   },
   {
     "name": "Horn Attack",
@@ -2042,7 +2092,7 @@
     "range": "Adjacent enemy",
     "cuts_corners": true,
     "pp_cost": 3,
-	"sound_based": true,
+    "sound_based": true,
     "effects": [
       {
         "effect_type": "status_apply",
@@ -2061,8 +2111,9 @@
     "range": "All adjacent enemies",
     "cuts_corners": true,
     "pp_cost": 4,
-	"sound_based": true,
-    "effects": []
+    "sound_based": true,
+    "effects": [],
+    "animation": "voice_wave"
   },
   {
     "name": "Stored Power",
@@ -2090,7 +2141,8 @@
         "heal_percent": 0.25,
         "chance": 1.0
       }
-    ]
+    ],
+    "animation": "heal_aura"
   },
   {
     "name": "Moonlight",
@@ -2107,7 +2159,8 @@
         "heal_percent": 0.5,
         "chance": 1.0
       }
-    ]
+    ],
+    "animation": "heal_aura"
   },
   {
     "name": "Meteor Mash",
@@ -2126,7 +2179,8 @@
         "chance": 0.2,
         "target": "attacker"
       }
-    ]
+    ],
+    "animation": "meteor_mash"
   },
   {
     "name": "Cosmic Power",
@@ -2261,7 +2315,8 @@
     "accuracy": 100,
     "range": "All adjacent enemies",
     "pp_cost": 4,
-    "effects": []
+    "effects": [],
+    "animation": "voice_wave"
   },
   {
     "name": "Play Rough",
@@ -2302,7 +2357,7 @@
     "range": "Adjacent enemy",
     "cuts_corners": true,
     "pp_cost": 4,
-	"sound_based": true,
+    "sound_based": true,
     "effects": []
   },
   {
@@ -2332,8 +2387,9 @@
     "range": "All adjacent enemies",
     "cuts_corners": true,
     "pp_cost": 8,
-	"sound_based": true,
-    "effects": []
+    "sound_based": true,
+    "effects": [],
+    "animation": "voice_wave"
   },
   {
     "name": "Astonish",
@@ -2372,7 +2428,8 @@
         "status": "Flinch",
         "chance": 0.1
       }
-    ]
+    ],
+    "animation": "bite"
   },
   {
     "name": "Air Cutter",
@@ -2462,7 +2519,8 @@
     "range": "Adjacent enemy",
     "pp_cost": 5,
     "high_crit_ratio": true,
-    "effects": []
+    "effects": [],
+    "animation": "slash"
   },
   {
     "name": "Mud Slap",
@@ -2492,7 +2550,8 @@
     "range": "Adjacent enemy",
     "cuts_corners": true,
     "pp_cost": 5,
-    "effects": []
+    "effects": [],
+    "animation": "dazzling_gleam"
   },
   {
     "name": "Aqua Jet",
@@ -2504,7 +2563,8 @@
     "range": "Enemy up to 2 tiles away",
     "cuts_corners": true,
     "pp_cost": 3,
-    "effects": []
+    "effects": [],
+    "animation": "aqua_jet"
   },
   {
     "name": "Amnesia",
@@ -2533,7 +2593,7 @@
     "accuracy": 100,
     "range": "Adjacent enemy",
     "pp_cost": 2,
-	"sound_based": true,
+    "sound_based": true,
     "effects": [
       {
         "effect_type": "stat_change",
@@ -2643,7 +2703,8 @@
     "range": "Enemy up to 3 tiles away",
     "cuts_corners": true,
     "pp_cost": 7,
-    "effects": []
+    "effects": [],
+    "animation": "extreme_speed"
   },
   {
     "name": "Howl",
@@ -2654,7 +2715,7 @@
     "accuracy": null,
     "range": "All allies in room, including user",
     "pp_cost": 2,
-	"sound_based": true,
+    "sound_based": true,
     "effects": [
       {
         "effect_type": "stat_change",
@@ -2662,7 +2723,8 @@
         "stages": 1,
         "chance": 1.0
       }
-    ]
+    ],
+    "animation": "buff_aura"
   },
   {
     "name": "Flame Wheel",
@@ -2707,7 +2769,8 @@
         "status": "Confusion",
         "chance": 1.0
       }
-    ]
+    ],
+    "animation": "punch"
   },
   {
     "name": "Hypnosis",
@@ -2766,7 +2829,8 @@
         "status": "Slow",
         "chance": 0.1
       }
-    ]
+    ],
+    "animation": "bubble_beam"
   },
   {
     "name": "Stun Spore",
@@ -2817,7 +2881,8 @@
         "status": "Safeguard",
         "chance": 1.0
       }
-    ]
+    ],
+    "animation": "shield_aura"
   },
   {
     "name": "Fury Cutter",
@@ -2919,8 +2984,9 @@
     "accuracy": 90,
     "range": "Adjacent enemy",
     "pp_cost": 3,
-	"sound_based": true,
-    "effects": []
+    "sound_based": true,
+    "effects": [],
+    "animation": "bite"
   },
   {
     "name": "Wrap",
@@ -2946,7 +3012,7 @@
     "accuracy": null,
     "range": "User",
     "pp_cost": 2,
-	"sound_based": true,
+    "sound_based": true,
     "effects": []
   },
   {
@@ -2959,7 +3025,7 @@
     "range": "Adjacent enemy",
     "pp_cost": 2,
     "cuts_corners": true,
-	"sound_based": true,
+    "sound_based": true,
     "effects": []
   },
   {
@@ -2972,8 +3038,8 @@
     "range": "Adjacent enemy",
     "pp_cost": 10,
     "cuts_corners": true,
-	"sound_based": true,
-	"dangerous": true,
+    "sound_based": true,
+    "dangerous": true,
     "effects": []
   },
   {
@@ -2990,7 +3056,8 @@
         "effect_type": "haze",
         "target": "defender"
       }
-    ]
+    ],
+    "animation": "status_wave"
   },
   {
     "name": "Electro Ball",
@@ -3013,7 +3080,8 @@
     "accuracy": 100,
     "range": "Enemy up to 3 tiles away",
     "pp_cost": 3,
-    "effects": []
+    "effects": [],
+    "animation": "feint"
   },
   {
     "name": "Light Screen",
@@ -3032,7 +3100,8 @@
         "chance": 1.0,
         "target": "defender"
       }
-    ]
+    ],
+    "animation": "shield_aura"
   },
   {
     "name": "Rollout",
@@ -3106,7 +3175,7 @@
     "accuracy": 100,
     "range": "Adjacent enemy",
     "pp_cost": 5,
-	"sound_based": true,
+    "sound_based": true,
     "effects": [
       {
         "effect_type": "encore"
@@ -3122,7 +3191,7 @@
     "accuracy": null,
     "range": "User",
     "pp_cost": 3,
-	"sound_based": true,
+    "sound_based": true,
     "effects": [
       {
         "effect_type": "after_you"
@@ -3153,7 +3222,7 @@
     "accuracy": null,
     "range": "User",
     "pp_cost": 3,
-	"sound_based": true,
+    "sound_based": true,
     "effects": [
       {
         "effect_type": "follow_me"
@@ -3169,8 +3238,8 @@
     "accuracy": null,
     "range": "User",
     "pp_cost": 15,
-	"sound_based": true,
-	"dangerous": true,
+    "sound_based": true,
+    "dangerous": true,
     "effects": [
       {
         "effect_type": "healing_wish"
@@ -3216,7 +3285,7 @@
     "accuracy": 100,
     "range": "Adjacent enemy",
     "pp_cost": 3,
-	"sound_based": true,
+    "sound_based": true,
     "effects": [
       {
         "effect_type": "whirlwind",
@@ -3250,10 +3319,11 @@
     "power": 70,
     "accuracy": 100,
     "high_crit_ratio": true,
-	"cuts_corners": true,
+    "cuts_corners": true,
     "range": "Adjacent enemy",
     "pp_cost": 6,
-    "effects": []
+    "effects": [],
+    "animation": "slash"
   },
   {
     "name": "Recover",
@@ -3417,9 +3487,10 @@
         "stat": "Special_Attack",
         "stages": -2,
         "chance": 1.0,
-		"target": "attacker"
+        "target": "attacker"
       }
-    ]
+    ],
+    "animation": "leaf_storm"
   },
   {
     "name": "Leaf Blade",
@@ -3482,7 +3553,8 @@
     "accuracy": 100,
     "range": "All enemies and allies in room",
     "pp_cost": 9,
-    "effects": []
+    "effects": [],
+    "animation": "surf"
   },
   {
     "name": "Rock Polish",
@@ -3515,9 +3587,10 @@
     "power": 50,
     "accuracy": 90,
     "range": "Adjacent enemy",
-	"cuts_corners": true,
+    "cuts_corners": true,
     "pp_cost": 3,
-    "effects": []
+    "effects": [],
+    "animation": "meteor_mash"
   },
   {
     "name": "Smack Down",
@@ -3538,7 +3611,7 @@
     "power": 25,
     "accuracy": 90,
     "range": "Adjacent enemy",
-	"cuts_corners": true,
+    "cuts_corners": true,
     "pp_cost": 5,
     "effects": [
       {
@@ -3559,7 +3632,8 @@
     "range": "Adjacent enemy",
     "pp_cost": 8,
     "high_crit_ratio": true,
-    "effects": []
+    "effects": [],
+    "animation": "meteor_mash"
   },
   {
     "name": "Smart Strike",
@@ -3587,7 +3661,7 @@
         "stat": "Speed",
         "stages": 1,
         "chance": 1.0,
-		"target": "attacker"
+        "target": "attacker"
       }
     ]
   },
@@ -3664,7 +3738,8 @@
       {
         "effect_type": "imprison"
       }
-    ]
+    ],
+    "animation": "status_wave"
   },
   {
     "name": "Rest",
@@ -3789,7 +3864,8 @@
         "status": "Quick Guard",
         "chance": 1.0
       }
-    ]
+    ],
+    "animation": "shield_aura"
   },
   {
     "name": "Grassy Terrain",
@@ -3823,7 +3899,8 @@
         "status": "Sleep",
         "chance": 1.0
       }
-    ]
+    ],
+    "animation": "spore"
   },
   {
     "name": "Aromatherapy",
@@ -3838,7 +3915,8 @@
       {
         "effect_type": "cure_all_statuses"
       }
-    ]
+    ],
+    "animation": "heal_aura"
   },
   {
     "name": "Headbutt",
@@ -3872,7 +3950,8 @@
         "heal_percent": 0.5,
         "chance": 1.0
       }
-    ]
+    ],
+    "animation": "heal_aura"
   },
   {
     "name": "Withdraw",
@@ -3902,7 +3981,7 @@
     "range": "Adjacent enemy",
     "cuts_corners": true,
     "pp_cost": 2,
-	"sound_based": true,
+    "sound_based": true,
     "effects": [
       {
         "effect_type": "stat_change",
@@ -3927,7 +4006,8 @@
         "status": "Paralysis",
         "chance": 1.0
       }
-    ]
+    ],
+    "animation": "zap_cannon"
   },
   {
     "name": "Cut",
@@ -3937,9 +4017,10 @@
     "power": 50,
     "accuracy": 100,
     "range": "All adjacent enemies",
-	"cuts_corners": true,
+    "cuts_corners": true,
     "pp_cost": 4,
-    "effects": []
+    "effects": [],
+    "animation": "slash_adjacent"
   },
   {
     "name": "False Swipe",
@@ -3961,7 +4042,7 @@
     "accuracy": 100,
     "range": "Adjacent enemy",
     "pp_cost": 6,
-	"cuts_corners": true,
+    "cuts_corners": true,
     "effects": [
       {
         "effect_type": "recoil",
@@ -4004,7 +4085,8 @@
         "stages": -1,
         "chance": 1.0
       }
-    ]
+    ],
+    "animation": "icy_wind"
   },
   {
     "name": "Ice Shard",
@@ -4016,7 +4098,8 @@
     "range": "Enemy up to 2 tiles away",
     "cuts_corners": true,
     "pp_cost": 3,
-    "effects": []
+    "effects": [],
+    "animation": "ice_shard"
   },
   {
     "name": "Aurora Beam",
@@ -4026,7 +4109,7 @@
     "power": 65,
     "accuracy": 100,
     "range": "Straight line up to 4 tiles",
-	"cuts_corners": true,
+    "cuts_corners": true,
     "pp_cost": 5,
     "effects": [
       {
@@ -4035,7 +4118,8 @@
         "stages": -1,
         "chance": 0.1
       }
-    ]
+    ],
+    "animation": "aurora_beam"
   },
   {
     "name": "Tri Attack",
@@ -4073,8 +4157,8 @@
     "accuracy": 100,
     "range": "Adjacent enemy",
     "pp_cost": 3,
-	"sound_based": true,
-	"dangerous": true,
+    "sound_based": true,
+    "dangerous": true,
     "effects": [
       {
         "effect_type": "status_apply",
@@ -4109,7 +4193,7 @@
     "accuracy": 100,
     "range": "Adjacent enemy or ally",
     "pp_cost": 3,
-	"dangerous": true,
+    "dangerous": true,
     "effects": [
       {
         "effect_type": "soak"
@@ -4140,7 +4224,7 @@
     "accuracy": null,
     "range": "User",
     "pp_cost": 5,
-	"dangerous": true,
+    "dangerous": true,
     "effects": [
       {
         "effect_type": "wonder_room"
@@ -4185,7 +4269,8 @@
         "status": "Frozen",
         "chance": 0.1
       }
-    ]
+    ],
+    "animation": "ice_beam"
   },
   {
     "name": "Snowscape",
@@ -4220,7 +4305,8 @@
         "status": "Poison",
         "chance": 1.0
       }
-    ]
+    ],
+    "animation": "poison_gas"
   },
   {
     "name": "Sludge",
@@ -4231,7 +4317,7 @@
     "accuracy": 100,
     "range": "Adjacent enemy",
     "pp_cost": 4,
-	"cuts_corners": true,
+    "cuts_corners": true,
     "effects": [
       {
         "effect_type": "status_apply",
@@ -4248,7 +4334,7 @@
     "power": 25,
     "accuracy": 100,
     "range": "Adjacent enemy",
-	"cuts_corners": true,
+    "cuts_corners": true,
     "pp_cost": 5,
     "effects": [
       {
@@ -4303,7 +4389,7 @@
     "accuracy": 100,
     "range": "Adjacent enemy",
     "pp_cost": 3,
-	"sound_based": true,
+    "sound_based": true,
     "effects": [
       {
         "effect_type": "status_apply",
@@ -4321,7 +4407,7 @@
     "accuracy": 100,
     "range": "Adjacent enemy",
     "pp_cost": 6,
-	"sound_based": true,
+    "sound_based": true,
     "effects": []
   },
   {
@@ -4339,7 +4425,8 @@
         "status": "Flinch",
         "chance": 0.2
       }
-    ]
+    ],
+    "animation": "dark_pulse"
   },
   {
     "name": "Shadow Punch",
@@ -4350,7 +4437,8 @@
     "accuracy": null,
     "range": "Adjacent enemy",
     "pp_cost": 4,
-    "effects": []
+    "effects": [],
+    "animation": "punch"
   },
   {
     "name": "Shadow Ball",
@@ -4369,7 +4457,8 @@
         "stages": -1,
         "chance": 0.2
       }
-    ]
+    ],
+    "animation": "shadow_ball"
   },
   {
     "name": "Hammer Arm",
@@ -4385,9 +4474,10 @@
         "effect_type": "status_apply",
         "status": "Slow",
         "chance": 1.0,
-		"target": "attacker"
+        "target": "attacker"
       }
-    ]
+    ],
+    "animation": "punch"
   },
   {
     "name": "Metal Claw",
@@ -4406,7 +4496,8 @@
         "chance": 0.1,
         "target": "attacker"
       }
-    ]
+    ],
+    "animation": "slash"
   },
   {
     "name": "Crab Hammer",
@@ -4446,7 +4537,7 @@
     "power": null,
     "accuracy": 100,
     "range": "Adjacent enemy",
-	"cuts_corners": true,
+    "cuts_corners": true,
     "pp_cost": 2,
     "effects": [
       {
@@ -4465,7 +4556,7 @@
     "power": 50,
     "accuracy": 100,
     "range": "Adjacent enemy",
-	"cuts_corners": true,
+    "cuts_corners": true,
     "pp_cost": 4,
     "effects": [
       {
@@ -4473,7 +4564,7 @@
         "stat": "Special_Attack",
         "stages": 1,
         "chance": 0.7,
-		"target": "attacker"
+        "target": "attacker"
       }
     ]
   },
@@ -4502,7 +4593,7 @@
     "power": 25,
     "accuracy": 90,
     "range": "Adjacent enemy",
-	"cuts_corners": true,
+    "cuts_corners": true,
     "pp_cost": 5,
     "effects": [
       {
@@ -4530,7 +4621,8 @@
         "max_hits": 2,
         "chance": 1.0
       }
-    ]
+    ],
+    "animation": "bonemerang"
   },
   {
     "name": "Brick Break",
@@ -4553,7 +4645,8 @@
     "range": "Enemy up to 2 tiles away",
     "cuts_corners": true,
     "pp_cost": 4,
-    "effects": []
+    "effects": [],
+    "animation": "bullet_punch"
   },
   {
     "name": "Blaze Kick",
@@ -4597,7 +4690,8 @@
       {
         "effect_type": "drain"
       }
-    ]
+    ],
+    "animation": "punch"
   },
   {
     "name": "Mach Punch",
@@ -4609,7 +4703,8 @@
     "range": "Enemy up to 2 tiles away",
     "cuts_corners": true,
     "pp_cost": 4,
-    "effects": []
+    "effects": [],
+    "animation": "mach_punch"
   },
   {
     "name": "Vacuum Wave",
@@ -4621,7 +4716,8 @@
     "range": "Enemy up to 2 tiles away",
     "cuts_corners": true,
     "pp_cost": 4,
-    "effects": []
+    "effects": [],
+    "animation": "vacuum_wave"
   },
   {
     "name": "Fire Punch",
@@ -4638,7 +4734,8 @@
         "status": "Burn",
         "chance": 0.1
       }
-    ]
+    ],
+    "animation": "punch"
   },
   {
     "name": "Ice Punch",
@@ -4655,7 +4752,8 @@
         "status": "Frozen",
         "chance": 0.1
       }
-    ]
+    ],
+    "animation": "punch"
   },
   {
     "name": "Mega Punch",
@@ -4666,7 +4764,8 @@
     "accuracy": 85,
     "range": "Adjacent enemy",
     "pp_cost": 5,
-    "effects": []
+    "effects": [],
+    "animation": "punch"
   },
   {
     "name": "Smog",
@@ -4710,7 +4809,7 @@
     "power": 60,
     "accuracy": 100,
     "range": "Adjacent enemy",
-	"cuts_corners": true,
+    "cuts_corners": true,
     "pp_cost": 5,
     "effects": [
       {
@@ -4718,14 +4817,14 @@
         "stat": "Attack",
         "stages": 1,
         "chance": 0.1,
-		"target": "attacker"
+        "target": "attacker"
       },
       {
         "effect_type": "stat_change",
         "stat": "Defense",
         "stages": 1,
         "chance": 0.1,
-		"target": "attacker"
+        "target": "attacker"
       },
       {
         "effect_type": "stat_change",
@@ -4736,38 +4835,39 @@
       {
         "effect_type": "stat_change",
         "stat": "Special_Defense",
-		"stages": 1,
+        "stages": 1,
         "chance": 0.1,
-		"target": "attacker"
+        "target": "attacker"
       },
       {
         "effect_type": "stat_change",
         "stat": "Speed",
         "stages": 1,
         "chance": 0.1,
-		"target": "attacker"
+        "target": "attacker"
       },
       {
         "effect_type": "stat_change",
         "stat": "Accuracy",
         "stages": 1,
         "chance": 0.1,
-		"target": "attacker"
+        "target": "attacker"
       },
       {
         "effect_type": "stat_change",
         "stat": "Evasion",
         "stages": 1,
         "chance": 0.1,
-		"target": "attacker"
+        "target": "attacker"
       },
       {
         "effect_type": "status_apply",
         "status": "2x Speed",
         "chance": 0.1,
-		"target": "attacker"
+        "target": "attacker"
       }
-    ]
+    ],
+    "animation": "meteor_mash"
   },
   {
     "name": "Tickle",
@@ -4868,7 +4968,7 @@
     "accuracy": null,
     "range": "User",
     "pp_cost": 0,
-	"dangerous": true,
+    "dangerous": true,
     "effects": []
   },
   {
@@ -4914,7 +5014,8 @@
         "chance": 1.0,
         "target": "ally"
       }
-    ]
+    ],
+    "animation": "shield_aura"
   },
   {
     "name": "Psyshock",
@@ -4955,7 +5056,8 @@
         "chance": 1.0,
         "target": "ally"
       }
-    ]
+    ],
+    "animation": "shield_aura"
   },
   {
     "name": "Vital Throw",
@@ -5063,9 +5165,10 @@
     "power": 80,
     "accuracy": 100,
     "range": "All adjacent enemies",
-	"cuts_corners": true,
+    "cuts_corners": true,
     "pp_cost": 7,
-    "effects": []
+    "effects": [],
+    "animation": "dazzling_gleam"
   },
   {
     "name": "Teeter Dance",
@@ -5083,7 +5186,8 @@
         "status": "Confusion",
         "chance": 1.0
       }
-    ]
+    ],
+    "animation": "status_wave"
   },
   {
     "name": "Powder Snow",
@@ -5094,7 +5198,8 @@
     "accuracy": 100,
     "range": "All enemies in room",
     "pp_cost": 4,
-    "effects": []
+    "effects": [],
+    "animation": "powder_snow"
   },
   {
     "name": "Fake Tears",
@@ -5105,7 +5210,7 @@
     "accuracy": 100,
     "range": "Adjacent enemy",
     "pp_cost": 2,
-	"sound_based": true,
+    "sound_based": true,
     "effects": [
       {
         "effect_type": "stat_change",
@@ -5124,14 +5229,15 @@
     "accuracy": 75,
     "range": "All adjacent enemies",
     "pp_cost": 4,
-	"sound_based": true,
+    "sound_based": true,
     "effects": [
       {
         "effect_type": "status_apply",
         "status": "Sleep",
         "chance": 1.0
       }
-    ]
+    ],
+    "animation": "status_wave"
   },
   {
     "name": "Shock Wave",
@@ -5142,7 +5248,8 @@
     "accuracy": null,
     "range": "All adjacent enemies",
     "pp_cost": 6,
-    "effects": []
+    "effects": [],
+    "animation": "shock_wave"
   },
   {
     "name": "Lava Plume",
@@ -5159,7 +5266,8 @@
         "status": "Burn",
         "chance": 0.3
       }
-    ]
+    ],
+    "animation": "lava_plume"
   },
   {
     "name": "Sunny Day",
@@ -5282,7 +5390,8 @@
         "status": "Flinch",
         "chance": 0.3
       }
-    ]
+    ],
+    "animation": "meteor_mash"
   },
   {
     "name": "Block",
@@ -5327,9 +5436,10 @@
         "stat": "Special_Attack",
         "stages": -2,
         "chance": 1.0,
-		"target": "attacker"
+        "target": "attacker"
       }
-    ]
+    ],
+    "animation": "overheat"
   },
   {
     "name": "Psystrike",
@@ -5390,7 +5500,7 @@
     "accuracy": null,
     "range": "Adjacent enemy",
     "pp_cost": 2,
-	"sound_based": true,
+    "sound_based": true,
     "effects": []
   },
   {
@@ -5435,8 +5545,9 @@
     "accuracy": 100,
     "range": "All enemies in room",
     "pp_cost": 6,
-	"sound_based": true,
-    "effects": []
+    "sound_based": true,
+    "effects": [],
+    "animation": "uproar"
   },
   {
     "name": "Acupressure",
@@ -5447,7 +5558,8 @@
     "accuracy": null,
     "range": "All allies in room, including user",
     "pp_cost": 4,
-    "effects": []
+    "effects": [],
+    "animation": "buff_aura"
   },
   {
     "name": "Sheer Cold",
@@ -5502,8 +5614,9 @@
     "accuracy": 100,
     "range": "Room",
     "pp_cost": 20,
-	"dangerous": true,
-    "effects": []
+    "dangerous": true,
+    "effects": [],
+    "animation": "status_wave"
   },
   {
     "name": "Whirlpool",
@@ -5529,9 +5642,10 @@
     "accuracy": 20,
     "range": "Floor",
     "pp_cost": 10,
-	"sound_based": true,
-	"dangerous": true,
-    "effects": []
+    "sound_based": true,
+    "dangerous": true,
+    "effects": [],
+    "animation": "perish_song"
   },
   {
     "name": "Counter",
@@ -5554,7 +5668,8 @@
     "range": "All adjacent enemies",
     "pp_cost": 5,
     "cuts_corners": true,
-    "effects": []
+    "effects": [],
+    "animation": "night_shade"
   },
   {
     "name": "Destiny Bond",
@@ -5570,7 +5685,7 @@
         "effect_type": "status_apply",
         "status": "Destiny Bond",
         "chance": 1.0,
-		"target": "attacker"
+        "target": "attacker"
       }
     ]
   },
@@ -5633,7 +5748,8 @@
     "accuracy": null,
     "range": "Room",
     "pp_cost": 3,
-    "effects": []
+    "effects": [],
+    "animation": "shield_aura"
   },
   {
     "name": "Mirror Coat",
@@ -5695,7 +5811,7 @@
     "range": "Adjacent enemy or ally",
     "pp_cost": 2,
     "cuts_corners": true,
-	"dangerous": true,
+    "dangerous": true,
     "effects": []
   },
   {
@@ -5708,7 +5824,7 @@
     "range": "Adjacent enemy or ally",
     "pp_cost": 2,
     "cuts_corners": true,
-	"dangerous": true,
+    "dangerous": true,
     "effects": []
   },
   {
@@ -5720,7 +5836,8 @@
     "accuracy": null,
     "range": "Room",
     "pp_cost": 3,
-    "effects": []
+    "effects": [],
+    "animation": "buff_aura"
   },
   {
     "name": "Giga Impact",
@@ -5743,7 +5860,8 @@
     "range": "Straight line up to 4 tiles",
     "pp_cost": 9,
     "cuts_corners": true,
-    "effects": []
+    "effects": [],
+    "animation": "hyper_beam"
   },
   {
     "name": "Snore",
@@ -5755,8 +5873,9 @@
     "range": "All adjacent enemies",
     "pp_cost": 0,
     "cuts_corners": true,
-	"sound_based": true,
-    "effects": []
+    "sound_based": true,
+    "effects": [],
+    "animation": "voice_wave"
   },
   {
     "name": "Sleep Talk",
@@ -5767,7 +5886,7 @@
     "accuracy": null,
     "range": "User",
     "pp_cost": 0,
-	"sound_based": true,
+    "sound_based": true,
     "effects": []
   },
   {
@@ -5784,7 +5903,7 @@
         "effect_type": "status_apply",
         "status": "Ingrain",
         "chance": 1.0,
-		"target": "attacker"
+        "target": "attacker"
       }
     ]
   },
@@ -5840,7 +5959,8 @@
         "stages": -1,
         "chance": 0.3
       }
-    ]
+    ],
+    "animation": "muddy_water"
   },
   {
     "name": "Freeze-Dry",
@@ -5876,7 +5996,8 @@
         "status": "Flinch",
         "chance": 0.3
       }
-    ]
+    ],
+    "animation": "sky_attack"
   },
   {
     "name": "Transform",
@@ -5909,7 +6030,7 @@
     "accuracy": null,
     "range": "User",
     "pp_cost": 30,
-	"dangerous": true,
+    "dangerous": true,
     "effects": []
   },
   {
@@ -5921,7 +6042,7 @@
     "accuracy": null,
     "range": "User",
     "pp_cost": 25,
-	"dangerous": true,
+    "dangerous": true,
     "effects": []
   },
   {
@@ -5933,7 +6054,7 @@
     "accuracy": null,
     "range": "User",
     "pp_cost": 3,
-	"dangerous": true,
+    "dangerous": true,
     "effects": [
       {
         "effect_type": "status_apply",
@@ -5974,7 +6095,7 @@
     "accuracy": 75,
     "range": "Adjacent enemy",
     "pp_cost": 6,
-	"cuts_corners": true,
+    "cuts_corners": true,
     "effects": []
   },
   {
@@ -6044,7 +6165,8 @@
     "accuracy": 100,
     "range": "All adjacent enemies and allies",
     "pp_cost": 4,
-    "effects": []
+    "effects": [],
+    "animation": "brutal_swing"
   },
   {
     "name": "Defog",
@@ -6062,7 +6184,8 @@
         "stages": -1,
         "chance": 1.0
       }
-    ]
+    ],
+    "animation": "status_wave"
   },
   {
     "name": "Energy Ball",
@@ -6072,7 +6195,7 @@
     "power": 90,
     "accuracy": 100,
     "range": "Straight line up to 4 tiles",
-	"cuts_corners": true,
+    "cuts_corners": true,
     "pp_cost": 7,
     "effects": [
       {
@@ -6081,7 +6204,8 @@
         "stages": -1,
         "chance": 0.1
       }
-    ]
+    ],
+    "animation": "energy_ball"
   },
   {
     "name": "Dragon Hammer",
@@ -6128,7 +6252,8 @@
         "stages": 1,
         "chance": 1.0
       }
-    ]
+    ],
+    "animation": "blizzard"
   },
   {
     "name": "Strange Steam",
@@ -6145,7 +6270,8 @@
         "status": "Confusion",
         "chance": 0.2
       }
-    ]
+    ],
+    "animation": "strange_steam"
   },
   {
     "name": "Freezing Glare",
@@ -6162,7 +6288,8 @@
         "status": "Frozen",
         "chance": 0.1
       }
-    ]
+    ],
+    "animation": "freezing_glare"
   },
   {
     "name": "Thunderous Kick",
@@ -6190,7 +6317,7 @@
     "power": 90,
     "accuracy": 100,
     "range": "All adjacent enemies",
-	"cuts_corners": true,
+    "cuts_corners": true,
     "pp_cost": 8,
     "effects": [
       {
@@ -6198,7 +6325,8 @@
         "status": "Flinch",
         "chance": 0.2
       }
-    ]
+    ],
+    "animation": "fiery_wrath"
   },
   {
     "name": "Razor Wind",
@@ -6210,7 +6338,8 @@
     "range": "All enemies in the room",
     "pp_cost": 5,
     "charge_turns": 1,
-    "effects": []
+    "effects": [],
+    "animation": "razor_wind"
   },
   {
     "name": "Rage",
@@ -6251,7 +6380,7 @@
     "accuracy": 100,
     "range": "Adjacent enemy",
     "pp_cost": 1,
-	"dangerous": true,
+    "dangerous": true,
     "effects": []
   },
   {
@@ -6275,7 +6404,8 @@
     "accuracy": 100,
     "range": "Straight line",
     "pp_cost": 4,
-    "effects": []
+    "effects": [],
+    "animation": "psywave"
   },
   {
     "name": "Substitute",
@@ -6324,7 +6454,8 @@
         "stages": -1,
         "chance": 1.0
       }
-    ]
+    ],
+    "animation": "flash"
   },
   {
     "name": "Metal Burst",
@@ -6361,7 +6492,8 @@
         "duration": 20,
         "chance": 1.0
       }
-    ]
+    ],
+    "animation": "shield_aura"
   },
   {
     "name": "Shell Side Arm",
@@ -6378,7 +6510,8 @@
         "status": "Poison",
         "chance": 0.2
       }
-    ]
+    ],
+    "animation": "shell_side_arm"
   },
   {
     "name": "Rock Smash",
@@ -6400,7 +6533,8 @@
     "accuracy": 95,
     "range": "Straight line piercing",
     "pp_cost": 12,
-    "effects": []
+    "effects": [],
+    "animation": "chloroblast"
   },
   {
     "name": "Misty Terrain",
@@ -6429,7 +6563,7 @@
     "accuracy": null,
     "range": "User",
     "pp_cost": 5,
-	"dangerous": true,
+    "dangerous": true,
     "effects": []
   },
   {
@@ -6441,7 +6575,8 @@
     "accuracy": null,
     "range": "All adjacent enemies",
     "pp_cost": 3,
-    "effects": []
+    "effects": [],
+    "animation": "spin_slash"
   },
   {
     "name": "Wide Slash",
@@ -6452,7 +6587,8 @@
     "accuracy": 90,
     "range": "Adjacent enemy",
     "pp_cost": 3,
-    "effects": []
+    "effects": [],
+    "animation": "wide_slash"
   },
   {
     "name": "Vacuum Cut",
@@ -6463,6 +6599,7 @@
     "accuracy": 100,
     "range": "All enemies in the room",
     "pp_cost": 5,
-    "effects": []
+    "effects": [],
+    "animation": "vacuum_cut"
   }
 ]
