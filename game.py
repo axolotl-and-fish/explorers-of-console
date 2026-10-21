@@ -9586,9 +9586,8 @@ class Game:
         post_evo_bonus = 1.2 if (leader and hasattr(leader, "can_evolve") and leader.can_evolve(game=self)) else 1.0
 
         base_exp = math.floor(((3 * exp_yield * opponent_level) / 14) * post_evo_bonus)
-        boosted_exp = math.floor(base_exp * 1.5)
 
-        if boosted_exp <= 0:
+        if base_exp <= 0:
             return
 
         #Existing team members (excluding the recruited Pokémon, alive members only)
@@ -9603,11 +9602,11 @@ class Game:
         sum_allocated = 0
         for p, w in zip(existing_members, weights):
             fraction = w / total_weight
-            allocated = math.floor(boosted_exp * fraction)
+            allocated = math.floor(base_exp * fraction)
             shares[p] = allocated
             sum_allocated += allocated
 
-        remainder = boosted_exp - sum_allocated
+        remainder = base_exp - sum_allocated
         if remainder > 0:
             min_lvl = min(p.level for p in existing_members)
             lowest_pokes = [p for p in existing_members if p.level == min_lvl]
