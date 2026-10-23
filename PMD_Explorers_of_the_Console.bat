@@ -1,1 +1,1 @@
-python3 visualize.py --play
+python3 visualize.py
