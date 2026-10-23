@@ -189,6 +189,41 @@ def center_ansi(text: str, width: int = 76) -> str:
     return " " * left_padding + text + " " * right_padding
 
 
+def get_floor_average_items(floor_number: int = 1) -> int:
+    """Returns the target number of items for the given floor number.
+    Begins at 8 on floor 1, increasing by 1 every 10 floors
+    """
+    floor = max(1, floor_number)
+    return 8 + (floor - 1) // 10
+
+
+def get_floor_item_count(floor_number: int = 1) -> int:
+    """Returns a random item count for initial floor item spawning centered around the floor's target"""
+    avg = get_floor_average_items(floor_number)
+    return random.randint(avg - 2, avg + 2)
+
+
+def get_turn_enemy_spawn_chance(floor_number: int = 1, has_enemies: bool = True) -> float:
+    """Returns the spawn rate for Pokémon on the given floor.
+    Begins at 3% (or 8% when no Pokémon on floor) on floor 1,
+    increasing by 0.04% per floor up to 5% (or 10%).
+    """
+    floor = max(1, floor_number)
+    base_rate = 0.03 if has_enemies else 0.08
+    max_rate = 0.05 if has_enemies else 0.10
+    return min(max_rate, round(base_rate + (floor - 1) * 0.0004, 6))
+
+
+def get_initial_enemy_tile_spawn_chance(floor_number: int = 1) -> float:
+    """Returns the percentage chance of a tile containing a Pokémon when floor is initially generated.
+    Begins at 1% for the first 25 floors, then increases by 0.04% for every floor after the 25th.
+    """
+    floor = max(1, floor_number)
+    if floor <= 25:
+        return 0.01
+    return round(0.01 + (floor - 25) * 0.0004, 6)
+
+
 class Game:
     """Manages the player state, map coordinates, collision rules and rendering"""
 
@@ -1416,10 +1451,21 @@ class Game:
 
         return True
 
+    def get_floor_average_items(self) -> int:
+        return get_floor_average_items(getattr(self, "floor_number", 1))
+
+    def get_floor_item_count(self) -> int:
+        return get_floor_item_count(getattr(self, "floor_number", 1))
+
+    def get_turn_enemy_spawn_chance(self) -> float:
+        has_enemies = bool(getattr(self, "spawned_pokemon", []))
+        return get_turn_enemy_spawn_chance(getattr(self, "floor_number", 1), has_enemies)
+
+    def get_initial_enemy_tile_spawn_chance(self) -> float:
+        return get_initial_enemy_tile_spawn_chance(getattr(self, "floor_number", 1))
+
     def spawn_initial_items(self):
-        """Handles the logic for initial item spawns on the floor.
-        Each floor should contain around 10 items, with one Apple or Apricorn and one Elixir guaranteed to spawn per floor.
-        """
+        """Handles the logic for initial item spawns on the floor. One Apple/Apricorn and one Elixir are always guaranteed to spawn per floor."""
         import random
         self.items_on_floor = {}
         
@@ -1445,8 +1491,8 @@ class Game:
         if not valid_rooms_with_tiles:
             return
 
-        #Count 8-12 items
-        num_items = random.randint(8, 12)
+        #Count items based on floor number (avg 8 on 1F, +1 every 10 floors, spread ±2)
+        num_items = self.get_floor_item_count()
         r_count = len(valid_rooms_with_tiles)
 
         #Distribute items roughly equally across rooms
@@ -1514,12 +1560,14 @@ class Game:
             self.items_on_floor[(tx, ty)] = item_data
 
     def spawn_initial_enemies(self):
-        """Spawns napping enemies in non-player rooms with 1% chance per tile on first generation, excluding tiles directly adjacent to corridor entrances"""
+        """Spawns napping enemies in non-player rooms. Chance per tile begins at 1% for the first 25 floors, increasing by 0.04% for each floor after the 25th, excluding tiles directly adjacent to corridor entrances."""
         player_room = None
         for room in self.floor.rooms.values():
             if room.x1 <= self.player_x <= room.x2 and room.y1 <= self.player_y <= room.y2:
                 player_room = room
                 break
+
+        spawn_chance = self.get_initial_enemy_tile_spawn_chance()
 
         #Iterate over all rooms
         for room in self.floor.rooms.values():
@@ -1541,8 +1589,7 @@ class Game:
                                 occupied = True
                                 break
                         if not occupied and (rx, ry) != getattr(self, "stairs_position", None) and (rx, ry) != getattr(self, "wonder_tile_position", None):
-                            #1% chance per tile
-                            if random.random() < 0.01:
+                            if random.random() < spawn_chance:
                                 species_pool = self.floor_spawn_list if self.floor_spawn_list else self.all_species_names
                                 species = random.choice(species_pool)
                                 enemy = Pokemon(species, level=self.floor_number)
@@ -1582,8 +1629,7 @@ class Game:
             return
 
         #Per turn chance of a Pokémon spawning on the floor. Dungeons with no enemies are boring, so the rate is increased if there are no enemies at all on the floor.
-        #TODO: Make this floor based, higher floors have higher spawn rates
-        chance = 0.08 if not self.spawned_pokemon else 0.03
+        chance = self.get_turn_enemy_spawn_chance()
         if random.random() < chance:
             self.spawn_random_enemy()
 
@@ -13885,7 +13931,7 @@ class Game:
                 left_text = left_text[:45] + "..."
         else:
             sort_mode = getattr(self, "inventory_sort_mode", "Unsorted")
-            left_text = "  Toolbox"
+                left_text = "  Toolbox"
 
         right_margin = f"{capacity_str}  "
         spaces_needed = max(1, 74 - len(left_text) - len(right_margin))
