@@ -4079,7 +4079,7 @@
     "tm_moves": ["Swift", "Psychic", "Body Slam", "Guillotine", "Toxic", "Mimic", "Bide", "Rest", "Double Team", "Vacuum-Cut", "Wide Slash", "Spin Slash", "Rage"],
     "evolutions": [
       {
-        "to": "Rapidash",
+        "to": "Rapidash-G",
         "min_level": 40
       }
     ]
