@@ -251,6 +251,71 @@ def get_tm_compatibility_symbols(tm_item: dict | str, party: list) -> str:
     return f"[{''.join(symbols)}]"
 
 
+FOOD_ITEM_NAMES = {"Apple", "Big Apple", "Huge Apple", "Banana", "Chestnut", "Grimy Food"}
+VITAMIN_NAMES = {
+    "HP Up", "Protein", "Iron", "Calcium", "Zinc", "Carbos", "PP Up", "PP Max", "Rare Candy",
+    "EXP Candy XS", "EXP Candy S", "EXP Candy M", "EXP Candy L", "EXP Candy XL"
+}
+THROWN_ITEM_NAMES = {
+    "Geo Pebble", "Gravelerock", "Iron Thorn", "Stick", "Silver Spike", "Gold Fang", "Cacnea Spike", "Corsola Twig"
+}
+RARITY_ORDER = {
+    "Common": 0,
+    "Uncommon": 1,
+    "Rare": 2,
+    "Very Rare": 3,
+    "Epic": 4,
+    "Legendary": 5,
+}
+
+
+def get_item_category_order(item: dict) -> int:
+    """Returns sorting rank for item categories."""
+    name = item.get("name", "")
+    if name in FOOD_ITEM_NAMES or item.get("food", False) or item.get("category") == "Food" or item.get("item_type") == "Food":
+        return 0
+    if name.endswith("Seed") or item.get("seed", False) or item.get("category") == "Seed" or item.get("item_type") == "Seed":
+        return 1
+    if name.endswith("Orb") or item.get("is_orb", False) or item.get("category") == "Orb" or item.get("item_type") == "Orb":
+        return 2
+    if name.endswith("Berry") or item.get("berry", False) or item.get("category") == "Berry" or item.get("item_type") == "Berry":
+        return 3
+    if name.endswith("Apricorn") or item.get("apricorn", False) or item.get("category") == "Apricorn" or item.get("item_type") == "Apricorn":
+        return 4
+    if name in VITAMIN_NAMES or "Candy" in name or item.get("vitamin", False) or item.get("category") == "Vitamin" or item.get("item_type") == "Vitamin":
+        return 5
+    if name in THROWN_ITEM_NAMES or item.get("thrown", False) or item.get("thrown_item", False) or item.get("is_thrown", False) or (item.get("stackable", False) and not item.get("edible", False)) or item.get("category") == "Thrown" or item.get("item_type") == "Thrown":
+        return 6
+    if is_tm(item) or item.get("category") == "TM" or item.get("item_type") == "TM":
+        return 7
+    return 8
+
+
+def get_item_rarity_rank(item: dict) -> int:
+    """Returns integer rank for item rarity from most common (0) to most rare (5)."""
+    rarity = item.get("rarity", "Common")
+    return RARITY_ORDER.get(rarity, 0)
+
+
+def sort_inventory_items(inventory: list[dict], sort_mode: str) -> list[dict]:
+    """Sorts inventory items list according to sort_mode:
+    - 'By name': Alphabetical order
+    - 'By type': Food Items -> Seeds -> Orbs -> Berries -> Apricorns -> Vitamins -> Thrown items -> TMs -> Other,
+                 with items within each type sorted alphabetically
+    - 'By rarity': Most common to most rare, with items within a bracket sorted alphabetically
+    - 'Unsorted': No sorting
+    """
+    if sort_mode == "By name":
+        inventory.sort(key=lambda it: it.get("name", "").lower())
+    elif sort_mode == "By type":
+        inventory.sort(key=lambda it: (get_item_category_order(it), it.get("name", "").lower()))
+    elif sort_mode == "By rarity":
+        inventory.sort(key=lambda it: (get_item_rarity_rank(it), it.get("name", "").lower()))
+    elif sort_mode == "Unsorted":
+        pass
+    return inventory
+
+
 def apply_item_effect(item: dict, target, game, is_thrown: bool = False):
     """Applies the use or throw effect of an item to a target Pokémon"""
     if hasattr(game, "party") and target not in game.party:

@@ -335,6 +335,7 @@ class Game:
         self.inventory: list[dict] = []
         self.items_on_floor: dict[tuple[int, int], dict] = {}
         self.money: int = 0
+        self.inventory_sort_mode: str = "Unsorted"
         self.inventory_state: dict | None = None #Is the inventory menu open?
         self.message_history_state: dict | None = None #Is the message history menu open?
         self.pause_menu_state: dict | None = None #Is the pause menu open?
@@ -6048,6 +6049,8 @@ class Game:
                 self.inventory.append(new_item)
             else:
                 self.inventory[plain_seed_idx] = new_item
+            if getattr(self, "inventory_sort_mode", "Unsorted") != "Unsorted":
+                self.sort_inventory()
 
             article = "an" if new_item["name"][0].lower() in "aeiou" else "a"
             self.log_message(f"The Plain Seed was recycled into {article} {new_item['name']}!")
@@ -8245,7 +8248,15 @@ class Game:
         if added:
             for member in getattr(self, "party", []):
                 member.check_evolution_notifications(game=self)
+            if getattr(self, "inventory_sort_mode", "Unsorted") != "Unsorted":
+                self.sort_inventory()
         return added
+
+    def sort_inventory(self):
+        """Sorts the inventory according to self.inventory_sort_mode."""
+        mode = getattr(self, "inventory_sort_mode", "Unsorted")
+        if mode != "Unsorted":
+            items.sort_inventory_items(self.inventory, mode)
 
     def check_auto_pickup(self, x: int, y: int):
         """Checks if there is an item at (x, y) and automatically picks it up if inventory space is available. Items that have been dropped are not automatically picked up."""
@@ -8851,6 +8862,19 @@ class Game:
         if state is None:
             return
             
+        if action in (game_input.USE_MOVE_1, "z", "Z"):
+            if state.get("mode") != "swap_ground" and state.get("context_menu") is None:
+                sort_options = ["By name", "By type", "By rarity", "Unsorted"]
+                state["context_menu"] = sort_options
+                state["mode"] = "sort"
+                cur_mode = getattr(self, "inventory_sort_mode", "Unsorted")
+                if cur_mode in sort_options:
+                    state["context_index"] = sort_options.index(cur_mode)
+                else:
+                    state["context_index"] = 0
+                self.render()
+                return
+
         if action == game_input.QUIT:
             if state["context_menu"] is not None:
                 state["context_menu"] = None
@@ -8900,6 +8924,29 @@ class Game:
             return
             
         if action == game_input.CONFIRM:
+            if state.get("mode") == "sort":
+                menu = state.get("context_menu") or []
+                idx = state.get("context_index", 0)
+                if 0 <= idx < len(menu):
+                    chosen_mode = menu[idx]
+                    self.inventory_sort_mode = chosen_mode
+                    if chosen_mode != "Unsorted":
+                        if self.inventory and 0 <= state.get("selected_index", 0) < len(self.inventory):
+                            current_item = self.inventory[state["selected_index"]]
+                            self.sort_inventory()
+                            try:
+                                state["selected_index"] = self.inventory.index(current_item)
+                            except ValueError:
+                                state["selected_index"] = 0
+                        else:
+                            self.sort_inventory()
+                            state["selected_index"] = 0
+                state["context_menu"] = None
+                state["context_index"] = 0
+                state["mode"] = "options"
+                self.render()
+                return
+
             if not self.inventory:
                 return
                 
@@ -8922,6 +8969,8 @@ class Game:
                 self.inventory[state["selected_index"]] = ground_item
                 self.items_on_floor[pos] = selected_item_pop
                 self.inventory_state = None
+                if getattr(self, "inventory_sort_mode", "Unsorted") != "Unsorted":
+                    self.sort_inventory()
 
                 self.log_message(f"{self.player_pokemon.name} swapped the {items.get_item_display_name(selected_item_pop)} with the {items.get_item_display_name(ground_item)}.")
                 for member in getattr(self, "party", []):
@@ -9141,6 +9190,8 @@ class Game:
                             self.inventory[state["selected_index"]] = ground_item
                             self.items_on_floor[pos] = selected_item_pop
                             self.inventory_state = None
+                            if getattr(self, "inventory_sort_mode", "Unsorted") != "Unsorted":
+                                self.sort_inventory()
                             
                             self.log_message(f"{self.player_pokemon.name} swapped the {items.get_item_display_name(selected_item_pop)} with the {items.get_item_display_name(ground_item)}.")
                             self.on_turn_completed()
@@ -13833,6 +13884,7 @@ class Game:
             if len(left_text) > 48:
                 left_text = left_text[:45] + "..."
         else:
+            sort_mode = getattr(self, "inventory_sort_mode", "Unsorted")
             left_text = "  Toolbox"
 
         right_margin = f"{capacity_str}  "
@@ -13843,7 +13895,15 @@ class Game:
         
         #If inventory is empty
         if not self.inventory:
-            interior.append("  \033[90m(no items)\033[0m")
+            idx = 0
+            right_text = ""
+            if state and state.get("context_menu") is not None:
+                menu = state["context_menu"]
+                if 0 <= idx < len(menu) + 2:
+                    right_text = "┌" + "─" * 21 + "┐"
+            left_part = self.pad_ansi_string("  \033[90m(no items)\033[0m", 45)
+            right_part = self.pad_ansi_string(right_text, 26)
+            interior.append(left_part + "   " + right_part)
         else:
             assert state is not None
             selected_idx = state["selected_index"]
@@ -13947,7 +14007,12 @@ class Game:
         interior.append("─" * 74)
         
         state = self.inventory_state
-        if self.inventory and state:
+        if state and state.get("mode") == "sort":
+            interior.append("  \033[93mSort Inventory\033[0m")
+            interior.append("  Choose how to organize items in the Toolbox.")
+            cur_mode = getattr(self, "inventory_sort_mode", "Unsorted")
+            interior.append(f"  Current sort: {cur_mode}")
+        elif self.inventory and state:
             sel_item = self.inventory[state["selected_index"]]
             rarity = sel_item.get("rarity", "Common")
             r_color = items.RARITY_COLORS.get(rarity, "\033[37m")
@@ -14926,6 +14991,8 @@ class Game:
                     self.move_replacement_queue.pop(0)
                     if tm_item is not None and hasattr(self, "inventory"):
                         self.inventory.append(tm_item)
+                        if getattr(self, "inventory_sort_mode", "Unsorted") != "Unsorted":
+                            self.sort_inventory()
                     self.log_message(f"{pokemon.name} did not learn {new_move['name']}.")
                     self.render()
                 continue

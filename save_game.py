@@ -443,6 +443,7 @@ def serialize_game_state(game) -> dict:
         "explored_tiles": [list(pos) for pos in getattr(game, "explored_tiles", set())],
         "floor_spawn_list": list(getattr(game, "floor_spawn_list", [])),
         "inventory": [dict(item) for item in getattr(game, "inventory", [])],
+        "inventory_sort_mode": getattr(game, "inventory_sort_mode", "Unsorted"),
         "items_on_floor": items_floor_data,
         "floor": floor_data,
         "party": party_data,
@@ -505,6 +506,7 @@ def apply_game_state(game, state_dict: dict):
     game.explored_tiles = set(tuple(pos) for pos in state_dict.get("explored_tiles", []))
     game.floor_spawn_list = list(state_dict.get("floor_spawn_list", []))
     game.inventory = [dict(item) for item in state_dict.get("inventory", [])]
+    game.inventory_sort_mode = state_dict.get("inventory_sort_mode", "Unsorted")
 
     game.items_on_floor = {}
     for pos_key, item in state_dict.get("items_on_floor", {}).items():
