@@ -21,8 +21,8 @@
 								 ██                   ██                  
 							   
 						✩ Explorers of the Console ✩                          
-							  beta ver. 0.1.2
-							 September 13, 2026
+							  beta ver. 0.2.0
+							  October 26, 2026
 								  
 						2026 C437RP13 / Axolotl and Fish
 						   
@@ -39,7 +39,7 @@ failed?
 
 Pokémon Misery Dungeon: Explorers of the Console is a text-based PMD fangame 
 presented in the style of a traditional "roguelike" game. Choose a starter 
-Pokémon from any of the 11 canon PMD starters from gen 1 and lead them through
+Pokémon from any of the 15 canon PMD starters from gen 1 and lead them through
 fifty randomly-generated floors full of useful items and dangerous foes. By no 
 means must you undertake this task alone, however; you can recruit the
 dungeon's Pokémon to your side by enticing them with special Apricorn items.
@@ -77,8 +77,9 @@ follow the license terms, which can be found in the LICENSE file.
 8. Items & Inventory
 9. Food & Belly
 10. Recruiting Pokémon
-11. Saving Your Game
-12. Winning & Losing
+11. All About the Weather
+12. Saving Your Game
+13. Winning & Losing
 A. Modding
 B. pokemon.json
 C. moves.json
@@ -100,7 +101,7 @@ the following:
 2. Post a message on the Pokecommunity thread:
    https://www.pokecommunity.com/threads/pok%C3%A9mon-misery-dungeon-explorers-of-the-console.543129/
    
-3. Shoot me a message on my Discord server https://discord.gg/qr9V6FvMEz 
+3. Shoot me a message on my Discord server https://discord.gg/SDTBkesJ6U
    Discord accounts with private profiles are STRICTLY prohibited from the 
    server.
    
@@ -130,7 +131,7 @@ Select the source code (zip) download from the GitHub releases tab and unzip
 the file. Then to run the game, either run PMD_Explorers_of_the_Console.bat or
 open the game's directory in your terminal and type
 
-python3 visualize.py --play
+python3 visualize.py
 
 Note that the executable file is not actually compiled, it's just bundled in a 
 PyInstaller wrapper, so performance will be the same. The executable version is 
@@ -139,7 +140,7 @@ simply provided for your convenience.
 						1a. System Requirements
 ===============================================================================
 Since the game is text-based, it will run on just about anything. The game 
-consumes less than 16 MB of RAM on my system. It even runs well on my Pentium 
+consumes less than 64 MB of RAM on my system. It even runs well on my Pentium 
 N6000 laptop underclocked to 0.8 GHz!
 
 For the executable version however, you will need a x64 processor and a 64-bit 
@@ -184,6 +185,7 @@ MAKE SURE YOUR NUMLOCK IS TURNED ON!
 					  Movement	  [P] - Open message history
 								  [L] - Enable "look around" mode
 								  [>] - Use stairs
+								  [;] - Toggle Auto Leader Switch
 					  
 Some smaller laptops ("notebooks") have a smaller keyboard without a numpad,
 so alternatively you can use the Shift, CTRL and arrow keys to move your
@@ -215,22 +217,64 @@ the starter choices has their own strengths and weaknesses, so make your choice
 carefully. A table of the general relative stats of each of the starters is
 given below.
 
-You will then be asked for your name. Type in a name for your Pokémon, then
-press [Return] to enter the game, or [Esc] to skip and just use the species
-name. The less mature the name is, the better ;)
-
 Name		Type		HP		ATK		SP.ATK		DEF		SP.DEF		SPEED
 Bulbasaur	Grass/Poison☼☼		☼☼		☼☼☼☼		☼☼		☼☼☼☼		☼☼
 Charmander	Fire		☼		☼☼☼		☼☼☼☼		☼☼		☼☼☼			☼☼☼☼
 Squirtle	Water		☼☼		☼☼		☼☼☼			☼☼☼☼	☼☼☼☼		☼☼
 Pikachu		Electric	☼☼		☼☼☼☼☼☼	☼☼☼☼☼		☼☼☼		☼☼☼☼		☼☼☼☼☼☼
 Vulpix		Fire		☼		☼☼		☼☼☼			☼		☼☼☼☼		☼☼☼☼
+AlolaVulpix	Ice			☼		☼☼		☼☼☼			☼		☼☼☼☼		☼☼☼☼
 Growlithe	Fire		☼☼☼		☼☼☼☼☼	☼☼☼☼☼		☼☼		☼☼☼			☼☼☼☼
+HGrowlithe	Fire/Rock	☼☼☼☼	☼☼☼☼☼☼	☼☼☼☼		☼☼		☼☼☼			☼☼☼
 Meowth		Normal		☼		☼☼		☼			☼		☼			☼☼☼☼☼☼
+AlolaMeowth	Dark		☼		☼☼		☼☼☼			☼		☼			☼☼☼☼☼☼
+GalarMeowth	Steel		☼☼		☼☼☼☼☼	☼☼			☼☼☼		☼☼			☼☼
 Psyduck		Water		☼☼☼		☼☼☼		☼☼☼☼		☼☼		☼☼☼☼		☼☼☼
 Machop		Fighting	☼☼☼☼☼	☼☼☼☼☼☼	☼			☼☼		☼			☼
 Cubone		Ground		☼☼☼		☼☼☼		☼			☼☼☼☼☼☼	☼☼			☼
 Eevee		Normal		☼☼☼☼	☼☼☼☼☼	☼☼☼☼		☼☼☼☼	☼☼☼☼☼☼		☼☼☼☼☼
+
+Then, you will be given an opportunity to roll your starting IVs and Nature.
+Each time you press [Z], you will be given a new set of IVs and a new Nature.
+You can place up to 2 locks on IVs and Natures to prevent their values from
+being rerolled while you reroll the rest; so you can really get a good set of
+starting stats! When you're satisfied with your starter's IVs and Nature, press
+Return to move on.
+
+┌──────────────────────────────────────────────────────────────────────────┐
+│                          Roll Your IVs & Nature                          │
+├──────────────────────────────────────────────────────────────────────────┤
+│                   Bulbasaur (Level 2) [Grass / Poison]                   │
+├──────────────────────────────────────────────────────────────────────────┤
+│                                                                          │
+│           Key   Stat               IV     Value                          │
+│           ───   ───────────────   ────    ─────                          │
+│           [A]   HP                  17       14                          │
+│                                                                          │
+│           [S]   Attack              23        7                          │
+│                                                                          │
+│           [D]   Defense             17        7                          │
+│                                                                          │
+│           [F]   Sp. Attack          21        8                          │
+│                                                                          │
+│           [G]   Sp. Defense         27        8                          │
+│                                                                          │
+│           [H]   Speed               10        6                          │
+│                                                                          │
+├──────────────────────────────────────────────────────────────────────────┤
+│                                                                          │
+│           [V]   Nature: Sassy      (+Sp. Def, -Speed)                    │
+│                                                                          │
+├──────────────────────────────────────────────────────────────────────────┤
+│           Locks left: 2 (Press [A]-[H] or [V] to toggle lock)            │
+│                                                                          │
+│                [Z] Reroll   [Return] Confirm   [Esc] Back                │
+│                                                                          │
+└──────────────────────────────────────────────────────────────────────────┘
+
+Finally, you will be asked for your name. Type in a name for your Pokémon, then
+press [Return] to enter the game, or [Esc] to skip and just use the species
+name. The less mature the name is, the better ;)
 
 Not only do the different starters have different stats and types, they will
 also have different movesets, both starting out and learned over the course of
@@ -317,6 +361,13 @@ greater than sign (">") on the map. Once you've found them, move on top of them
 and press the [>] key to move to the next floor. Moving to the next floor
 immediately is usually not the best idea though; you'll want to find items and
 fight enemies for experience points first.
+
+However, you must not dally longer than you need to, for the dungeon walls are 
+very unstable and will begin to collapse if you remain on the floor for too 
+long. If the dungeon collapses on you, the game will end immediately, so pay 
+special attention to any warnings that appear about the dungeon's imminent
+collapse, and make for the stairs as soon as you see them! Higher floors are
+more sturdy and will take longer to collapse, though.
 ===============================================================================
 						    4a. The In-Game Menu
 ===============================================================================
@@ -339,12 +390,12 @@ regarding your teammates. It can be called up by pressing the key shortcut
 displayed on the top right corner of a Pokémon's window. It looks like this:
 
 ┌──────────────────────────────────────────────────────────────────────────┐
-│ Eevee (Level 5) [Normal]                                         No. 133 │
+│ Eevee (Level 13) [Normal]                                        No. 133 │
 │──────────────────────────────────────────────────────────────────────────│
-│ HP   16/   22             ██████████████████████████████████▌            │
-│ PP   78/  100             ████████████████████████████████████▌          │
-│ EXP      160 (Next:    56)██████████████████                             │
-│ Belly   74%               ██████████████████████████████████             │
+│ HP    7/   42             ███████▌                                       │
+│ PP   37/  100             █████████████████                              │
+│ EXP    2,333 (Next:   411)███████████▌                                   │
+│ Belly   74%               ██████████████████████████████████▌            │
 │──────────────────────────────────────────────────────────────────────────│
 │ Description:                                                             │
 │   Eevee has an unstable genetic makeup that suddenly mutates due to the  │
@@ -352,38 +403,38 @@ displayed on the top right corner of a Pokémon's window. It looks like this:
 │   this Pokémon to evolve.                                                │
 │──────────────────────────────────────────────────────────────────────────│
 │ Stats:                                                                   │
-│                                  │Value│ Eff.│ EVs │IVs                  │
-│                      ────────────┼─────┼─────┼─────┼───                  │
-│                       HP         │   22│   16│    7│ 28                  │
-│                       Attack     │   12│    6│    1│  7  ↓↓              │
-│                       Sp. Attack │   11│   11│    1│  1                  │
-│                       Defense    │   12│   12│   13│ 13                  │
-│                       Sp.Defense │   13│   13│    0│  2                  │
-│                       Speed      │   13│   13│    5│ 17                  │
+│                   │Value│ Eff.│ EVs │IVs                                 │
+│       ────────────┼─────┼─────┼─────┼───                                 │
+│        HP         │   42│    7│    8│ 16                                 │
+│        Attack     │   27│   54│   16│ 18  ↑↑                             │
+│        Sp. Attack │   25│   21│    9│  5  ↓        Nature: Quiet         │
+│        Defense    │   23│   23│    7│  2                                 │
+│        Sp.Defense │   29│   29│    1│ 15                                 │
+│        Speed      │   23│   23│    2│ 16                                 │
 │──────────────────────────────────────────────────────────────────────────│
 │ Known Moves:                                                             │
-│   • [Z] Sand Attack (Ground / Status)                                    │
-│     Power: --    Accuracy: 100%   PP Cost: 1                             │
-│     Lowers an enemy's accuracy by one level. Cuts corners.               │
-│   • [X] Helping Hand (Normal / Status)                                   │
+│   • [Z] Helping Hand (Normal / Status)                                   │
 │     Power: --    Accuracy: --     PP Cost: 5                             │
 │     Raises the Attack and Special Attack of every team member in the     │
 │     room by one stage each.                                              │
-│   • [C] Tackle (Normal / Physical)                                       │
-│     Power: 60    Accuracy: 100%   PP Cost: 2                             │
-│     Damages an enemy.                                                    │
-│   • [V] Covet (Normal / Physical)                                        │
+│   • [X] Covet (Normal / Physical)                                        │
 │     Power: 90    Accuracy: 90%    PP Cost: 4                             │
 │     Damages an enemy and attempts to steal their item.                   │
+│   • [C] Sand Attack (Ground / Status)                                    │
+│     Power: --    Accuracy: 100%   PP Cost: 1                             │
+│     Lowers an enemy's accuracy by one level. Cuts corners.               │
+│   • [V] Quick Attack (Normal / Physical)                                 │
+│     Power: 60    Accuracy: 100%   PP Cost: 3                             │
+│     Damages an enemy up to 2 tiles away. Cuts corners.                   │
 │──────────────────────────────────────────────────────────────────────────│
-│ Next move: Quick Attack at Level 10                                      │
-│ Evolution: Evolves into Vaporeon using Water Stone / Evolves into Jolteon│
-│ using Thunder Stone / Evolves into Flareon using Fire Stone              │
+│ Next move: Baby-Doll Eyes at Level 15                                    │
+│ Evolution: Evolves into Vaporeon using Water Stone                       │
+│            Evolves into Jolteon using Thunder Stone                      │
+│            Evolves into Flareon using Fire Stone                         │
 │──────────────────────────────────────────────────────────────────────────│
-│ Status effects: Confusion                                                │
+│ Status effects: None                                                     │
 │──────────────────────────────────────────────────────────────────────────│
 │[Return] Options   [↑/↓] Scroll   [Esc] Close                             │
-│                                                                          │
 │                                                                          │
 └──────────────────────────────────────────────────────────────────────────┘
 Pressing [Return] on this screen gives you a list of additional options for the
@@ -398,8 +449,9 @@ selected party member, depending on circumstances. These include:
   the selected teammate are under certain status effects.
 - Switch Places: Switches this member's placement on the list with another
   member.
+- Rename: Allows you to change the Pokémon's nickname.
 - Farewell: Removes the Pokémon from the team permanently. Be careful with
-  this!
+  this, because there's no way to get them back!
 
 Pretty much everything on this screen is absolutely crucial in understanding
 how the game works, so let's briefly go over all of this information.
@@ -496,6 +548,10 @@ There are three factors that determine a Pokémon's stats:
 - EVs (Effort Values), which are earned when a Pokémon defeats another. These
   directly increase a Pokémon's stats. Unlike other Pokémon games, EVs are
   not capped and an unlimited amount can be gained... if you survive that long!
+- Nature, which is also different for each individual Pokémon. There are 25
+  possible natures, each raising a stat by 10% and lowering another stat by 10%.
+  Some Natures raise and lower the same stat, meaning they cancel each other
+  out. They can have a surprisingly big impact on a Pokémon's viability!
 
 The summary screen displays the next move that a Pokémon will learn by leveling
 up, and the requirements for that Pokémon to evolve (if it is capable of
@@ -660,10 +716,15 @@ But if you do manage to defeat a Pokémon, you will earn EXP (experience points)
 for your trouble, pushing you towards a new level. You will also earn EVs
 depending on the species that you have defeated. Experience points are shared
 between all Pokémon in your party, with lower-leveled members receiving a
-larger share to help them catch up. Note that recruiting Pokémon instead of
-defeating them gives much more EXP, so you should try to recruit where possible,
-even if your party is full! See Section 10. Recruiting Pokémon for more info on
-recruitment.
+larger share to help them catch up.
+
+As a more advanced technique, if you have more than one party member, you can
+toggle a feature known as "Auto Leader Switch" by pressing the [;] key. While
+this is active, the Pokémon you control will automatically switch to the team
+member whose turn it is to move, allowing you to manually control your entire
+team. This can be a very useful tool when you can't trust the AI in a tight
+spot, but it can really slow down the pace of the game, so it's best to leave it
+disabled in a non-combat situation.
 
 Pokémon will occasionally learn moves when leveling up. A Pokémon can only know
 four moves at a time. If a Pokémon tries to learn a new move while already
@@ -682,6 +743,11 @@ a limited capacity. Starting out it can only hold up to 20 items, but each
 additional party member adds four more slots, up to a maximum of 40 items with a
 full party. Losing a party member will result in these additional slots being 
 lost, and any items past the new capacity will be dropped to the ground.
+
+Items in your inventory can be sorted in three different ways: by name, by type
+and by rarity. Press [Z] in the inventory screen to open the sorting menu. Your
+inventory will continue to be sorted in the selected mode until you change the
+mode again.
 
 Items can be broadly categorized depending on their function:
 
@@ -708,7 +774,12 @@ Items can be broadly categorized depending on their function:
   These items inflict damage on Pokémon when thrown. Some thrown items deal
   a fixed amount of damage regardless of stats, while others depend on stats,
   like with moves. The rarer a thrown weapon, the more damage it does!
-- POKÉ - Poké, often referred to simply as P, is the currency of the Pokémon
+- TMs: Technical Machines (TMs) are single-use devices that teach a specific
+  move to a Pokémon. Only some Pokémon are compatible with any given TM, and
+  the compatibility of the TM with your team is displayed as a row of Xs and
+  ticks alongside the name of the TM in your inventory. Some TMs teach moves
+  no Pokémon can learn otherwise, but they tend to be the stuff of legends.
+- POKÉ: Poké, often referred to simply as P, is the currency of the Pokémon
   world. In the current version Poké has no function other than contributing to
   your final score.
   
@@ -777,7 +848,37 @@ The Pokémon Summary for more information). If the leader is defeated and not
 revived, the leader will automatically switch to the next party member on the
 list.
 ===============================================================================
-							11. Saving Your Game
+						  11. All About the Weather
+===============================================================================
+Due to the magical natural forces in play in the Misery Dungeon, floors will
+often contain natural weather. As these forces grow stronger as you progress,
+more often and the more intense weather will be! Weather can also be summoned
+by using certain moves or rare Orbs that can be found in the dungeon.
+
+There are many different types of weather, each with their own unique effects.
+Some of the more common types of weather include:
+
+- Rain: Increases the power of Water-type moves by 50%, reduces the power of
+  Fire-type moves by 50%.
+- Sunny: Increases the power of Fire-type moves by 50%, reduces the power of
+  Water-type moves by 50%.
+- Sandstorm: Damages Pokémon over time, except those that are Rock-type,
+  Ground-type or Steel-type. Raises the Defense of Rock-types.
+- Hail: Damages Pokémon over time, except those that are Ice-type. Raises the
+  Defense of Ice-types.
+- Cloudy: Reduces visibility in corridors, but boosts the power of Normal-type
+  moves a little.
+- Snow: Boosts the power of Ice-type moves by 50%.
+- Fog: Lowers the accuracy of all moves, but increases all Pokémon's Speed by
+  20%. Greatly reduces visibility in corridors.
+- Thunderstorm: Water-type and Electric-type moves are boosted by 50%. 
+  Fire-type moves are weakened by 50%.
+  
+There's also some very rare and extreme weather types that can only be found
+on the highest floors... I'll leave it to you to discover those and find out
+what they do ;)
+===============================================================================
+							12. Saving Your Game
 ===============================================================================
 You can save the game at any time by using the "Save & Quit" option from the
 in-game menu. This will save the game to a file in the /save_data directory in
@@ -794,7 +895,7 @@ versions, i.e., save files from 0.1.0 will not work with 0.2.0. They are
 usually compatible with minor updates though, i.e., save files from 0.1.0
 should work with 0.1.1.
 ===============================================================================
-							12. Winning & Losing
+							13. Winning & Losing
 ===============================================================================
 To win the game you must successfully traverse all 50 floors of the dungeon and
 use the stairs on the 50th floor to exit. Doing so is no easy feat!
@@ -867,9 +968,9 @@ defeated in battle. Recruiting a Pokémon does not yield EVs.
 "exp_yield": Determines, along with the Pokémon's level, the amount of EXP
 gained upon defeating this Pokémon.
 
-"gender_ratio": Currently unused as gender is not yet implemented. Determines
-how often this Pokémon will be male (i.e., 0.875 = 87.5% male). If null, then
-this species is genderless.
+"gender_ratio": Currently unused, will be implemented in version 0.3. 
+Determines how often this Pokémon will be male (i.e., 0.875 = 87.5% 
+male). If null, then this species is genderless.
 
 "recruit_rate": Analogus to catch rate, determines how difficult it is for
 this species to be recruited by the player. A lower recruit rate means
@@ -896,7 +997,9 @@ summary screen and look around mode.
 which moves a Pokémon can learn and at what level. A level of "0" means that
 the Pokémon will learn this move on evolution.
 
-"tm_moves": Currently unused.
+"tm_moves": A list of all moves that this Pokémon can learn via TM. Note that
+Pokémon can also learn moves via TM that they would learn by level-up anyway;
+see "level_up_moves".
 
 "evolutions": Defines a Pokémon's possible evolutions and the criteria for it
 evolving. There are currently two definable types of evolution criteria; level
@@ -982,7 +1085,7 @@ There's too many effects to go over here, but its pretty self-explanatory
 if you look at the pre-defined ones in moves.json. (TODO: Maybe actually
 write something here?)
 ===============================================================================
-								 D. moves.json
+								 D. items.json
 ===============================================================================
 As stated above, currently most items have their effects hardcoded into the
 source code, so you will need to make source code changes to properly change or
@@ -1018,10 +1121,71 @@ rarity tiers are currently "Common", "Uncommon", "Rare", "Very Rare", "Epic"
 and "Legendary".
 
 "value": The value of one of these items in P. Currently only used as part of
-the game-end score calculation, but will be used for shops in a future update.
-
+the game-end score calculation, but will be used for shops in 0.3.
 ===============================================================================
-								E. Legal Crap
+								 E. tms.json
+===============================================================================
+Basically a greatly simplified version of items.json. Each TM is numbered
+sequentially in the order given in this file, and the TM number is appended
+before the name of the move in-game (no need to define it here).
+
+"name": The name of the taught move, and thus the name of the TM. Must be a
+move defined in moves.json.
+
+"rarity": The TM's rarity tier, with the same options as item rarity tiers.
+Note that internally, TMs are considered part of their own rarity bracket, and
+the item spawning algorithm spawns TMs using the rarity tiers within that
+bracket, so TMs are rarer than their rarities would otherwise imply.
+
+"value": The value of the TM item in P. Currently only used as part of the
+game-end score calculation, but will be used in shops in 0.3.
+===============================================================================
+							    F. Debug Mode
+===============================================================================
+So you've read all the way to the end of the manual, eh? Well, as a reward, let
+me tell you about the dark and horrible underbelly of Explorers of the
+Console...
+
+"Debug Mode" is basically a cheating mode that gives you complete control of
+most aspects of the game, and gives access to debugging information useful for,
+well, debuggers. Debug mode allows you to alter aspects of the game to your
+liking. Want to play as a level 99 Mewtwo? You can do that. Spawn as many
+bananas as you want? You can do that. Travel to London to see the Great British
+Museum? Well... maybe that might be a bit TOO powerful for this game.
+
+To enable debug mode, run the game from the command line with the --debug
+argument, e.g., python3 visualize.py --debug
+
+High scores will not be saved when a save file is loaded with Debug Mode, and
+your save files will be marked as cheated on the end screen. This applies even
+if you reload the game again outside Debug Mode.
+
+When Debug Menu is active, a Debug Menu option is added to the game's pause
+menu. A brief explanation of the functions provided within the Debug Menu is
+as follows:
+
+- Omnisicience Mode: Gives you a complete view of the entire dungeon map at all
+  times, bypassing all visibility restrictions.
+- Spawn Pokémon: Spawns the selected Pokémon on the target tile. The Pokémon's
+  intrinsic values can be completely customized.
+- Spawn Item: Spawns the selected item on the target tile. For stackable items,
+  the quantity of the item can be chosen.
+- Edit Pokémon: Edits the selected Pokémon in place. Level, EVs, IVs, Nature,
+  and Moves can all be modified. Also allows deletion of Pokémon entities.
+- Stress Test: Spawns Pokémon on all empty tiles on the floor. Used to stress
+  test the game and the AI.
+- Violate Geneva Convention: Deletes all non-team Pokémon from the current
+  floor.
+- Print Debug Info: Prints normally unseen game variables to the message log.
+- Forecast Weather: Changes the floor's weather.
+- Regenerate/Change Floor: Changes the current floor number and regenerates
+  with the new floor number (can be the same as the current floor).
+- Degreelessness Mode: When enabled, team members will always be revived when
+  defeated, even without Reviver Seeds.
+- Always Recruit Pokémon: When enabled, Pokémon recruitment rolls will always
+  succeed.
+===============================================================================
+								G. Legal Crap
 ===============================================================================
 Pokémon Misery Dungeon: Explorers of the Console
 Engine & Code Copyright (C) 2026 C437RP13 (GitHub: Axolotl and Fish)
