@@ -84,7 +84,9 @@ A. Modding
 B. pokemon.json
 C. moves.json
 D. items.json
-E. Legal Crap
+E. tms.json
+F. Debug Mode
+G. Legal Crap
 
 ===============================================================================
 					!. Reporting Bugs [IMPORTANT - PLEASE READ]
