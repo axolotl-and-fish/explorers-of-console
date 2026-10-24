@@ -266,7 +266,7 @@ class Game:
         self.floor_timer_collapsed = False
         self.map_shake_offset = (0, 0)
         self.collapse_blanked_tiles: set[tuple[int, int]] = set()
-        self.build_string = "Beta 0.2.0-dev"
+        self.build_string = "Beta 0.2.0"
         self.message = self.build_string
         self.stairs_position = (0, 0)
         self.spawn_stairs()
