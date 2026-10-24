@@ -151,7 +151,7 @@ TIPS_OF_THE_DAY = [
     "Stat raising moves can be used even without enemies nearby.",
     "Stronger Pokémon only show up on higher floors of the dungeon.",
     "No numpad? Use SHIFT+↑/↓ to move diag-left, & CTRL+↑/↓ to move diag right.",
-    "Join my Discord server! https://discord.gg/qr9V6FvMEz",
+    "Join my Discord server! discord.gg/SDTBkesJ6U",
     "This is an early beta version, so expect lots of bugs!",
     "Better move cost more PP; Normal-type moves tend to cost less PP.",
     "Drink Elixirs BEFORE fighting; using items in fights wastes valuable time.",
@@ -168,7 +168,23 @@ TIPS_OF_THE_DAY = [
     "Moves deal less damage when they hit multiple targets.",
     "More content is coming soon, stay tuned!",
     "Don't worry if you lose an ally, there's plenty more you can recruit.",
-    "Losing is fun. Every failed run is a learning experience for the next run!"
+    "Losing is fun. Every failed run is a learning experience for the next run!",
+    "Be careful with who you use TMs on, as some can teach very valuable moves!",
+    "Lingering on a floor too long may result in a slight case of death.",
+    "Sort your inventory with [Z] on the inventory screen. It even sticks!",
+    "Star me on GitHub! github.com/axolotl-and-fish/explorers-of-console",
+    "Bad weather? Use an item or move to change it, or get to the stairs.",
+    "Weather becomes more common the further your progress.",
+    "Some moves can only be found in TMs and can't be learned by level up.",
+    "Evolving a Pokémon may cause them to immediately learn some new moves.",
+    "Natures can completely change a Pokémon's viability!",
+    "Keep rerolling when starting a run to get your perfect set of stats!",
+    "Use your stat locks wisely!",
+    "0.3 coming Christmas 2026! Follow me on Bsky for updates.",
+    "Regret your teammate's name? You can rename them from their summary.",
+    "Use [;] to enable Auto Leader Switch, for manual control of your team.",
+    "Floors get larger and denser the further up you go.",
+    "Have you had your Weetabix today?"
 ]
 
 
