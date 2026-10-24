@@ -251,6 +251,8 @@ class Game:
         self._turn_timer_start: float | None = None
         self._turn_animation_time: float = 0.0
         self._animation_pause_depth: int = 0
+        self._turn_more_prompt_time: float = 0.0
+        self._more_prompt_pause_depth: int = 0
         self.floor_number = 1
         self.floor_width_override: int | None = width
         init_width = width if width is not None else self.get_target_floor_width(self.floor_number)
@@ -453,21 +455,40 @@ class Game:
             self._animation_pause_depth -= 1
             if self._animation_pause_depth == 0:
                 elapsed = time.perf_counter() - start
-                self._turn_animation_time = getattr(self, "_turn_animation_time", 0.0) + elapsed
+                if getattr(self, "_more_prompt_pause_depth", 0) == 0:
+                    self._turn_animation_time = getattr(self, "_turn_animation_time", 0.0) + elapsed
+
+    @contextlib.contextmanager
+    def more_prompt_pause(self):
+        """Context manager to measure and exclude [MORE] prompt display time from the debug turn timer"""
+        start = time.perf_counter()
+        prev_depth = getattr(self, "_more_prompt_pause_depth", 0)
+        self._more_prompt_pause_depth = prev_depth + 1
+        try:
+            yield
+        finally:
+            self._more_prompt_pause_depth -= 1
+            if self._more_prompt_pause_depth == 0:
+                elapsed = time.perf_counter() - start
+                if getattr(self, "_animation_pause_depth", 0) == 0:
+                    self._turn_more_prompt_time = getattr(self, "_turn_more_prompt_time", 0.0) + elapsed
 
     def _start_turn_timer(self):
         """Starts timing the current turn logic"""
         self._turn_timer_start = time.perf_counter()
         self._turn_animation_time = 0.0
+        self._turn_more_prompt_time = 0.0
 
     def _stop_turn_timer(self):
-        """Stops timing the turn and computes duration excluding animation delays"""
+        """Stops timing the turn and computes duration excluding animation delays and [MORE] prompt pauses"""
         if getattr(self, "_turn_timer_start", None) is not None:
             raw_duration = time.perf_counter() - self._turn_timer_start
             anim_duration = getattr(self, "_turn_animation_time", 0.0)
-            self.previous_turn_duration = max(0.0, raw_duration - anim_duration)
+            more_duration = getattr(self, "_turn_more_prompt_time", 0.0)
+            self.previous_turn_duration = max(0.0, raw_duration - anim_duration - more_duration)
             self._turn_timer_start = None
             self._turn_animation_time = 0.0
+            self._turn_more_prompt_time = 0.0
 
     def register_encountered_species(self, species_name: str, was_defeated: bool = False, is_recruited: bool = False):
         """Tracks encountered species, defeated count, and recruitment count (used for the summary screen)"""
@@ -1394,24 +1415,26 @@ class Game:
         #When more than 5 messages have been added in a single turn, prompt [MORE]
         #For most cases, don't display the prompt unless a turn is ongoing.
         if turn_active and getattr(self, "_turn_messages_count", 0) >= 5:
-            self.message_log.has_more_page = True
-            self.render()
-            if self._should_wait_for_more_prompt():
-                game_input.get_key()
-            self.message_log.has_more_page = False
-            self._turn_messages_count = 0
+            with self.more_prompt_pause():
+                self.message_log.has_more_page = True
+                self.render()
+                if self._should_wait_for_more_prompt():
+                    game_input.get_key()
+                self.message_log.has_more_page = False
+                self._turn_messages_count = 0
 
         colorized = self.colorize_log_message(text, important=is_imp)
         self.message_log.log(colorized, current_action, important=is_imp)
         self._turn_messages_count = getattr(self, "_turn_messages_count", 0) + 1
 
         if is_imp:
-            self.message_log.has_more_page = True
-            self.render()
-            if self._should_wait_for_more_prompt():
-                game_input.get_key()
-            self.message_log.has_more_page = False
-            self._turn_messages_count = 0
+            with self.more_prompt_pause():
+                self.message_log.has_more_page = True
+                self.render()
+                if self._should_wait_for_more_prompt():
+                    game_input.get_key()
+                self.message_log.has_more_page = False
+                self._turn_messages_count = 0
         else:
             self.render()
 
@@ -12561,6 +12584,12 @@ class Game:
         self.start_time = time.time()
         self.session_start_time = time.time()
         self.accumulated_play_time = 0.0
+        self.previous_turn_duration = 0.0
+        self._turn_timer_start = None
+        self._turn_animation_time = 0.0
+        self._turn_more_prompt_time = 0.0
+        self._animation_pause_depth = 0
+        self._more_prompt_pause_depth = 0
         self.message_log = MessageLog()
         self._message_log_current_turn = 1
         self._turn_messages_count = 0
@@ -14754,9 +14783,13 @@ class Game:
 
         while self.message_log.has_pending():
             has_more = self.message_log.step_page()
-            self.render()
             if has_more:
-                game_input.get_key()
+                with self.more_prompt_pause():
+                    self.render()
+                    if self._should_wait_for_more_prompt():
+                        game_input.get_key()
+            else:
+                self.render()
         self.message_log.has_more_page = False
 
     def run(self):
