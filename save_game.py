@@ -467,7 +467,6 @@ def apply_game_state(game, state_dict: dict):
     """Restores a Game instance to match the serialized state_dict (when loading a save)"""
     import time
     game.cheated = bool(state_dict.get("cheated", False) or getattr(game, "debug_mode", False))
-    game.auto_leader_switch = bool(state_dict.get("auto_leader_switch", False))
     game.floor_number = state_dict.get("floor_number", 1)
     default_timer = 500 + 10 * game.floor_number
     game.floor_timer = state_dict.get("floor_timer", default_timer)
@@ -509,6 +508,7 @@ def apply_game_state(game, state_dict: dict):
     game.floor_spawn_list = list(state_dict.get("floor_spawn_list", []))
     game.inventory = [dict(item) for item in state_dict.get("inventory", [])]
     game.inventory_sort_mode = state_dict.get("inventory_sort_mode", "Unsorted")
+    game.auto_leader_switch = state_dict.get("auto_leader_switch", False)
 
     game.items_on_floor = {}
     for pos_key, item in state_dict.get("items_on_floor", {}).items():

@@ -724,15 +724,7 @@ class Game:
                 hs_controller.handle_input(action)
 
         #Return to the title screen when high score screen is closed
-        self.high_scores_state = None
-        import random
-        self.title_screen_state = {
-            "selected_index": 0,
-            "tip_of_the_day": random.choice(TIPS_OF_THE_DAY)
-        }
-        self.game_ended = False
-        self.game_won = False
-        self.is_running = True
+        self.return_to_title_screen()
 
     def generate_floor_spawn_list(self):
         """
@@ -10175,9 +10167,7 @@ class Game:
             from save_game import save_game
             try:
                 fpath = save_game(self)
-                self.pause_menu_state = None
-                self.is_running = False
-                self.log_message(f"Game saved to {os.path.basename(fpath)}.", important=True)
+                self.return_to_title_screen()
             except Exception as e:
                 self.log_message(f"Failed to save game: {str(e)}", important=True)
                 self.render()
@@ -12209,6 +12199,44 @@ class Game:
         }
         self.render()
 
+    def return_to_title_screen(self):
+        """Returns to the title screen and resets important variables."""
+        self.pause_menu_state = None
+        self.active_status_pokemon = None
+        self.summary_context_menu_state = None
+        self.inventory_state = None
+        self.message_history_state = None
+        self.throw_state = None
+        self.waiting_for_throw_direction = None
+        self.waiting_for_orb_direction = None
+        self.orb_direction_mode = False
+        self.move_replacement_queue = []
+        self.targeting_mode = False
+        self.targeting_move = None
+        self.look_around_mode = False
+        self.waiting_for_direction = False
+        self.direction_move = None
+        self.replace_recruit_state = None
+        self.nickname_prompt_state = None
+        self.debug_spawn_pokemon_state = None
+        self.debug_spawn_item_state = None
+        self.debug_tile_select_mode = None
+        self.game_ended = False
+        self.game_won = False
+        self.high_scores_state = None
+        self.load_game_state = None
+        self.starter_select_state = None
+        self.disclaimer_screen_state = None
+        self.player_pokemon = None
+        self.party = []
+        self.is_running = True
+        import random
+        self.title_screen_state = {
+            "selected_index": 0,
+            "tip_of_the_day": random.choice(TIPS_OF_THE_DAY)
+        }
+        self.render()
+
     def render_disclaimer_screen(self) -> list[str]:
         """Renders the startup disclaimer screen"""
         state = getattr(self, "disclaimer_screen_state", None)
@@ -12492,6 +12520,49 @@ class Game:
         self.omniscience_mode = False
         self.degreelessness_mode = False
         self.always_recruit_pokemon = False
+
+        self.inventory = []
+        self.money = 0
+        self.turn_number = 0
+        self.player_action_number = 1
+        self.turn_in_progress = False
+        self.turn_count = 0
+        self.game_ended = False
+        self.game_won = False
+        self.total_enemy_exp = 0
+        self.total_recruited_count = 0
+        self.all_team_members = []
+        self.encountered_species = {}
+        self.items_on_floor = {}
+        self.active_status_pokemon = None
+        self.move_replacement_queue = []
+        self.flash_damages = {}
+        self.moved_used_this_turn = set()
+        self.round_users_this_turn = set()
+        self.party_start_positions = {}
+        self.player_actions_left = 1
+        self.leech_seed_sources = {}
+        self.taunt_sources = {}
+        self.fire_spin_bindings = []
+        self.wrap_bindings = []
+        self.sand_tomb_bindings = []
+        self.whirlpool_bindings = []
+        self.future_sight_effects = []
+        self.targeting_mode = False
+        self.targeting_move = None
+        self.waiting_for_direction = False
+        self.direction_move = None
+        self.look_around_mode = False
+        self.auto_leader_switch = False
+        self._auto_switch_acted_members = set()
+        import time
+        self.start_time = time.time()
+        self.session_start_time = time.time()
+        self.accumulated_play_time = 0.0
+        self.message_log = MessageLog()
+        self._message_log_current_turn = 1
+        self._turn_messages_count = 0
+        self.is_running = True
 
         self.player_pokemon = Pokemon(species_name, level=2, nickname=nickname, nature=nature, ivs=ivs, is_leader=True)
         self.player_pokemon.is_leader = True
@@ -14933,6 +15004,13 @@ class Game:
                 self.render()
 
     def _run_loop(self):
+        while self.is_running:
+            self._run_loop_body()
+            if not (getattr(self, "title_screen_state", None) is not None and self.is_running):
+                self.is_running = False
+                break
+
+    def _run_loop_body(self):
         #Initial render/message processing
         if self.message_log.has_pending():
             self.process_messages()
@@ -15815,7 +15893,8 @@ class Game:
         if getattr(self, "game_ended", False) or getattr(self, "game_won", False) or (self.player_pokemon is not None and int(self.player_pokemon.current_hp) <= 0):
             self.show_end_screen()
 
-        self.is_running = False
+        if not (getattr(self, "title_screen_state", None) is not None and self.is_running):
+            self.is_running = False
 
     def _restore_cursor(self):
         """Restore text cursor when exiting game loop."""
