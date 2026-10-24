@@ -13088,6 +13088,11 @@ class Game:
             color_code = color_map.get(color_raw.lower(), "\033[92m")
         return f"{color_code}{symbol}\033[0m"
 
+    def render_final_floor_map(self) -> list[str]:
+        """Renders the final state of the entire floor without color (used for the end screen)"""
+        from end_screen import render_floor_map
+        return render_floor_map(self)
+
     def render_map_to_rows(self) -> list[str]:
         """Compiles the raw dungeon map grid cells into row strings with overlaid entities"""
         self.explored_tiles.update(self._compute_currently_visible(ignore_omniscience=True))

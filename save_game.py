@@ -459,7 +459,6 @@ def serialize_game_state(game) -> dict:
         "sand_tomb_bindings": [serialize_binding(b) for b in getattr(game, "sand_tomb_bindings", [])],
         "whirlpool_bindings": [serialize_binding(b) for b in getattr(game, "whirlpool_bindings", [])],
         "cheated": getattr(game, "cheated", False),
-        "auto_leader_switch": getattr(game, "auto_leader_switch", False),
     }
 
 
@@ -508,7 +507,6 @@ def apply_game_state(game, state_dict: dict):
     game.floor_spawn_list = list(state_dict.get("floor_spawn_list", []))
     game.inventory = [dict(item) for item in state_dict.get("inventory", [])]
     game.inventory_sort_mode = state_dict.get("inventory_sort_mode", "Unsorted")
-    game.auto_leader_switch = state_dict.get("auto_leader_switch", False)
 
     game.items_on_floor = {}
     for pos_key, item in state_dict.get("items_on_floor", {}).items():

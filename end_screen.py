@@ -35,6 +35,94 @@ def get_item_value(item: dict) -> int:
     return unit_val * count
 
 
+def render_floor_map(game) -> list[str]:
+    """Renders the final state of the entire floor."""
+    floor = getattr(game, "floor", None)
+    if (
+        floor is None
+        or not isinstance(getattr(floor, "width", None), int)
+        or not isinstance(getattr(floor, "height", None), int)
+        or not isinstance(getattr(floor, "grid", None), (list, tuple))
+    ):
+        return []
+
+    #Map of spawned pokemon coordinates to single-char symbol
+    spawned_map = {}
+    for p in getattr(game, "spawned_pokemon", []):
+        if hasattr(p, "x") and hasattr(p, "y") and int(getattr(p, "current_hp", 0)) > 0:
+            name = getattr(p, "name", "")
+            char = name[0] if name else "E"
+            spawned_map[(p.x, p.y)] = char
+
+    #Map of non-leader party ally coordinates to slot string
+    ally_map = {}
+    player_poke = getattr(game, "player_pokemon", None)
+    party = getattr(game, "party", [])
+    for idx, ally in enumerate(party):
+        if (
+            ally is not player_poke
+            and not getattr(ally, "is_leader", False)
+            and int(getattr(ally, "current_hp", 0)) > 0
+        ):
+            if hasattr(ally, "x") and hasattr(ally, "y"):
+                ax, ay = ally.x, ally.y
+            else:
+                try:
+                    from targeting import get_pokemon_position
+                    ax, ay = get_pokemon_position(game, ally)
+                except Exception:
+                    ax, ay = (0, 0)
+            slot_num = idx + 1
+            slot_str = str(slot_num) if slot_num < 10 else str(slot_num % 10)
+            ally_map[(ax, ay)] = slot_str
+
+    #Items on floor
+    items_map = {}
+    for (ix, iy), item in getattr(game, "items_on_floor", {}).items():
+        if isinstance(item, dict):
+            if item.get("type") == "Money" or item.get("name") == "Poké":
+                sym = "P"
+            else:
+                raw_sym = item.get("appearance") or item.get("symbol") or item.get("char") or "?"
+                sym = strip_ansi(str(raw_sym))
+        else:
+            sym = "?"
+        items_map[(ix, iy)] = sym
+
+    player_x = getattr(game, "player_x", None)
+    player_y = getattr(game, "player_y", None)
+    player_pos = (player_x, player_y) if player_x is not None and player_y is not None else None
+    stairs_pos = getattr(game, "stairs_position", None)
+    wonder_pos = getattr(game, "wonder_tile_position", None)
+    blanked_tiles = getattr(game, "collapse_blanked_tiles", set())
+
+    rows: list[str] = []
+    for y in range(floor.height):
+        row_chars = []
+        for x in range(floor.width):
+            if blanked_tiles and (x, y) in blanked_tiles:
+                row_chars.append(" ")
+            elif player_pos is not None and player_pos == (x, y):
+                row_chars.append("@")
+            elif (x, y) in ally_map:
+                row_chars.append(ally_map[(x, y)])
+            elif (x, y) in spawned_map:
+                row_chars.append(spawned_map[(x, y)])
+            elif (x, y) == stairs_pos:
+                row_chars.append(">")
+            elif (x, y) == wonder_pos:
+                row_chars.append("↑")
+            elif (x, y) in items_map:
+                row_chars.append(items_map[(x, y)])
+            else:
+                if 0 <= y < len(floor.grid) and 0 <= x < len(floor.grid[y]):
+                    row_chars.append(strip_ansi(str(floor.grid[y][x])))
+                else:
+                    row_chars.append(" ")
+        rows.append("".join(row_chars))
+    return rows
+
+
 def generate_end_screen_report(game, game_won: bool) -> list[str]:
     """Generates complete uncolored text report lines for the End Screen."""
     lines: list[str] = []
@@ -199,7 +287,18 @@ def generate_end_screen_report(game, game_won: bool) -> list[str]:
     lines.append("")
 
     #---------------------------------------------------------
-    #SECTION 3: ENCOUNTERED POKÉMON SPECIES
+    #SECTION 3: FINAL MAP
+    #---------------------------------------------------------
+    lines.append("──────────────────FINAL─MAP───────────────────")
+    map_rows = render_floor_map(game)
+    if not map_rows:
+        lines.append("(no map)")
+    else:
+        lines.extend(map_rows)
+    lines.append("")
+
+    #---------------------------------------------------------
+    #SECTION 4: ENCOUNTERED POKÉMON SPECIES
     #---------------------------------------------------------
     lines.append("──────────────ENCOUNTERED─POKÉMON─────────────")
     enc = getattr(game, "encountered_species", {})
@@ -222,7 +321,7 @@ def generate_end_screen_report(game, game_won: bool) -> list[str]:
     lines.append("└" + "─" * 45 + "┘")
 
     #---------------------------------------------------------
-    #SECTION 4: TEAM MEMBERS HISTORY
+    #SECTION 5: TEAM MEMBERS HISTORY
     #---------------------------------------------------------
     lines.append("────────────────YOUR─TEAMMATES────────────────")
     history = getattr(game, "all_team_members", [])
@@ -353,7 +452,7 @@ def generate_end_screen_report(game, game_won: bool) -> list[str]:
         lines.append("")
 
     #---------------------------------------------------------
-    #SECTION 5: FINAL INVENTORY
+    #SECTION 6: FINAL INVENTORY
     #---------------------------------------------------------
     lines.append("──────────────────TOOLBOX─────────────────────")
     if not inventory:
@@ -370,7 +469,7 @@ def generate_end_screen_report(game, game_won: bool) -> list[str]:
     lines.append("")
 
     #---------------------------------------------------------
-    #SECTION 6: MESSAGE HISTORY
+    #SECTION 7: MESSAGE HISTORY
     #---------------------------------------------------------
     lines.append("────────────────MESSAGE─HISTORY───────────────")
     raw_msgs = getattr(game.message_log, "raw_messages", [])
