@@ -1,5 +1,134 @@
 		Pokémon Misery Dungeon: Explorers of the Console CHANGELOG
 ===============================================================================
+						   0.2.0  - October 26, 2026
+===============================================================================
+Save files and highscores from 0.1.x will not be compatible.
+Expect scores to be significantly inflated compared to 0.1.x!
+-----------------------------------ADDITIONS-----------------------------------
+- 36 new Pokémon species have been added to the game, representing regional
+  variants of Generation 1 Pokémon!
+- 4 new starter Pokémon to choose from; Alolan Vulpix, Alolan Meowth, Galarian
+  Meowth and Hisuian Growlithe. Yes, you can start as the ice fox now. Kon!
+- TMs have been added to the game! There are 58 TMs in total, from generation 1
+  as well as the three PMD-exclusive TMs.
+- Many ranged moves (and some non-ranged moves) now play animations!
+- 31 new moves for the new Pokémon, as well as for moves that are (currently)
+  TM-exclusive.
+- Weather has been completely overhauled and can now spawn naturally on floors.
+  This becomes more common the further into the dungeon you get. There are also
+  9 new weather types:
+	- Cloudy: Normal-type moves are boosted in power by 33%. 
+    Visibility is reduced by one tile in corridors.
+	- Fog: Lowers move accuracy by 20%, but all Pokémon have 33% increased Speed. 
+	Visibility is reduced by two tiles in corridoors (but not below one tile).
+	- Snow: Ice-type moves are boosted by 50%.
+	- Blizzard: Ice-type moves are boosted by 50% and Ice-type Pokémon have 
+	increased movement speed and +50% Speed.
+	- Thunderstorm: Water-type and Electric-type moves are boosted by 50%. 
+	Fire-type moves are weakened by 50%.
+	- And 4 more super rare weather types... I won't spoil them here ;)
+- Additionally, most weather effects now play particle animations on the map.
+- Floors may have lowered visibility now, and this becomes increasingly common
+  as you reach higher floors.
+- Dungeon floors are now timed. Linger too long and the floor will collapse,
+  ending your game.
+- Pokémon now have Natures! Natures work just like the main series Pokémon
+  games and every Pokémon you encounter has a randomly determined Nature.
+- You can now reroll your starter's IVs and Nature before starting a new game. 
+  You can "lock" up to 2 of them to prevent them from being re-randomized while
+  rerolling the rest. Use this if you get a good IV/Nature and want to keep it.
+- You can now sort your inventory by pressing [Z] in the inventory screen. You
+  can sort items by name, type, or rarity, and the game will keep sorting your
+  items for you!
+- You can now rename teammates from their Summary screen.
+- A new "Auto Leader Switch" mode has been added, which can be toggled on and 
+  off by pressing [;]. This control mode automatically switches the leader to 
+  other teammates when it is their turn to move, allowing for full manual 
+  control of your team in tight situations!
+- The end screen now includes a copy of the entire floor's map when your game
+  ended (and is also included in the text dump).
+- A Debug Mode has been added for those filthy cheaters ;) (or you know, 
+  debuggers) Pass the --debug parameter to the game when starting it to 
+  activate it. Debug mode gives you access to a bunch of debugging and cheating
+  features, but will disable high scores. Note that messing with debug features
+  may lead to unexpected bugs, so try it at your own risk!
+- 16 new loading screen tips.
+------------------------------------CHANGES------------------------------------
+- EXP has been rebalanced. The base EXP from an enemy is now multiplied by the
+  number of party members in your team. Additionally, the team member that
+  deals the finishing blow gets a +25% EXP bonus, and Pokémon that did not
+  damage an enemy at all get a -25% EXP penalty. This should make training a
+  full party much easier.
+- Dungeon floor size now increases as you progress, the early floors should be
+  faster now.
+- Similarly, the number of items per floor and the rate of Pokémon spawns now
+  increases slowly with the floor number. Expect slightly fewer items on
+  earlier floors, and slightly more on later floors.
+- To compensate for EXP being more abundant, base EXP from enemies has been
+  reduced by 33%.
+- Some items now only appear on certain floors.
+	- All evolution stones now only appear on 21F and higher.
+	- Sitrus Berries, Razz Berries, Nanab Berries and Pinap Berries only appear 
+	  on 31F and higher.
+	- Type-resistance berries only appear on 21F and higher.
+	- Vitamins (except PP Up) only appear on 11F and higher.
+	- PP Max only appears on 41F and higher.
+	- Geo Pebbles stop appearing after 10F.
+	- Gravelerocks stop appearing after 20F.
+	- Sticks only appear on 1F-20F.
+	- Iron Thorns only appear on 11F-30F.
+	- Silver Spikes only appear on 21F-40F.
+	- Corsola Twigs and Cacnea Spikes only appear on 31F and higher.
+	- Gold Fangs only appear on 41F and higher.
+	- Rainbow Apricorns only appear on 31F and higher.
+	- Grimy Food only appears on 11F and higher.
+	- Doom Seeds don't appear on 1F anymore (because they would be redundant
+	  when every Pokémon is level 1 anyway)
+- Lots of improvements to damage pop-ups.
+	- Damage pop-ups are properly centered now.
+	- Damage pop-ups have inverted colors on a critical hit.
+	- New pop-ups appear when a stat is raised or lowered.
+	- Some status effects also trigger a pop-up when applied.
+- Now that Dark- and Steel-type Pokémon are in the game, the Black & Silver
+  Apricorns are now much more common, going from Legendary rarity to Rare/Very
+  Rare respectively.
+- Certain "dangerous" moves (such as Explosion and Memento) are now disabled by
+  default for teammates. Hopefully that means your teammates don't randomly kill
+  themselves now... as much :P
+- Save files are now compressed with zlib and have had some unnecessary data
+  removed. This should reduce the size of save files by over 80%. I don't know
+  if this will break compatability with some platforms, so let me know!
+- All weather orbs are now one tier rarer.
+- Fury Cutter's power has been nerfed (15 -> 10)
+- Lowered the power ceiling of Reversal and Flail (250 -> 200)
+- Abra doesn't start with Confusion anymore. Not really necessary now that it
+  can learn moves by TM.
+- The terminal is now cleared on screen refresh.
+- The game now returns to the title screen instead of exiting when saving and
+  quitting or after the game ends.
+-------------------------------------FIXES-------------------------------------
+- Diglett now evolves at level 26 instead of 24 (whoops)
+- Lowered the luminous floor vision radius from 100 to 56 to partially fix
+  performance issues caused by excessive lighting calculations
+- Fixed Luminous Orb's effect being permanent
+- Allies won't use Struggle anymore if all of their moves are manually
+  disabled.
+- Apricorns are no longer affected by Pierce Throw (which was causing them not
+  to work)
+- Fixed HP values below -99 causing graphical glitches in the interface.
+- Fixed some moves having the wrong type.
+	- Nasty Plot is now properly Dark-type (and not Fairy)
+	- Counter is now properly Fighting-type (and not Dark)
+- Totter Seeds actually work now when thrown.
+- Fixed the screen not refreshing properly when a move needs to be replaced on
+  evolving a Pokémon.
+- Fixed another double message, this time when using a Power Toss Orb.
+- Fixed a typo with the Transform Orb's description.
+- Removed some internal unused code. I have no idea if this actually improves
+  performance/mem usage or not, but I doubt it will make a difference anyway
+  lol
+- Miscellaneous JSON fixes.
+===============================================================================
 						0.1.2  - September 13, 2026
 ===============================================================================
 -----------------------------------ADDITIONS-----------------------------------
@@ -69,6 +198,7 @@ of these! (And for being the first player ever to beat Explorers of Console!)
 - First public release!
 -------------------------------------FIXES-------------------------------------
 - Fixed eating Grimy Food resulting in a double message.
+
 ------------------------------PRIVATE BETA-------------------------------------
 ===============================================================================
 				0.1.0 Release Candidate 6 - August 24, 2026
