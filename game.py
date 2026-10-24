@@ -12823,6 +12823,7 @@ class Game:
             options.append("Make Leader")
         if len(self.party) > 1:
             options.append("Switch Places")
+        options.append("Rename")
         is_leader = (pokemon == self.player_pokemon or getattr(pokemon, "is_leader", False))
         if not is_leader:
             options.append("Farewell")
@@ -12895,7 +12896,22 @@ class Game:
             box_rows.append(fmt_line("[Esc] Cancel"))
             box_rows.append(bot_border)
 
+        elif mode == "rename":
+            curr_text = state.get("text", "")
+            box_rows.append(top_border)
+            box_rows.append(fmt_line(f"Rename {poke.name}"))
+            box_rows.append(sep_border)
+            box_rows.append(fmt_line("Enter a new nickname:"))
+            box_rows.append(fmt_line("(Max 12 characters, leave empty to reset)"))
+            box_rows.append(empty_line)
+            box_rows.append(fmt_line(f"► {curr_text}_"))
+            box_rows.append(empty_line)
+            box_rows.append(sep_border)
+            box_rows.append(fmt_line("[Return] Confirm   [Esc] Cancel"))
+            box_rows.append(bot_border)
+
         elif mode == "farewell_confirm":
+            box_rows.append(top_border)
             box_rows.append(fmt_line("Are you SURE you want to say goodbye to"))
             box_rows.append(fmt_line(f"{poke.name}? They will leave the team forever."))
             box_rows.append(empty_line)
@@ -14011,11 +14027,7 @@ class Game:
             if len(left_text) > 48:
                 left_text = left_text[:45] + "..."
         else:
-            sort_mode = getattr(self, "inventory_sort_mode", "Unsorted")
-            if sort_mode and sort_mode != "Unsorted":
-                left_text = f"  Toolbox ({sort_mode})"
-            else:
-                left_text = "  Toolbox"
+            left_text = "  Toolbox"
 
         right_margin = f"{capacity_str}  "
         spaces_needed = max(1, 74 - len(left_text) - len(right_margin))
@@ -14757,6 +14769,12 @@ class Game:
                         context_state["mode"] = "switch_places"
                         self.render()
                         return
+                    elif sel_opt == "Rename":
+                        context_state["mode"] = "rename"
+                        target = self.active_status_pokemon
+                        context_state["text"] = target.nickname or "" if target else ""
+                        self.render()
+                        return
                     elif sel_opt == "Farewell":
                         context_state["mode"] = "farewell_confirm"
                         self.render()
@@ -14821,6 +14839,36 @@ class Game:
                         return
                 if action == game_input.QUIT:
                     context_state["mode"] = "menu"
+                    self.render()
+                    return
+
+            elif mode == "rename":
+                curr_text = context_state.get("text", "")
+                poke = self.active_status_pokemon
+                if action in ("ENTER", game_input.CONFIRM, "\r", "\n"):
+                    name_to_set = curr_text.strip()[:12]
+                    if poke:
+                        if name_to_set:
+                            poke.nickname = name_to_set
+                        else:
+                            poke.nickname = None
+                        for entry in getattr(self, "all_team_members", []):
+                            if entry.get("pokemon") is poke:
+                                entry["name"] = poke.name
+                    self.summary_context_menu_state = None
+                    self.render()
+                    return
+                elif action in ("ESC", game_input.QUIT, "\x1b"):
+                    context_state["mode"] = "menu"
+                    self.render()
+                    return
+                elif action in ("BACKSPACE", "\x08", "KEY_BACKSPACE"):
+                    if curr_text:
+                        context_state["text"] = curr_text[:-1]
+                        self.render()
+                    return
+                elif len(action) == 1 and len(curr_text) < 12 and (action.isalnum() or action in " -_"):
+                    context_state["text"] = curr_text + action
                     self.render()
                     return
 
@@ -15237,6 +15285,16 @@ class Game:
 
             has_weather_anim = getattr(self, "weather", "Clear") in ANIMATED_PARTICLE_WEATHERS
             if getattr(self, "active_status_pokemon", None) is not None:
+                state = getattr(self, "summary_context_menu_state", None)
+                if state and state.get("mode") == "rename":
+                    try:
+                        char_in = game_input.get_char_input(timeout=None)
+                    except (StopIteration, RuntimeError):
+                        self.is_running = False
+                        break
+                    if char_in is not None:
+                        self.handle_summary_input(char_in)
+                    continue
                 timeout = None
             else:
                 if has_weather_anim:
