@@ -10167,6 +10167,8 @@ class Game:
             from save_game import save_game
             try:
                 fpath = save_game(self)
+                self.pause_menu_state = None
+                self.log_message(f"Game saved to {os.path.basename(fpath)}.", important=True)
                 self.return_to_title_screen()
             except Exception as e:
                 self.log_message(f"Failed to save game: {str(e)}", important=True)
