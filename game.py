@@ -362,6 +362,8 @@ class Game:
         self.look_around_mode = False #Game mode used when pressing "l", displays descriptions of items
         self.look_around_cursor = (0, 0)
         self.look_around_cursor_visible = True #Used to flash the cursor in look around mode
+        self.auto_leader_switch: bool = False #Auto Leader Switch mode (press ';')
+        self._auto_switch_acted_members: set[Pokemon] = set()
         self.active_status_pokemon = None #Active Pokémon in the party
         self.summary_scroll_offset: int = 0
         self.future_sight_effects: list[dict] = []
@@ -2282,6 +2284,8 @@ class Game:
 
     def process_ally_turns(self):
         """Default AI for non-leader teammates (allies) in self.party."""
+        if getattr(self, "auto_leader_switch", False):
+            return
         for ally in list(self.party):
             if ally is self.player_pokemon or int(ally.current_hp) <= 0:
                 continue
@@ -3041,6 +3045,39 @@ class Game:
         if not self.is_running or int(self.player_pokemon.current_hp) <= 0:
             self.player_actions_left = 0
 
+        #Auto Leader Switch: Switch to next team member who can act before resolving enemies & round end
+        if getattr(self, "auto_leader_switch", False) and len(self.party) > 1:
+            if not hasattr(self, "_auto_switch_acted_members") or self._auto_switch_acted_members is None:
+                self._auto_switch_acted_members = set()
+            self._auto_switch_acted_members.add(self.player_pokemon)
+
+            #Look for the next member in self.party that can act this round
+            next_actor = None
+            next_actions = 0
+            for member in self.party:
+                if member in self._auto_switch_acted_members or int(member.current_hp) <= 0:
+                    continue
+                if getattr(member, "swapped_this_turn", False):
+                    self._auto_switch_acted_members.add(member)
+                    continue
+                act_count = self.get_pokemon_actions_this_turn(member)
+                if act_count <= 0:
+                    self._auto_switch_acted_members.add(member)
+                    continue
+                next_actor = member
+                next_actions = act_count
+                break
+
+            if next_actor is not None:
+                self.switch_leader(next_actor)
+                self.player_actions_left = next_actions
+                self.turn_in_progress = False
+                self._stop_turn_timer()
+                return
+
+            #All party members have completed their actions this round!
+            self._auto_switch_acted_members.clear()
+
         self.turn_number += 1
         self.message_log.has_more_page = False
 
@@ -3381,7 +3418,27 @@ class Game:
                 self.set_weather(getattr(self, "base_weather", "Clear"))
 
         #Replenish player actions for the next round
-        self.replenish_player_actions()
+        if getattr(self, "auto_leader_switch", False) and len(self.party) > 1:
+            first_actor = None
+            first_actions = 0
+            for member in self.party:
+                if int(member.current_hp) <= 0:
+                    continue
+                act_count = self.get_pokemon_actions_this_turn(member)
+                if act_count <= 0:
+                    self._auto_switch_acted_members.add(member)
+                    continue
+                first_actor = member
+                first_actions = act_count
+                break
+
+            if first_actor is not None:
+                self.switch_leader(first_actor)
+                self.player_actions_left = first_actions
+            else:
+                self.replenish_player_actions()
+        else:
+            self.replenish_player_actions()
         self.turn_in_progress = False
         self._stop_turn_timer()
 
@@ -8228,16 +8285,12 @@ class Game:
             member.is_leader = False
             self.party.remove(member)
 
+            if hasattr(self, "_auto_switch_acted_members"):
+                self._auto_switch_acted_members.discard(member)
             if is_leader:
                 if len(self.party) > 0:
                     new_leader = self.party[0]
-                    new_leader.is_leader = True
-                    self.player_pokemon = new_leader
-                    for m in new_leader.moves:
-                        m["enabled"] = True
-                    if hasattr(new_leader, "x") and hasattr(new_leader, "y"):
-                        self.player_x = new_leader.x
-                        self.player_y = new_leader.y
+                    self.switch_leader(new_leader)
                     self.log_message(f"{new_leader.name} took over as team leader!", important=True)
                 else:
                     #Game over man, game over!
@@ -12716,6 +12769,34 @@ class Game:
         scores = load_high_scores()
         return self.sanitize_rendered_rows(format_high_scores_table(scores))
 
+    def switch_leader(self, target: Pokemon, log: bool = False):
+        """Switches the team leader to target Pokémon."""
+        if target not in self.party:
+            return
+        for p in self.party:
+            if p != target:
+                p.is_leader = False
+                for m in p.moves:
+                    if m.get("dangerous", False):
+                        m["enabled"] = False
+        target.is_leader = True
+        self.player_pokemon = target
+        for m in target.moves:
+            m["enabled"] = True
+        if hasattr(target, "x") and hasattr(target, "y"):
+            self.player_x = target.x
+            self.player_y = target.y
+        if log and not self.auto_leader_switch:
+            self.log_message(f"{target.name} became the leader!")
+
+    def toggle_auto_leader_switch(self):
+        """Toggles the Auto Leader Switch on or off."""
+        self.auto_leader_switch = not getattr(self, "auto_leader_switch", False)
+        if hasattr(self, "_auto_switch_acted_members"):
+            self._auto_switch_acted_members.clear()
+        status = "enabled" if self.auto_leader_switch else "disabled"
+        self.log_message(f"Auto Leader Switch {status}.")
+
     def can_change_leader(self, target: Pokemon) -> bool:
         """Returns True if the leader can be changed to target.
         Leader cannot be changed if target is already the team leader, or if either the leader
@@ -13931,6 +14012,9 @@ class Game:
                 left_text = left_text[:45] + "..."
         else:
             sort_mode = getattr(self, "inventory_sort_mode", "Unsorted")
+            if sort_mode and sort_mode != "Unsorted":
+                left_text = f"  Toolbox ({sort_mode})"
+            else:
                 left_text = "  Toolbox"
 
         right_margin = f"{capacity_str}  "
@@ -14663,20 +14747,9 @@ class Game:
                     elif sel_opt == "Make Leader":
                         target = self.active_status_pokemon
                         if target and self.can_change_leader(target):
-                            for p in self.party:
-                                if p != target:
-                                    p.is_leader = False
-                                    for m in p.moves:
-                                        if m.get("dangerous", False):
-                                            m["enabled"] = False
-                            target.is_leader = True
-                            self.player_pokemon = target
-                            for m in target.moves:
-                                m["enabled"] = True
-                            if hasattr(target, "x") and hasattr(target, "y"):
-                                self.player_x = target.x
-                                self.player_y = target.y
-                            self.log_message(f"{target.name} became the leader!")
+                            self.switch_leader(target, log=True)
+                            if hasattr(self, "_auto_switch_acted_members"):
+                                self._auto_switch_acted_members.clear()
                         self.summary_context_menu_state = None
                         self.render()
                         return
@@ -15172,7 +15245,8 @@ class Game:
                     timeout = 0.5
                 else:
                     timeout = None
-            self.party_start_positions = {p: get_pokemon_position(self, p) for p in self.party}
+            if not self.party_start_positions:
+                self.party_start_positions = {p: get_pokemon_position(self, p) for p in self.party}
             try:
                 action = game_input.get_key(timeout=timeout)
             except (StopIteration, RuntimeError):
@@ -15495,6 +15569,15 @@ class Game:
                 self.render()
                 continue
 
+            #Toggle auto leader switch mode
+            if action in (";", getattr(game_input, "TOGGLE_AUTO_LEADER_SWITCH", "TOGGLE_AUTO_LEADER_SWITCH")):
+                self.toggle_auto_leader_switch()
+                if self.message_log.has_pending():
+                    self.process_messages()
+                else:
+                    self.render()
+                continue
+
             #9. Open teammate status window
             if action in (game_input.STATUS_1, game_input.STATUS_2, game_input.STATUS_3, game_input.STATUS_4, game_input.STATUS_5, game_input.STATUS_6):
                 status_map = {
@@ -15547,6 +15630,8 @@ class Game:
                         self.floor_luminous = False
                         
                         #Spawn player & party
+                        if hasattr(self, "_auto_switch_acted_members"):
+                            self._auto_switch_acted_members.clear()
                         self.player_x, self.player_y = self._get_starting_position()
                         self.player_pokemon.x, self.player_pokemon.y = self.player_x, self.player_y
                         self.spawn_party_members()
