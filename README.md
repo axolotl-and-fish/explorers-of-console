@@ -25,11 +25,11 @@
 # Pokémon Misery Dungeon: Explorers of the Console
 Some speak of a very special Mystery Dungeon known as the "Misery Dungeon", a 50-floor long gauntlet of Pokémon out for blood and ruin, but also a treasure trove of loot, money and glory. Many Rescue Teams and Explorer Guilds have tried their hands at this dungeon, but few have ever lived to tell the tale and reap the benefits. Now you, a lowly Pokémon explorer, have dared to defy the odds and try to conquer this Misery Dungeon; will you succeed where others have failed?
 
-Pokémon Misery Dungeon: Explorers of the Console is a text-based PMD fangame presented in the style of a traditional "roguelike" game. Choose a starter Pokémon from any of the 11 canon PMD starters from gen 1 and lead them through fifty randomly-generated floors full of useful items and dangerous foes. By no  means must you undertake this task alone, however; you can recruit the dungeon's Pokémon to your side by enticing them with special Apricorn items. Lead a team of up to six Pokemon to the top of the dungeon, and aim for a high  score! Will YOU be the first person to beat the legendary score of 1 million?
+Pokémon Misery Dungeon: Explorers of the Console is a text-based PMD fangame presented in the style of a traditional "roguelike" game. Choose a starter Pokémon from any of the 15 canon PMD starters from gen 1 and lead them through fifty randomly-generated floors full of useful items and dangerous foes. By no  means must you undertake this task alone, however; you can recruit the dungeon's Pokémon to your side by enticing them with special Apricorn items. Lead a team of up to six Pokemon to the top of the dungeon, and aim for a high score! Will YOU be the first person to beat the legendary score of 1 million?
 
 **For detailed information on how to play the game, please refer to the [Manual](manual.txt).**
 
-**Also, join my Discord server, where I have a dedicated channel for discussion of this game!** https://discord.gg/qr9V6FvMEz
+**Also, join my Discord server, where I have a dedicated channel for discussion of this game!** https://discord.gg/SDTBkesJ6U
 
 # Controls
 PMD: Explorers of the Console is entirely controlled with your keyboard.
@@ -37,14 +37,15 @@ PMD: Explorers of the Console is entirely controlled with your keyboard.
 Use the numpad or arrow keys to move your character around the dungeon.
 **MAKE SURE YOUR NUMLOCK IS TURNED ON!**
 
-                       7  8  9    [Return/Enter] - Confirm
-						\ | /	  [Esc] - Cancel/Open pause menu
-					   4- @ -6    [Z][X][C][V] - Use a move
-						/ | \	  [A][S][D][F][G][H] - Open Pokemon summary
-					   1  2  3    [I] - Open inventory
-					  Movement	  [P] - Open message history
-								  [L] - Enable "look around" mode
-								  [>] - Use stairs
+                   7  8  9    [Return/Enter] - Confirm
+					\ | /	  [Esc] - Cancel/Open pause menu
+				   4- @ -6    [Z][X][C][V] - Use a move
+					/ | \	  [A][S][D][F][G][H] - Open Pokémon summary
+				   1  2  3    [I] - Open inventory
+				  Movement	  [P] - Open message history
+							  [L] - Enable "look around" mode
+							  [>] - Use stairs
+							  [;] - Toggle Auto Leader Switch
 					  
 Some smaller laptops ("notebooks") have a smaller keyboard without a numpad, so alternatively you can use the Shift, CTRL and arrow keys to move your character, like so:
 
@@ -83,24 +84,24 @@ If you are on Windows on a x86-64 system, a pre-compiled version of the game usi
 You will need **Python 3.10 or higher** installed on your system. I believe macOS and many Linux distros nowadays come with Python pre-installed, but you can check if you have Python by typing ````python3```` in your terminal. If it shows an error, that most likely means Python 3 is not installed. You can install the latest version of Python from here: https://www.python.org/
 
 Head to the Releases tab and download the Source Code (zip), extract the file, and either run PMD_Explorers_of_the_Console.bat, or type the following command in your terminal:
-````python3 visualize.py --play````
+````python3 visualize.py````
 
 # CLI Arguments
 
-````--play````: Starts the game. Only used for the non-compiled version, which defaults to a dungeon generation visualizer if this is not specified
-
-````--generate````: Generates and displays a dungeon using the game's generation algorithm. Only used for the compiled version, which defaults to playing the actual game if not specified.
+````--generate````: Generates and displays a dungeon using the game's generation algorithm.
 
 ````--compat````: Runs the game in compatibility mode, which removes all ANSI color. The game is designed with color in mind, so this should only be used as a last resort if your terminal is incompatible, but you should really just use a different terminal.
 
 ````--width````: Specify a width between 32 and 56 for the generated floor. Can only be used with ````--generate````.
 
-# Features
-- 146 currently encounterable and recruitable Pokémon (plus 5 legendaries, currently unused)
-- Over 350 individually implemented moves
+````--debug````: Starts the game in Debug Mode. See the Debug Mode section in the [Manual](manual.txt) for more information.
+
+# Features (as of v0.2)
+- 171 currently encounterable and recruitable Pokémon (plus 8 legendaries, currently unused)
+- Almost 400 individually implemented moves, many with animations
 - PMD Rescue Team style dungeon generation
 - Over 150 different items to use or throw
-- Enemy and ally AI that acts independently of the player
+- Enemy and ally AI that acts independently of the player, with an option to manually control your teammates
 - 50 dungeon floors; clear them all to win!
 - High scores: Challenge yourself and compete with your friends!
 - And more...
@@ -158,9 +159,22 @@ This could be the result of a few issues:
 
 Sadly given the random nature of this game, there will be situations where there is nothing you can really do, but that's the way the cookie crumbles for this genre. Don't worry; with every failed run, you'll learn something new!
 
+**What's coming next?**
+The 0.3 update is planned for the end of December and will feature held items, boss fights (and a way to finally recruit legendary Pokémon legitimately), shops, rest floors, IQ skills and Gummis, Tactics, Pokémon from Generation 2, TMs/HMs from Generation 2, and more. It's going to be another game-changer, so look forward to it! Follow my Bluesky account for development updates: https://bsky.app/profile/c437rp13.bsky.social/
+
 # Compiling
-The game's source code can be compiled using **PyInstaller**: https://pyinstaller.org/en/stable/
+The game's source code can be compiled using **PyInstaller**.
 
-It's not required to play the game since it can be run using the Python interpreter anyway with the same performance, but it is more convenient for most users.
+To compile the game for Windows:
 
-Further information and instructions will be added here at a later date.
+1. Download or git clone the source code from master or download the source code ZIP (not the Release ZIP!) from the Releases tab.
+
+2. Ensure that you have Python **3.10 or higher** installed on your machine. The version of Python you have installed will be the version used inside the compiled executable.
+
+3. Download and install the latest version of PyInstaller from https://pyinstaller.org/en/stable/ (installation instructions can be found there).
+
+4. Run ````python3 build_exe.py```` 
+from the game's root directory. You will find the compiled game in the /dist folder.
+
+Unfortunately I have no idea how PyInstaller works for non-Windows systems as I've been unable to get it to work on my Linux machine, but I expect you'll need to make changes to build_exe.py to make it work.
+I would really appreciate some help on how I can get PyInstaller to work on Linux!
