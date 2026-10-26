@@ -1,7 +1,7 @@
 """
 save_game.py
 
-Handles everything to do with saving and loading games; saving, encoding, validating, checksumming, loading. Game saves have a .pecsav extension (standing for Pokémon Explorers of Console SAVe)
+Handles everything to do with saving and loading games; saving, encoding, validating, loading. Game saves have a .pecsav extension (standing for Pokémon Explorers of Console SAVe)
 """
 #Copyright (C) 2026 C437RP13 (GitHub: Axolotl and Fish)
 #Licensed under the GNU General Public License v3. See LICENSE for more info
@@ -13,15 +13,12 @@ Handles everything to do with saving and loading games; saving, encoding, valida
 import os
 import json
 import zlib
-import hashlib
 import uuid
 import datetime
 from typing import Any
 from dungeon import DungeonFloor, Room
 from pokemon import Pokemon  # type: ignore
 from message_log import MessageLog, wrap_text  # type: ignore
-
-SALT = "SWAMPERT_IS_THE_GREATEST_OF_ALL_TIME"
 
 
 def get_save_dir() -> str:
@@ -711,18 +708,8 @@ def save_game(game) -> str:
     filepath = os.path.join(save_dir, filename)
 
     state_dict = serialize_game_state(game)
-    payload_json = json.dumps(state_dict, sort_keys=True, separators=(",", ":"))
-
-    checksum_input = payload_json + SALT
-    checksum = hashlib.sha256(checksum_input.encode("utf-8")).hexdigest()
-
-    container = {
-        "checksum": checksum,
-        "payload": state_dict
-    }
-
-    container_json = json.dumps(container, sort_keys=True, separators=(",", ":"))
-    compressed_bytes = zlib.compress(container_json.encode("utf-8"), level=9)
+    state_json = json.dumps(state_dict, sort_keys=True, separators=(",", ":"))
+    compressed_bytes = zlib.compress(state_json.encode("utf-8"), level=9)
 
     with open(filepath, "wb") as f:
         f.write(compressed_bytes)
@@ -731,7 +718,7 @@ def save_game(game) -> str:
 
 
 def validate_save_file(filepath: str) -> tuple[bool, dict | None]:
-    """Validates a save file's checksum."""
+    """Decompresses save files. It's still referred to as validate_save_file as it used to verify save file checksums before we started compressing them."""
     if not os.path.exists(filepath):
         return False, None
     try:
@@ -741,19 +728,10 @@ def validate_save_file(filepath: str) -> tuple[bool, dict | None]:
         if not raw_bytes:
             return False, None
 
-        container_json = zlib.decompress(raw_bytes).decode("utf-8")
-        container = json.loads(container_json)
-
-        checksum = container.get("checksum")
-        payload = container.get("payload")
-
-        if not checksum or payload is None:
-            return False, None
-
-        payload_json = json.dumps(payload, sort_keys=True, separators=(",", ":"))
-        expected_checksum = hashlib.sha256((payload_json + SALT).encode("utf-8")).hexdigest()
-
-        if checksum != expected_checksum:
+        data_json = zlib.decompress(raw_bytes).decode("utf-8")
+        data = json.loads(data_json)
+        
+        if not isinstance(payload, dict):
             return False, None
 
         return True, payload
