@@ -13,10 +13,7 @@ Manages the HIGHSCORES file, which stores high scores (duh), and also handles re
 import os
 import json
 import zlib
-import hashlib
 import datetime
-
-SECRET_SALT = "SWAMPERT_LOAF_FOR_PRESIDENT_2028"
 
 def get_high_scores_filepath() -> str:
     from save_game import get_save_dir
@@ -24,13 +21,8 @@ def get_high_scores_filepath() -> str:
     return os.path.join(save_dir, "HIGHSCORES")
 
 
-def compute_checksum(data_str: str) -> str:
-    """Computes SHA-256 checksum for the high score data string"""
-    return hashlib.sha256((data_str + SECRET_SALT).encode("utf-8")).hexdigest()
-
-
 def wipe_high_scores():
-    """Wipes the HIGHSCORES file if checksum fails"""
+    """Wipes the HIGHSCORES file if corrupted or invalid"""
     filepath = get_high_scores_filepath()
     if os.path.exists(filepath):
         try:
@@ -42,7 +34,7 @@ def wipe_high_scores():
 
 def load_high_scores() -> list[dict]:
     """Loads and validates high scores from the save_data/HIGHSCORES file.
-    If the checksum mismatches or decoding fails, the file is wiped and [] is returned (you broke it son!)
+    If decoding fails or the file is corrupted, the file is wiped and [] is returned.
     """
     filepath = get_high_scores_filepath()
     if not os.path.exists(filepath):
@@ -55,35 +47,24 @@ def load_high_scores() -> list[dict]:
         if not raw_bytes:
             return []
 
-        container_json = zlib.decompress(raw_bytes).decode("utf-8")
-        container = json.loads(container_json)
+        decompressed_json = zlib.decompress(raw_bytes).decode("utf-8")
+        data = json.loads(decompressed_json)
 
-        stored_checksum = container.get("checksum")
-        payload = container.get("payload")
-
-        if not stored_checksum or payload is None:
-            wipe_high_scores()
-            return []
-
-        raw_json = None
-        if isinstance(payload, str):
-            if compute_checksum(payload) == stored_checksum:
-                raw_json = payload
+        if isinstance(data, dict) and "payload" in data:
+            payload = data.get("payload")
+            if isinstance(payload, str):
+                scores = json.loads(payload)
+            elif isinstance(payload, list):
+                scores = payload
             else:
                 wipe_high_scores()
                 return []
-        elif isinstance(payload, list):
-            cand_json = json.dumps(payload, separators=(",", ":"))
-            if compute_checksum(cand_json) == stored_checksum:
-                raw_json = cand_json
-            else:
-                wipe_high_scores()
-                return []
+        elif isinstance(data, list):
+            scores = data
         else:
             wipe_high_scores()
             return []
 
-        scores = json.loads(raw_json)
         if not isinstance(scores, list):
             wipe_high_scores()
             return []
@@ -101,27 +82,19 @@ def load_high_scores() -> list[dict]:
 
 
 def save_high_scores(scores: list[dict]):
-    """Saves high scores into save_data/HIGHSCORES with compression and checksum. Up to 50 can be stored."""
+    """Saves high scores into save_data/HIGHSCORES with zlib compression. Up to 50 can be stored."""
     filepath = get_high_scores_filepath()
     os.makedirs(os.path.dirname(filepath), exist_ok=True)
 
-    # Sort descending by score
+    #Sort descending by score
     scores = sorted(scores, key=lambda x: int(x.get("score", 0)), reverse=True)
 
-    # Cap at top 50 scores 
-    # This limit is arbitrary and can be increased, though it will increase the size of the HIGHSCORE file, and in extreme cases lead to extra decoding time. The High Score screen is only designed for 50 at most anyway.
+    #Cap at top 50 scores 
+    #This limit is arbitrary and can be increased, though it will increase the size of the HIGHSCORE file, and in extreme cases lead to extra decoding time. The High Score screen is only designed for 50 at most anyway.
     scores = scores[:50]
 
     raw_json = json.dumps(scores, separators=(",", ":"))
-    checksum = compute_checksum(raw_json)
-
-    container = {
-        "checksum": checksum,
-        "payload": raw_json
-    }
-
-    container_json = json.dumps(container, separators=(",", ":"))
-    compressed_bytes = zlib.compress(container_json.encode("utf-8"), level=9)
+    compressed_bytes = zlib.compress(raw_json.encode("utf-8"), level=9)
 
     with open(filepath, "wb") as f:
         f.write(compressed_bytes)

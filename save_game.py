@@ -730,7 +730,12 @@ def validate_save_file(filepath: str) -> tuple[bool, dict | None]:
 
         data_json = zlib.decompress(raw_bytes).decode("utf-8")
         data = json.loads(data_json)
-        
+
+        if isinstance(data, dict) and "payload" in data:
+            payload = data.get("payload")
+        else:
+            payload = data
+
         if not isinstance(payload, dict):
             return False, None
 
