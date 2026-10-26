@@ -244,12 +244,33 @@ class Game:
     """Manages the player state, map coordinates, collision rules and rendering"""
 
     def __init__(self, width: int | None = None, player_species: str | None = None, player_nickname: str | None = None, compatibility_mode: bool = False, debug_mode: bool = False, **kwargs):
-        self.compatibility_mode: bool = bool(
+        import config as game_config
+        self.config = game_config.load_config()
+
+        cli_compat = bool(
             compatibility_mode
             or kwargs.get("compatability_mode", False)
             or os.environ.get("NO_COLOR")
             or os.environ.get("GAME_COMPATIBILITY_MODE")
+            or "--compat" in sys.argv
+            or "--compatibility" in sys.argv
+            or "--no-color" in sys.argv
+            or "--nocolor" in sys.argv
+            or "-c" in sys.argv
         )
+        if cli_compat:
+            self.compatibility_mode: bool = True
+            self.config["compatibility_mode"] = "On"
+        else:
+            self.compatibility_mode: bool = (self.config.get("compatibility_mode", "Off") == "On")
+
+        self.suppress_more_prompts: str = self.config.get("suppress_more_prompts", "No")
+        self.move_animations: str = self.config.get("move_animations", "1.0x")
+        self.weather_animations: str = self.config.get("weather_animations", "On")
+        self.other_animations: str = self.config.get("other_animations", "On")
+        self.damage_popups: str = self.config.get("damage_popups", "All")
+        self.party_window_flashing: str = self.config.get("party_window_flashing", "On")
+        self.options_state: dict | None = None
         self.debug_mode: bool = bool(
             debug_mode
             or kwargs.get("debug_mode", False)
@@ -282,7 +303,7 @@ class Game:
         self.floor_timer_collapsed = False
         self.map_shake_offset = (0, 0)
         self.collapse_blanked_tiles: set[tuple[int, int]] = set()
-        self.build_string = "Beta 0.2.0"
+        self.build_string = "Beta 0.2.1-dev"
         self.message = self.build_string
         self.stairs_position = (0, 0)
         self.spawn_stairs()
@@ -310,6 +331,7 @@ class Game:
         self.starter_select_state: dict | None = None
         self.high_scores_state: dict | None = None
         self.load_game_state: dict | None = None
+        self.options_state: dict | None = None
 
         #Statistics used for the game end summary
         import time
@@ -693,6 +715,10 @@ class Game:
     def toggle_compatibility_mode(self) -> bool:
         """Toggles compatibility mode (no-color mode)."""
         self.compatibility_mode = not getattr(self, "compatibility_mode", False)
+        if hasattr(self, "config"):
+            self.config["compatibility_mode"] = "On" if self.compatibility_mode else "Off"
+            import config as game_config
+            game_config.save_config(self.config)
         return self.compatibility_mode
 
     def sanitize_rendered_row(self, row: str) -> str:
@@ -968,6 +994,8 @@ class Game:
     def init_weather_particles(self, weather: str):
         """Initializes particles distributed across the map for the given weather"""
         self.weather_particles = []
+        if getattr(self, "weather_animations", "On") == "Off":
+            return
         if weather not in ANIMATED_PARTICLE_WEATHERS:
             return
         w = getattr(self.floor, "width", 56) if hasattr(self, "floor") and self.floor else 56
@@ -984,6 +1012,11 @@ class Game:
 
     def update_weather_particles(self):
         """Updates weather particle positions, spawns new ones, and handles weather flashes"""
+        if getattr(self, "weather_animations", "On") == "Off":
+            self.weather_particles = []
+            self._current_particle_weather = None
+            self.thunderstorm_flash = False
+            return
         weather = getattr(self, "weather", "Clear")
         if weather not in ANIMATED_PARTICLE_WEATHERS:
             self.weather_particles = []
@@ -1028,6 +1061,8 @@ class Game:
 
     def animate_terrain_spread(self, weather: str, source: Pokemon | tuple[int, int] | None = None):
         """Animates a circle of terrain color spreading from the source across the dungeon"""
+        if getattr(self, "other_animations", "On") == "Off":
+            return
         color = TERRAIN_COLORS.get(weather)
         if not color or not hasattr(self, "floor") or self.floor is None:
             return
@@ -1428,9 +1463,12 @@ class Game:
         is_imp = important or self.is_message_important(text)
         turn_active = getattr(self, "turn_in_progress", False)
 
+        suppress_mode = getattr(self, "suppress_more_prompts", "No")
+        suppress_5_msg = suppress_mode in ("Yes", "Some")
+
         #When more than 5 messages have been added in a single turn, prompt [MORE]
         #For most cases, don't display the prompt unless a turn is ongoing.
-        if turn_active and getattr(self, "_turn_messages_count", 0) >= 5:
+        if not suppress_5_msg and turn_active and getattr(self, "_turn_messages_count", 0) >= 5:
             with self.more_prompt_pause():
                 self.message_log.has_more_page = True
                 self.render()
@@ -1443,7 +1481,12 @@ class Game:
         self.message_log.log(colorized, current_action, important=is_imp)
         self._turn_messages_count = getattr(self, "_turn_messages_count", 0) + 1
 
-        if is_imp:
+        prompt_important = is_imp
+        if is_imp and suppress_mode == "Yes":
+            if "The team was wiped out" not in text:
+                prompt_important = False
+
+        if prompt_important:
             with self.more_prompt_pause():
                 self.message_log.has_more_page = True
                 self.render()
@@ -2930,6 +2973,8 @@ class Game:
 
     def play_screen_shake_animation(self, max_offset: int, num_frames: int = 8):
         """Briefly shakes the dungeon map by randomly offsetting it within +/- max_offset on each axis"""
+        if getattr(self, "other_animations", "On") == "Off":
+            return
         with self.animation_pause():
             for _ in range(num_frames):
                 ox = random.randint(-max_offset, max_offset)
@@ -2947,6 +2992,14 @@ class Game:
 
     def play_floor_collapse_animation(self, num_frames: int = 16):
         """Plays a longer form of the floor shaking animation, where tiles are gradually blanked out. Plays when the floor timer expires"""
+        if getattr(self, "other_animations", "On") == "Off":
+            all_tiles = [(x, y) for y in range(self.floor.height) for x in range(self.floor.width)]
+            if not hasattr(self, "collapse_blanked_tiles") or self.collapse_blanked_tiles is None:
+                self.collapse_blanked_tiles = set()
+            self.collapse_blanked_tiles.update(all_tiles)
+            self.map_shake_offset = (0, 0)
+            self.render()
+            return
         with self.animation_pause():
             all_tiles = [(x, y) for y in range(self.floor.height) for x in range(self.floor.width)]
             random.shuffle(all_tiles)
@@ -4230,9 +4283,35 @@ class Game:
         """Displays a brief pop-up over a Pokémon."""
         if not self.flash_damages:
             return
-        with self.animation_pause():
-            all_flashes = list(self.flash_damages.items())
+
+        setting = getattr(self, "damage_popups", "All")
+        if setting == "Off":
             self.flash_damages.clear()
+            return
+
+        filtered_flashes = {}
+        for pos, flash in self.flash_damages.items():
+            dmg = flash[0]
+            mult = flash[1] if len(flash) > 1 else None
+            is_stat = dmg in ("↓", "↑")
+            is_status = dmg in ("PSN", "BRN", "???", "FRZ", "SLP", "PRZ", "!!!", "LCH", "***", "CRS")
+            is_exp = (mult == "EXP")
+
+            if setting == "All":
+                filtered_flashes[pos] = flash
+            elif setting == "Some":
+                if not is_stat and not is_status:
+                    filtered_flashes[pos] = flash
+            elif setting == "Damage Only":
+                if not is_stat and not is_status and not is_exp:
+                    filtered_flashes[pos] = flash
+
+        self.flash_damages.clear()
+        if not filtered_flashes:
+            return
+
+        with self.animation_pause():
+            all_flashes = list(filtered_flashes.items())
             for pos, flash in all_flashes:
                 self.flash_damages[pos] = flash
                 self.render()
@@ -4299,7 +4378,7 @@ class Game:
         shade_chars = ["█", "▓", "▒", "░"]
         color_cycles = ["\033[91m", "\033[93m", "\033[38;5;208m"] #Red, yellow, white
 
-        if not getattr(self, "suppress_animation_delay", False):
+        if not getattr(self, "suppress_animation_delay", False) and getattr(self, "other_animations", "On") != "Off":
             with self.animation_pause():
                 for step in range(radius + 4):
                     self.explosion_overlays = {}
@@ -4394,6 +4473,9 @@ class Game:
         """
         if not move:
             return
+        move_setting = getattr(self, "move_animations", "1.0x")
+        if move_setting == "Off":
+            return
         move_name = move.get("name", "")
         #Explosion, Self-Destruct, and Terrain moves already have dedicated animations
         if move_name in ("Explosion", "Self-Destruct", "Grassy Terrain", "Electric Terrain", "Psychic Terrain", "Misty Terrain"):
@@ -4412,6 +4494,13 @@ class Game:
             return
 
         is_suppressed = getattr(self, "suppress_animation_delay", False)
+        speed_mult = 1.0
+        if move_setting == "0.5x":
+            speed_mult = 0.5
+        elif move_setting == "1.5x":
+            speed_mult = 1.5
+        elif move_setting == "2.0x":
+            speed_mult = 2.0
 
         with self.animation_pause():
             try:
@@ -4430,7 +4519,7 @@ class Game:
                             sys.stdout.flush()
                         except Exception:
                             pass
-                        time.sleep(frame.delay)
+                        time.sleep(frame.delay / speed_mult)
             finally:
                 self.move_animation_overlays = {}
                 self.map_shake_offset = (0, 0)
@@ -9534,22 +9623,22 @@ class Game:
                         trajectory.append((tx, ty, None))
 
             import time
-            currently_visible = self._compute_currently_visible()
-            with self.animation_pause():
-                for anim_x, anim_y, hit_type in trajectory:
-                    if (anim_x, anim_y) not in currently_visible:
-                        break
-                    self.flying_item_animation = {
-                        "x": anim_x,
-                        "y": anim_y,
-                        "char": flying_char,
-                        "color": color_code
-                    }
-                    self.render()
-                    if not getattr(self, "suppress_animation_delay", False):
-                        time.sleep(0.03)
+            if getattr(self, "other_animations", "On") != "Off":
+                with self.animation_pause():
+                    for anim_x, anim_y, hit_type in trajectory:
+                        if (anim_x, anim_y) not in currently_visible:
+                            break
+                        self.flying_item_animation = {
+                            "x": anim_x,
+                            "y": anim_y,
+                            "char": flying_char,
+                            "color": color_code
+                        }
+                        self.render()
+                        if not getattr(self, "suppress_animation_delay", False):
+                            time.sleep(0.03)
 
-                self.flying_item_animation = None
+                    self.flying_item_animation = None
 
             if trajectory:
                 is_pierce = bool(self.player_pokemon.status_effects.get("Pierce Throw")) and not is_apricorn
@@ -12021,12 +12110,12 @@ class Game:
         sel = state.get("selected_index", 0)
 
         if action in (game_input.MOVE_UP, "w", "W", "up", "UP", "k", "K"): #Up arrow key
-            state["selected_index"] = (sel - 1) % 4
+            state["selected_index"] = (sel - 1) % 5
             self.render()
             return
 
         if action in (game_input.MOVE_DOWN, "s", "S", "down", "DOWN", "j", "J"): #Down arrow key
-            state["selected_index"] = (sel + 1) % 4
+            state["selected_index"] = (sel + 1) % 5
             self.render()
             return
 
@@ -12048,6 +12137,11 @@ class Game:
         if action in ("4", "4"): #V
             state["selected_index"] = 3
             self._select_title_screen_option(3)
+            return
+
+        if action in ("5", "5"):
+            state["selected_index"] = 4
+            self._select_title_screen_option(4)
             return
 
         if action in (game_input.QUIT, "q", "Q"): #Esc
@@ -12085,9 +12179,96 @@ class Game:
                 "controller": HighScoreController(self)
             }
             self.render()
-        elif option_index == 3: #Exit
+        elif option_index == 3: #Options
+            self.title_screen_state = None
+            self.options_state = {
+                "selected_index": 0
+            }
+            self.render()
+        elif option_index == 4: #Quit
             self.title_screen_state = None
             self.is_running = False
+
+    def handle_options_screen_input(self, action: str):
+        """Handles input on the options screen."""
+        state = getattr(self, "options_state", None)
+        if state is None:
+            return
+
+        import config as game_config
+        sel = state.get("selected_index", 0)
+        num_options = len(game_config.OPTION_KEYS)
+
+        if action in (game_input.MOVE_UP, "w", "W", "up", "UP", "k", "K"):
+            state["selected_index"] = (sel - 1) % num_options
+            self.render()
+            return
+
+        if action in (game_input.MOVE_DOWN, "s", "S", "down", "DOWN", "j", "J"):
+            state["selected_index"] = (sel + 1) % num_options
+            self.render()
+            return
+
+        #Cycle value backwards
+        if action in (game_input.MOVE_LEFT, "a", "A", "left", "LEFT", "h", "H"):
+            self._cycle_current_option(forward=False)
+            self.render()
+            return
+
+        #Cycle value forwards
+        if action in (game_input.MOVE_RIGHT, "d", "D", "right", "RIGHT", "l", "L",
+                      game_input.CONFIRM, "\r", "\n", " ", "z", "Z"):
+            self._cycle_current_option(forward=True)
+            self.render()
+            return
+
+        #Save and return to title screen
+        if action in (game_input.QUIT, "\x1b", "ESC", "Esc", "esc", "q", "Q"):
+            game_config.save_config(self.config)
+            self.options_state = None
+            import random
+            self.title_screen_state = {
+                "selected_index": 3,
+                "tip_of_the_day": random.choice(TIPS_OF_THE_DAY)
+            }
+            self.render()
+            return
+
+    def _cycle_current_option(self, forward: bool = True):
+        state = getattr(self, "options_state", None)
+        if state is None:
+            return
+
+        import config as game_config
+        sel = state.get("selected_index", 0)
+        key = game_config.OPTION_KEYS[sel]
+        current_val = self.config.get(key, game_config.DEFAULT_CONFIG[key])
+        new_val = game_config.cycle_option(key, current_val, forward=forward)
+
+        self.config[key] = new_val
+        game_config.save_config(self.config)
+
+        #Apply immediately to game state
+        if key == "suppress_more_prompts":
+            self.suppress_more_prompts = new_val
+        elif key == "move_animations":
+            self.move_animations = new_val
+        elif key == "weather_animations":
+            self.weather_animations = new_val
+            if new_val == "Off":
+                self.weather_particles = []
+                self.thunderstorm_flash = False
+            else:
+                if hasattr(self, "weather"):
+                    self.init_weather_particles(self.weather)
+        elif key == "other_animations":
+            self.other_animations = new_val
+        elif key == "damage_popups":
+            self.damage_popups = new_val
+        elif key == "party_window_flashing":
+            self.party_window_flashing = new_val
+        elif key == "compatibility_mode":
+            self.compatibility_mode = (new_val == "On")
 
     def handle_load_game_screen_input(self, action: str):
         """Handles key input for the Load Game selection screen"""
@@ -12266,6 +12447,7 @@ class Game:
         self.game_won = False
         self.high_scores_state = None
         self.load_game_state = None
+        self.options_state = None
         self.starter_select_state = None
         self.disclaimer_screen_state = None
         self.player_pokemon = None
@@ -12360,6 +12542,7 @@ class Game:
         rows.append(wrap(version_text))
 
         if getattr(self, "debug_mode", False):
+            #Debug mode disclaimer, it's very important that the player knows they're in debug mode!
             rows.append(wrap("\033[91mDEBUG MODE ACTIVE! Proceed with caution. High scores are disabled.\033[0m"))
             for _ in range(3):
                 rows.append(empty_line)
@@ -12369,7 +12552,7 @@ class Game:
 
         #3. Menu options
         sel_idx = state.get("selected_index", 0)
-        options = ["New Game", "Load Game", "High Scores", "Quit"]
+        options = ["New Game", "Load Game", "High Scores", "Options", "Quit"]
 
         for idx, opt in enumerate(options):
             if sel_idx == idx:
@@ -12383,7 +12566,7 @@ class Game:
 
         rows.append(wrap("\033[90m2026 C437RP13 (github.com/axolotl-and-fish)\033[0m"))
 
-        for _ in range(6):
+        for _ in range(5):
             rows.append(empty_line)
 
         #4. Tip of the Day
@@ -12556,6 +12739,7 @@ class Game:
         self.title_screen_state = None
         self.starter_select_state = None
         self.high_scores_state = None
+        self.options_state = None
         if getattr(self, "debug_mode", False):
             self.cheated = True
         self.omniscience_mode = False
@@ -12887,6 +13071,104 @@ class Game:
         scores = load_high_scores()
         return self.sanitize_rendered_rows(format_high_scores_table(scores))
 
+    def render_options_screen(self) -> list[str]:
+        """Renders the options screen."""
+        state = getattr(self, "options_state", None)
+        if state is None:
+            return []
+
+        import config as game_config
+        sel_idx = state.get("selected_index", 0)
+
+        width = 76
+        inner_w = width - 2
+        top_border = "┌" + "─" * inner_w + "┐"
+        bot_border = "└" + "─" * inner_w + "┘"
+        divider = "├" + "─" * inner_w + "┤"
+        empty_line = "│" + " " * inner_w + "│"
+
+        def wrap_center(content: str) -> str:
+            return "│" + center_ansi(content, inner_w) + "│"
+
+        def wrap_left(content: str) -> str:
+            import re
+            ansi_escape = re.compile(r'\x1b\[[0-9;]*[a-zA-Z]')
+            vis_len = len(ansi_escape.sub('', content))
+            right_pad = max(0, inner_w - 2 - vis_len)
+            return "│ " + content + " " * right_pad + " │"
+
+        rows = [
+            top_border,
+            wrap_center("\033[1;97mOptions\033[0m"),
+            divider,
+            empty_line,
+        ]
+
+        descriptions = {
+            "suppress_more_prompts": [
+                "Controls display of [MORE] prompts in the message log.",
+                "Yes: Almost all [MORE] prompts are skipped.",
+                "Some: Skips some [MORE] prompts but will still display",
+                "prompts for important messages."
+            ],
+            "move_animations": [
+                "Sets the playback speed of move animations.",
+                "Higher speeds play faster (0.5x, 1.0x, 1.5x, 2.0x).",
+                "Off: Move animations are skipped entirely."
+            ],
+            "weather_animations": [
+                "Toggles animations related to the weather."
+            ],
+            "other_animations": [
+                "Toggles animations for explosions and thrown items."
+            ],
+            "damage_popups": [
+                "Controls which floating damage numbers and pop-ups appear.",
+                "All: All types of pop-ups are displayed.",
+                "Some: Only displays EXP popups and damage popups.",
+                "Damage Only: Only displays damage popups."
+            ],
+            "party_window_flashing": [
+                "Toggles flashing warning frames around party member windows.",
+                "Windows will flash when HP is critically low (<20%) or if",
+                "Belly is empty."
+            ],
+            "compatibility_mode": [
+                "Toggles compatibility mode, which removes all ANSI colors",
+                "and formatting. Only recommended for terminals with limited",
+                "ANSI support. You should really just use a different terminal!"
+            ],
+        }
+
+        for idx, key in enumerate(game_config.OPTION_KEYS):
+            label = game_config.OPTION_LABELS[key]
+            val = self.config.get(key, game_config.DEFAULT_CONFIG[key])
+            if sel_idx == idx:
+                line_str = f"\033[1;93m ► {label:<26} : < {val} > \033[0m"
+            else:
+                line_str = f"\033[0m   {label:<26} :   \033[97m{val}\033[0m"
+            rows.append(wrap_left(line_str))
+            rows.append(empty_line)
+
+        rows.append(divider)
+        rows.append(empty_line)
+
+        sel_key = game_config.OPTION_KEYS[sel_idx]
+        sel_desc = descriptions.get(sel_key, [])
+        sel_label = game_config.OPTION_LABELS[sel_key]
+        rows.append(wrap_left(f"\033[1;96m{sel_label}\033[0m"))
+        for d_line in sel_desc:
+            rows.append(wrap_left(f"  \033[90m{d_line}\033[0m"))
+
+        while len(rows) < 45:
+            rows.append(empty_line)
+
+        rows.append(wrap_center("\033[90m[↑/↓] Navigate   [←/→/Return] Change   [Esc] Save & Back\033[0m"))
+        rows.append(empty_line)
+        rows.append(bot_border)
+
+        return self.sanitize_rendered_rows(rows)
+
     def switch_leader(self, target: Pokemon, log: bool = False):
         """Switches the team leader to target Pokémon."""
         if target not in self.party:
@@ -13161,9 +13443,11 @@ class Game:
         shake_x, shake_y = getattr(self, "map_shake_offset", (0, 0))
         blanked_tiles: set[tuple[int, int]] = getattr(self, "collapse_blanked_tiles", set())
 
-        weather_particle_map = {
-            (p["x"], p["y"]): p for p in getattr(self, "weather_particles", [])
-        }
+        weather_particle_map = (
+            {(p["x"], p["y"]): p for p in getattr(self, "weather_particles", [])}
+            if getattr(self, "weather_animations", "On") != "Off"
+            else {}
+        )
         active_weather = getattr(self, "weather", "Clear")
         current_terrain_color = TERRAIN_COLORS.get(active_weather, None)
         spread_radius = getattr(self, "terrain_spread_radius", None)
@@ -13486,6 +13770,9 @@ class Game:
         elif getattr(self, "high_scores_state", None) is not None:
             screen_view = "high_scores"
             rows = self.render_high_scores_screen()
+        elif getattr(self, "options_state", None) is not None:
+            screen_view = "options"
+            rows = self.render_options_screen()
         elif getattr(self, "pause_menu_state", None) is not None:
             screen_view = "pause_menu"
             pause_rows = self.render_pause_menu_screen()
@@ -13593,7 +13880,7 @@ class Game:
 
             prefix = "\033[2J\033[3J\033[H"
             output_buffer = prefix + "\n".join(rows) + "\n\033[J"
-            if getattr(self, "thunderstorm_flash", False) and screen_view == "gameplay":
+            if getattr(self, "thunderstorm_flash", False) and getattr(self, "weather_animations", "On") != "Off" and screen_view == "gameplay":
                 flash_rows = [f"\033[7m{r}\033[0m" for r in rows]
                 flash_buffer = prefix + "\n".join(flash_rows) + "\n\033[J"
                 try:
@@ -13705,10 +13992,11 @@ class Game:
                 is_belly_empty = (pokemon.current_belly <= 0.0)
 
                 flash_color = None
-                if is_low_hp:
-                    flash_color = "\033[91m"  #Red
-                elif is_belly_empty:
-                    flash_color = "\033[93m"  #Yellow
+                if getattr(self, "party_window_flashing", "On") == "On":
+                    if is_low_hp:
+                        flash_color = "\033[91m"  #Red
+                    elif is_belly_empty:
+                        flash_color = "\033[93m"  #Yellow
 
                 if flash_color is not None:
                     import time
@@ -15154,6 +15442,17 @@ class Game:
                 if action is None:
                     continue
                 self.handle_high_scores_screen_input(action)
+                continue
+
+            if getattr(self, "options_state", None) is not None:
+                try:
+                    action = game_input.get_key(timeout=None)
+                except (StopIteration, RuntimeError):
+                    self.is_running = False
+                    break
+                if action is None:
+                    continue
+                self.handle_options_screen_input(action)
                 continue
 
             if getattr(self, "pause_menu_state", None) is not None:
