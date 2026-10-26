@@ -97,8 +97,8 @@ Head to the Releases tab and download the Source Code (zip), extract the file, a
 ````--debug````: Starts the game in Debug Mode. See the Debug Mode section in the [Manual](manual.txt) for more information.
 
 # Features (as of v0.2)
-- 171 currently encounterable and recruitable Pokémon (plus 8 legendaries, currently unused)
-- Almost 400 individually implemented moves, many with animations
+- 181 currently encounterable and recruitable Pokémon (plus 8 legendaries, currently unused)
+- Over 400 individually implemented moves, many with animations
 - PMD Rescue Team style dungeon generation
 - Over 150 different items to use or throw
 - Enemy and ally AI that acts independently of the player, with an option to manually control your teammates
