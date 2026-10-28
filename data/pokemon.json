@@ -7658,7 +7658,7 @@
 	  [65, "Magnetic Flux"],
 	  [70, "Zap Cannon"]
     ],
-    "tm_moves": []
+    "tm_moves": ["Thunderbolt", "Thunder", "Thunder Wave", "Fly", "Swift", "Hyper Beam", "Double-Edge", "Take Down", "Toxic", "Mimic", "Bide", "Rest", "Double Team", "Vacuum-Cut", "Wide Slash", "Spin Slash", "Rage"]
   },
   {
     "id": "145G",
