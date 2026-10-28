@@ -13319,14 +13319,8 @@ class Game:
             box_rows.append(bot_border)
 
         start_row = (48 - len(box_rows)) // 2
-        new_rows = list(rows)
         left_pad = (76 - box_width) // 2
-        for i, box_line in enumerate(box_rows):
-            r_idx = start_row + i
-            if 0 <= r_idx < 48:
-                prefix = " " * left_pad
-                suffix = " " * (76 - left_pad - box_width)
-                new_rows[r_idx] = prefix + box_line + suffix
+        new_rows = self.overlay_rows_on_base(rows, box_rows, left_pad, start_row)
         return self.sanitize_rendered_rows(new_rows)
 
     def get_item_render_char(self, item: dict, is_visible: bool = True) -> str:
