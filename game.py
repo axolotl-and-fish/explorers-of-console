@@ -458,7 +458,6 @@ class Game:
         #Initial setup
         self.spawn_initial_items()
         self.spawn_initial_enemies()
-        self.log_message("You enter the misery dungeon...")
 
     def get_current_memory_usage_mb(self) -> float:
         """Returns current process resident memory usage (in MB) for debug display"""
@@ -12836,6 +12835,7 @@ class Game:
         self.generate_floor_spawn_list()
         self.spawn_initial_items()
         self.spawn_initial_enemies()
+        self.log_message("You enter the misery dungeon...")
 
         self.render()
 
