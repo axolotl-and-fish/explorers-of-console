@@ -9512,6 +9512,7 @@ class Game:
             
         if dx != 0 or dy != 0:
             self.start_player_action()
+            currently_visible = self._compute_currently_visible()
             target_idx = self.waiting_for_throw_direction
             inv_item = self.inventory[target_idx]
             if inv_item.get("stackable", False) and inv_item.get("count", 1) > 1:
