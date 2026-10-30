@@ -13088,7 +13088,10 @@ class Game:
             rows.append(wrap_center("What's your name?"))
             rows.append(wrap_center("\033[90m(Max 12 characters)\033[0m"))
             rows.append(empty_line)
-            rows.append(f"                                \033[1;97m► {text}_\033[0m")
+            input_content = f"                               \033[1;97m► {text}_\033[0m"
+            input_vis_len = len(ANSI_ESCAPE_REGEX.sub('', input_content))
+            right_pad = max(0, inner_w - input_vis_len)
+            rows.append(f"│{input_content}{' ' * right_pad}│")
             rows.append(empty_line)
             rows.append(wrap_center("\033[90m[Return] Confirm   [Esc] Skip\033[0m"))
             while len(rows) < 47:
