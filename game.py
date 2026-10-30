@@ -9645,6 +9645,9 @@ class Game:
                 if is_pierce:
                     hit_enemies = [hit_type for _, _, hit_type in trajectory if isinstance(hit_type, Pokemon)]
                     for enemy_hit in hit_enemies:
+                        if getattr(enemy_hit, "napping", False):
+                            enemy_hit.napping = False
+                            enemy_hit.just_woke_up = True
                         ex, ey = get_pokemon_position(self, enemy_hit)
                         enemy_visible = (ex, ey) in currently_visible
                         if not enemy_visible:
@@ -9678,6 +9681,11 @@ class Game:
                         ex, ey = get_pokemon_position(self, enemy_hit)
                         enemy_visible = (ex, ey) in currently_visible
 
+                        can_dodge = self.can_dodge_thrown_items(enemy_hit)
+                        if getattr(enemy_hit, "napping", False):
+                            enemy_hit.napping = False
+                            enemy_hit.just_woke_up = True
+
                         if is_apricorn:
                             consumed = self.attempt_apricorn_recruitment(thrown_item, enemy_hit)
                             if not consumed:
@@ -9694,7 +9702,7 @@ class Game:
                             hit_chance = 90.0 * (acc_mult / ev_mult)
 
                             import random
-                            if random.randint(1, 100) > hit_chance:
+                            if can_dodge and random.randint(1, 100) > hit_chance:
                                 if enemy_visible:
                                     self.log_message(f"{enemy_hit.name} dodged the {thrown_item['name']}!")
                                 self.place_item_on_floor(final_x, final_y, thrown_item)
@@ -9740,6 +9748,35 @@ class Game:
                 return "/"
         return item.get("appearance") or item.get("symbol") or item.get("char") or "?"
 
+    def can_dodge_thrown_items(self, pokemon: Pokemon) -> bool:
+        """Returns False if the Pokémon has status effects that prevent dodging thrown items."""
+        if not pokemon:
+            return False
+        if hasattr(pokemon, "can_dodge_thrown_items"):
+            return pokemon.can_dodge_thrown_items(game=self)
+        if getattr(pokemon, "napping", False):
+            return False
+        status = getattr(pokemon, "status_effects", {})
+        if status.get("Sleep", 0) > 0 or status.get("Resting", 0) > 0:
+            return False
+        if status.get("Paralysis", 0) > 0 or status.get("Paralyzed", 0) > 0:
+            return False
+        val_petr = status.get("Petrified", 0)
+        if val_petr > 0 or val_petr == -1:
+            return False
+        if status.get("Frozen", 0) > 0:
+            return False
+        if status.get("Wrapped", 0) > 0:
+            return False
+        if status.get("Wrap", 0) > 0:
+            if hasattr(self, "wrap_bindings") and any(pokemon == b.get("attacker") for b in self.wrap_bindings):
+                pass
+            else:
+                return False
+        if hasattr(self, "wrap_bindings") and any(pokemon == b.get("defender") for b in self.wrap_bindings):
+            return False
+        return True
+
     def attempt_apricorn_recruitment(self, apricorn_item: dict, target: Pokemon) -> bool:
         """Attempts recruitment of an enemy using a thrown Apricorn.
         Returns True if target was adjacent to leader, consuming the Apricorn, or False otherwise.
@@ -9751,13 +9788,19 @@ class Game:
         else:
             is_adjacent = True
 
+        can_dodge = self.can_dodge_thrown_items(target)
+        if getattr(target, "napping", False):
+            target.napping = False
+            target.just_woke_up = True
+
         always_recruit = getattr(self, "always_recruit_pokemon", False)
         if target in self.party:
             return False
 
         if not is_adjacent and not always_recruit:
-            self.log_message(f"{target.name} dodged the thrown {apricorn_item['name']}!")
-            return False
+            if can_dodge:
+                self.log_message(f"{target.name} dodged the thrown {apricorn_item['name']}!")
+                return False
 
         #Recruitment chance calculation
         import random

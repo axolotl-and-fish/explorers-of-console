@@ -556,6 +556,31 @@ class Pokemon:
         """Returns True if the Pokémon meets the criteria to evolve. Used to display the Evolution option in the party menu"""
         return len(self.get_eligible_evolutions(game)) > 0
 
+    def can_dodge_thrown_items(self, game=None) -> bool:
+        """Returns False if the Pokémon has status effects that prevent them dodging thrown items."""
+        if getattr(self, "napping", False):
+            return False
+        status = getattr(self, "status_effects", {})
+        if status.get("Sleep", 0) > 0 or status.get("Resting", 0) > 0:
+            return False
+        if status.get("Paralysis", 0) > 0 or status.get("Paralyzed", 0) > 0:
+            return False
+        val_petr = status.get("Petrified", 0)
+        if val_petr > 0 or val_petr == -1:
+            return False
+        if status.get("Frozen", 0) > 0:
+            return False
+        if status.get("Wrapped", 0) > 0:
+            return False
+        if status.get("Wrap", 0) > 0:
+            if game and hasattr(game, "wrap_bindings") and any(self == b.get("attacker") for b in game.wrap_bindings):
+                pass
+            else:
+                return False
+        if game and hasattr(game, "wrap_bindings") and any(self == b.get("defender") for b in game.wrap_bindings):
+            return False
+        return True
+
     def get_eligible_evolutions(self, game=None) -> list[dict]:
         """Returns a list of evolution dictionaries from species_data['evolutions'] whose criteria are met"""
         eligible = []
