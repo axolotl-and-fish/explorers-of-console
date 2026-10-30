@@ -259,6 +259,21 @@ VITAMIN_NAMES = {
 THROWN_ITEM_NAMES = {
     "Geo Pebble", "Gravelerock", "Iron Thorn", "Stick", "Silver Spike", "Gold Fang", "Cacnea Spike", "Corsola Twig"
 }
+
+
+def is_thrown_weapon(item: dict) -> bool:
+    """Returns True if the item is a thrown weapon."""
+    if not isinstance(item, dict):
+        return False
+    name = item.get("name", "")
+    return (
+        name in THROWN_ITEM_NAMES
+        or item.get("thrown", False)
+        or item.get("thrown_item", False)
+        or item.get("thrown_weapon", False)
+        or item.get("category") == "Thrown"
+        or item.get("item_type") == "Thrown"
+    )
 RARITY_ORDER = {
     "Common": 0,
     "Uncommon": 1,
@@ -329,6 +344,14 @@ def apply_item_effect(item: dict, target, game, is_thrown: bool = False):
     if is_thrown and hasattr(target, "napping") and target.napping:
         target.napping = False
         target.just_woke_up = True
+
+    if is_thrown and not item.get("edible", False) and not is_thrown_weapon(item):
+        name = item.get("name", "item")
+        game.log_message(f"The {name} hit {target.name}!")
+        attacker = getattr(game, "player_pokemon", None)
+        src = f"{attacker.name}'s {name}" if attacker else name
+        game.apply_direct_damage(target, 1, attacker=attacker, damage_source=src, type_mult=1.0)
+        return
 
     if is_tm(item):
         if is_thrown:
