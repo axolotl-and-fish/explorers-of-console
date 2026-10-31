@@ -311,6 +311,75 @@ class Pokemon:
 
             selected_candidates.sort(key=lambda c: (c["learn_lvl"], c["index"]))
             self.moves = [c["move_info"] for c in selected_candidates]
+
+            #This part of the script gives spawned Pokémon increased variety in known moves.
+            #There's a 5% chance that a Pokémon will have each of its move slots replaced with a TM move it can know,
+            #and a 5% chance that it will have each of its move slots replaced with a move that appears earlier in its level-up learnset.
+            #We still guarantee each Pokémon knows one damaging move and doesn't have duplicate moves if possible
+            species_can_learn_attacking = any(
+                c["move_info"].get("category") in ("Physical", "Special")
+                for c in candidates_by_name.values()
+            )
+
+            valid_tm_moves = []
+            seen_tm_names = set()
+            for tm_name in self.species_data.get("tm_moves", []):
+                tm_lower = tm_name.lower()
+                if tm_lower in seen_tm_names:
+                    continue
+                seen_tm_names.add(tm_lower)
+                try:
+                    tm_info = _get_move_data(tm_name)
+                    valid_tm_moves.append(tm_info)
+                except ValueError:
+                    pass
+
+            initial_move_names = {m["name"].lower() for m in self.moves}
+            earlier_candidates = [
+                cand for cand in candidates_by_name.values()
+                if cand["move_info"]["name"].lower() not in initial_move_names
+            ]
+
+            for slot_idx in range(len(self.moves)):
+                roll = random.random()
+                if roll < 0.05:
+                    #5% chance: TM replacement (if TM list is not empty)
+                    if valid_tm_moves:
+                        known_names = {m["name"].lower() for m in self.moves}
+                        other_attacking = sum(
+                            1 for idx, m in enumerate(self.moves)
+                            if idx != slot_idx and m.get("category") in ("Physical", "Special")
+                        )
+                        eligible_tms = []
+                        for tm in valid_tm_moves:
+                            if tm["name"].lower() in known_names:
+                                continue
+                            if species_can_learn_attacking and other_attacking == 0:
+                                if tm.get("category") not in ("Physical", "Special"):
+                                    continue
+                            eligible_tms.append(tm)
+
+                        if eligible_tms:
+                            self.moves[slot_idx] = dict(random.choice(eligible_tms))
+                elif roll < 0.10:
+                    #5% chance: earlier level-up learnset replacement
+                    known_names = {m["name"].lower() for m in self.moves}
+                    other_attacking = sum(
+                        1 for idx, m in enumerate(self.moves)
+                        if idx != slot_idx and m.get("category") in ("Physical", "Special")
+                    )
+                    eligible_earlier = []
+                    for cand in earlier_candidates:
+                        cand_info = cand["move_info"]
+                        if cand_info["name"].lower() in known_names:
+                            continue
+                        if species_can_learn_attacking and other_attacking == 0:
+                            if cand_info.get("category") not in ("Physical", "Special"):
+                                continue
+                        eligible_earlier.append(cand_info)
+
+                    if eligible_earlier:
+                        self.moves[slot_idx] = dict(random.choice(eligible_earlier))
         else:
             #Level-up move learning during gameplay.
             if old_level is None:
