@@ -1886,29 +1886,288 @@ class Game:
 
         return None
 
-    def get_ai_step_towards(self, mon: Pokemon, tx: int, ty: int) -> tuple[int, int] | None:
-        """Determines the next step (dx, dy) for an AI-controlled Pokémon moving towards its target (tx, ty).
-        If an obstacle is encountered, attempts to step around the obstacle, prioritizing counterclockwise directions over clockwise directions"""
+    def get_ai_step_towards(self, mon: Pokemon, tx: int, ty: int, target: Pokemon | None = None) -> tuple[int, int] | None:
+        """Determines the next step (dx, dy) for an AI-controlled Pokemon moving towards its target (tx, ty).
+        If target Pokemon is provided, proactively finds a path to surround the target rather than walking into it.
+        If an obstacle is encountered, attempts to step around the obstacle, prioritizing counterclockwise directions over clockwise directions."""
         mx, my = get_pokemon_position(self, mon)
         if (mx, my) == (tx, ty):
             return None
 
-        #1. Try finding a full path using BFS
+        #1. If target Pokemon is provided, try surrounding pathfinding first
+        if target is not None:
+            surround_step = self.find_path_to_surround(mon, target)
+            if surround_step == (0, 0):
+                return None
+            if surround_step is not None:
+                sdx, sdy = surround_step
+                if self.can_enemy_step_to(mon, mx + sdx, my + sdy, sdx, sdy):
+                    return surround_step
+            elif max(abs(mx - tx), abs(my - ty)) <= 1:
+                return None
+
+        #2. Try finding a full path using BFS
         path_dir = self.find_path_to_target(mon, tx, ty)
         if path_dir:
             pdx, pdy = path_dir
             if self.can_enemy_step_to(mon, mx + pdx, my + pdy, pdx, pdy):
                 return path_dir
 
-        #2. If BFS found no path, test candidate directions around the obstacle
+        #3. If BFS found no path, test candidate directions around the obstacle
         p_dx = 1 if tx > mx else (-1 if tx < mx else 0)
         p_dy = 1 if ty > my else (-1 if ty < my else 0)
         candidate_dirs = self.get_target_directed_candidate_dirs((p_dx, p_dy))
 
+        is_in_corridor = self.is_corridor_tile(mx, my)
+
         for cdx, cdy in candidate_dirs:
+            if is_in_corridor:
+                dot_prod = cdx * p_dx + cdy * p_dy
+                if dot_prod < 0:
+                    continue
             nx, ny = mx + cdx, my + cdy
             if self.can_enemy_step_to(mon, nx, ny, cdx, cdy):
                 return (cdx, cdy)
+
+        return None
+
+    def is_corridor_tile(self, x: int, y: int) -> bool:
+        """Returns True if (x, y) is a walkable floor tile outside a room."""
+        if not (0 <= x < self.floor.width and 0 <= y < self.floor.height):
+            return False
+        if self.floor.grid[y][x] != FLOOR_CHAR:
+            return False
+        if hasattr(self.floor, "corridor_tiles") and (x, y) in self.floor.corridor_tiles:
+            return True
+        return len(get_room_tiles_at(self.floor, x, y)) == 0
+
+    def is_doorway_tile(self, x: int, y: int) -> bool:
+        """Returns True if (x, y) is a doorway tile connecting a room to a corridor."""
+        if not (0 <= x < self.floor.width and 0 <= y < self.floor.height):
+            return False
+        if self.floor.grid[y][x] != FLOOR_CHAR:
+            return False
+
+        is_corr = self.is_corridor_tile(x, y)
+        for dx, dy in [(-1, 0), (1, 0), (0, -1), (0, 1)]:
+            nx, ny = x + dx, y + dy
+            if 0 <= nx < self.floor.width and 0 <= ny < self.floor.height:
+                if self.floor.grid[ny][nx] == FLOOR_CHAR:
+                    if is_corr != self.is_corridor_tile(nx, ny):
+                        return True
+        return False
+
+    def is_tile_unoccupied(self, sx: int, sy: int, mon: Pokemon | None = None) -> bool:
+        """Returns True if no entities (other than mon) occupies (sx, sy)."""
+        for p in self.party + self.spawned_pokemon:
+            if p is not mon and int(getattr(p, "current_hp", 0)) > 0:
+                px, py = get_pokemon_position(self, p)
+                if px == sx and py == sy:
+                    return False
+        return True
+
+    def get_unoccupied_surrounding_tiles(self, target: Pokemon, mon: Pokemon | None = None) -> list[tuple[int, int]]:
+        """Returns a list of walkable floor tiles adjacent to target that are not occupied by any other entity."""
+        tx, ty = get_pokemon_position(self, target)
+        surrounding = []
+        for dx in [-1, 0, 1]:
+            for dy in [-1, 0, 1]:
+                if dx == 0 and dy == 0:
+                    continue
+                nx, ny = tx + dx, ty + dy
+                if not (0 <= nx < self.floor.width and 0 <= ny < self.floor.height):
+                    continue
+                if self.floor.grid[ny][nx] != FLOOR_CHAR:
+                    continue
+                if dx != 0 and dy != 0:
+                    c1 = self.floor.grid[ty][nx]
+                    c2 = self.floor.grid[ny][tx]
+                    if c1 == WALL_CHAR or c2 == WALL_CHAR:
+                        continue
+                surrounding.append((nx, ny))
+
+        return [pos for pos in surrounding if self.is_tile_unoccupied(pos[0], pos[1], mon)]
+
+    def get_proactive_flank_step(self, mon: Pokemon, target: Pokemon) -> tuple[int, int] | None:
+        """If mon is adjacent to target on a corridor/doorway bottleneck tile while target is in a room,
+        finds an adjacent step into an unoccupied room tile that is also adjacent to target.
+        """
+        mx, my = get_pokemon_position(self, mon)
+        tx, ty = get_pokemon_position(self, target)
+        if max(abs(mx - tx), abs(my - ty)) != 1:
+            return None
+
+        if not (self.is_corridor_tile(mx, my) or self.is_doorway_tile(mx, my)):
+            return None
+
+        target_room = get_room_tiles_at(self.floor, tx, ty)
+        if not target_room:
+            return None
+
+        unoccupied = self.get_unoccupied_surrounding_tiles(target, mon)
+        candidate_tiles = [
+            (sx, sy) for (sx, sy) in unoccupied
+            if (sx, sy) in target_room and not self.is_doorway_tile(sx, sy) and (sx, sy) != (mx, my)
+        ]
+        if not candidate_tiles:
+            candidate_tiles = [
+                (sx, sy) for (sx, sy) in unoccupied
+                if (sx, sy) in target_room and (sx, sy) != (mx, my)
+            ]
+
+        for cx, cy in candidate_tiles:
+            dx = cx - mx
+            dy = cy - my
+            if max(abs(dx), abs(dy)) == 1:
+                if self.can_enemy_step_to(mon, cx, cy, dx, dy):
+                    return (dx, dy)
+
+        return None
+
+    def find_room_exit_towards(self, room_tiles: set[tuple[int, int]], tx: int, ty: int) -> tuple[int, int] | None:
+        """Finds the doorway tile inside room_tiles that leads towards (tx, ty) using BFS from (tx, ty)."""
+        from collections import deque
+        queue = deque([(tx, ty)])
+        visited = {(tx, ty)}
+
+        while queue:
+            cx, cy = queue.popleft()
+            if (cx, cy) in room_tiles:
+                return (cx, cy)
+
+            for dx, dy in [(-1, 0), (1, 0), (0, -1), (0, 1)]:
+                nx, ny = cx + dx, cy + dy
+                if 0 <= nx < self.floor.width and 0 <= ny < self.floor.height:
+                    if (nx, ny) not in visited and self.floor.grid[ny][nx] == FLOOR_CHAR:
+                        visited.add((nx, ny))
+                        queue.append((nx, ny))
+        return None
+
+    def _bfs_to_destinations(self, mon: Pokemon, destinations: set[tuple[int, int]]) -> tuple[int, int] | None:
+        """Finds the first step (dx, dy) on the shortest path from mon to any destination in destinations."""
+        mx, my = get_pokemon_position(self, mon)
+        if (mx, my) in destinations:
+            return None
+        if not destinations:
+            return None
+
+        from collections import deque
+        queue = deque()
+        visited = {(mx, my)}
+
+        avg_tx = sum(x for x, y in destinations) // len(destinations)
+        avg_ty = sum(y for x, y in destinations) // len(destinations)
+        p_dx = 1 if avg_tx > mx else (-1 if avg_tx < mx else 0)
+        p_dy = 1 if avg_ty > my else (-1 if avg_ty < my else 0)
+        init_dirs = self.get_target_directed_candidate_dirs((p_dx, p_dy))
+
+        for dx, dy in init_dirs:
+            nx, ny = mx + dx, my + dy
+            if self.can_enemy_step_to(mon, nx, ny, dx, dy):
+                if (nx, ny) in destinations:
+                    return (dx, dy)
+                visited.add((nx, ny))
+                queue.append((nx, ny, dx, dy))
+
+        occupied = {
+            get_pokemon_position(self, p)
+            for p in self.party + self.spawned_pokemon
+            if p is not mon and int(getattr(p, "current_hp", 0)) > 0
+        }
+
+        is_mobile = mon.status_effects.get("Mobile", 0) > 0
+
+        while queue:
+            cx, cy, fdx, fdy = queue.popleft()
+            if (cx, cy) in destinations:
+                return (fdx, fdy)
+
+            p_cx = 1 if avg_tx > cx else (-1 if avg_tx < cx else 0)
+            p_cy = 1 if avg_ty > cy else (-1 if avg_ty < cy else 0)
+            step_dirs = self.get_target_directed_candidate_dirs((p_cx, p_cy))
+
+            for dx, dy in step_dirs:
+                nx, ny = cx + dx, cy + dy
+                if (nx, ny) in visited:
+                    continue
+                if not (0 <= nx < self.floor.width and 0 <= ny < self.floor.height):
+                    continue
+                if not is_mobile and self.floor.grid[ny][nx] != FLOOR_CHAR:
+                    continue
+                if (nx, ny) in occupied and (nx, ny) not in destinations:
+                    continue
+                if not is_mobile and dx != 0 and dy != 0:
+                    c1 = self.floor.grid[cy][nx]
+                    c2 = self.floor.grid[ny][cx]
+                    if c1 == WALL_CHAR or c2 == WALL_CHAR:
+                        continue
+                visited.add((nx, ny))
+                queue.append((nx, ny, fdx, fdy))
+
+        return None
+
+    def find_path_to_surround(self, mon: Pokemon, target: Pokemon) -> tuple[int, int] | None:
+        """
+        Finds the first step (dx, dy) for mon to move towards an unoccupied tile surrounding target.
+        Returns (0, 0) if mon is already in an optimal surrounding or perimeter hold position.
+        """
+        mx, my = get_pokemon_position(self, mon)
+        tx, ty = get_pokemon_position(self, target)
+        if (mx, my) == (tx, ty):
+            return None
+
+        if max(abs(mx - tx), abs(my - ty)) == 1:
+            flank = self.get_proactive_flank_step(mon, target)
+            if flank:
+                return flank
+            return (0, 0)
+
+        mon_room = get_room_tiles_at(self.floor, mx, my)
+        if mon_room and (tx, ty) not in mon_room:
+            doorway = self.find_room_exit_towards(mon_room, tx, ty)
+            if doorway:
+                dx, dy = doorway
+                door_occupied_by_ally = False
+                for p in (self.party if mon in self.party else self.spawned_pokemon):
+                    if p is not mon and int(getattr(p, "current_hp", 0)) > 0:
+                        px, py = get_pokemon_position(self, p)
+                        if px == dx and py == dy:
+                            door_occupied_by_ally = True
+                            break
+
+                if door_occupied_by_ally:
+                    perimeter = []
+                    for pdx in [-1, 0, 1]:
+                        for pdy in [-1, 0, 1]:
+                            if pdx == 0 and pdy == 0:
+                                continue
+                            px, py = dx + pdx, dy + pdy
+                            if (px, py) in mon_room and self.floor.grid[py][px] == FLOOR_CHAR:
+                                if pdx != 0 and pdy != 0:
+                                    c1 = self.floor.grid[dy][px]
+                                    c2 = self.floor.grid[py][dx]
+                                    if c1 == WALL_CHAR or c2 == WALL_CHAR:
+                                        continue
+                                perimeter.append((px, py))
+
+                    if (mx, my) in perimeter:
+                        return (0, 0)
+
+                    unoccupied_perimeter = [
+                        pos for pos in perimeter
+                        if self.is_tile_unoccupied(pos[0], pos[1], mon)
+                    ]
+                    if unoccupied_perimeter:
+                        step = self._bfs_to_destinations(mon, set(unoccupied_perimeter))
+                        if step:
+                            return step
+                    return (0, 0)
+
+        unoccupied_surround = self.get_unoccupied_surrounding_tiles(target, mon)
+        if unoccupied_surround:
+            step = self._bfs_to_destinations(mon, set(unoccupied_surround))
+            if step:
+                return step
 
         return None
 
@@ -2346,7 +2605,7 @@ class Game:
         #2. Movement towards other teammates if not in attack range
         target_mate = random.choice(other_teammates)
         tx, ty = get_pokemon_position(self, target_mate)
-        step = self.get_ai_step_towards(mon, tx, ty)
+        step = self.get_ai_step_towards(mon, tx, ty, target=target_mate)
         if step:
             dx, dy = step
             nx, ny = ax + dx, ay + dy
@@ -2531,6 +2790,30 @@ class Game:
                                         ready_moves.append((move, rel_targets))
 
                 if ready_moves:
+                    # If ally is at a bottleneck tile adjacent to an enemy in a room, and there are following party members nearby, flank into the room first
+                    flank_step = None
+                    if self.is_corridor_tile(ax, ay) or self.is_doorway_tile(ax, ay):
+                        for _, targets in ready_moves:
+                            for t in targets:
+                                if t in self.spawned_pokemon and t not in self.party:
+                                    has_following_allies = any(
+                                        p is not ally and int(getattr(p, "current_hp", 0)) > 0
+                                        and max(abs(get_pokemon_position(self, p)[0] - ax), abs(get_pokemon_position(self, p)[1] - ay)) <= 5
+                                        for p in self.party
+                                    )
+                                    if has_following_allies:
+                                        flank_step = self.get_proactive_flank_step(ally, t)
+                                        if flank_step:
+                                            break
+                            if flank_step:
+                                break
+
+                    if flank_step:
+                        pdx, pdy = flank_step
+                        self.set_poke_pos(ally, ax + pdx, ay + pdy)
+                        ally.last_dx, ally.last_dy = pdx, pdy
+                        continue
+
                     chosen_move, enemy_targets = random.choice(ready_moves)
                     range_str = chosen_move.get("range", "Adjacent enemy")
                     if range_str == "Enemy in front":
@@ -2570,35 +2853,15 @@ class Game:
                 if not all_moves_disabled_manually and visible_enemies and (is_leader_in_same_room or self.enemy_can_see(ally, self.player_pokemon)):
                     visible_enemies.sort(key=lambda e: max(abs(e.x - ax), abs(e.y - ay)))
                     target_enemy = visible_enemies[0]
-                    p_dx = 1 if target_enemy.x > ax else (-1 if target_enemy.x < ax else 0)
-                    p_dy = 1 if target_enemy.y > ay else (-1 if target_enemy.y < ay else 0)
-                    path_dir = self.find_path_to_target(ally, target_enemy.x, target_enemy.y)
-
-                    best_step = None
-                    best_score = None
-
-                    candidate_dirs = self.get_target_directed_candidate_dirs((p_dx, p_dy))
-                    for pdx, pdy in candidate_dirs:
-                        nx, ny = ax + pdx, ay + pdy
-                        if self.can_enemy_step_to(ally, nx, ny, pdx, pdy):
-                            is_blocked = is_ally_in_way_from_pos(self, ally, nx, ny, target_enemy)
-                            has_path = has_clear_path(self.floor, nx, ny, target_enemy.x, target_enemy.y, False)
-                            dist = max(abs(target_enemy.x - nx), abs(target_enemy.y - ny))
-                            path_penalty = 0 if path_dir == (pdx, pdy) else 1
-
-                            score = (is_blocked or not has_path, dist, path_penalty)
-                            if best_score is None or score < best_score:
-                                best_score = score
-                                best_step = (pdx, pdy)
-
-                    if best_step:
-                        pdx, pdy = best_step
-                        nx, ny = ax + pdx, ay + pdy
-                        self.set_poke_pos(ally, nx, ny)
-                        ally.last_dx, ally.last_dy = pdx, pdy
-                        moved = True
-                    elif not moved:
-                        step = self.get_ai_step_towards(ally, target_enemy.x, target_enemy.y)
+                    if max(abs(ax - target_enemy.x), abs(ay - target_enemy.y)) <= 1:
+                        flank_step = self.get_proactive_flank_step(ally, target_enemy)
+                        if flank_step:
+                            pdx, pdy = flank_step
+                            self.set_poke_pos(ally, ax + pdx, ay + pdy)
+                            ally.last_dx, ally.last_dy = pdx, pdy
+                            moved = True
+                    if not moved:
+                        step = self.get_ai_step_towards(ally, target_enemy.x, target_enemy.y, target=target_enemy)
                         if step:
                             pdx, pdy = step
                             self.set_poke_pos(ally, ax + pdx, ay + pdy)
@@ -2655,18 +2918,26 @@ class Game:
                     tx, ty = get_pokemon_position(self, follow_target)
                     dist = max(abs(ax - tx), abs(ay - ty))
                     if dist > 1:
-                        step = self.get_ai_step_towards(ally, tx, ty)
+                        step = self.get_ai_step_towards(ally, tx, ty, target=follow_target)
                         if step:
                             pdx, pdy = step
                             nx, ny = ax + pdx, ay + pdy
                             self.set_poke_pos(ally, nx, ny)
                             ally.last_dx, ally.last_dy = pdx, pdy
                             moved = True
-                    else:
-                        pdx = 1 if tx > ax else (-1 if tx < ax else 0)
-                        pdy = 1 if ty > ay else (-1 if ty < ay else 0)
-                        if pdx != 0 or pdy != 0:
+                    elif dist == 1:
+                        flank_step = self.get_proactive_flank_step(ally, follow_target)
+                        if flank_step:
+                            pdx, pdy = flank_step
+                            nx, ny = ax + pdx, ay + pdy
+                            self.set_poke_pos(ally, nx, ny)
                             ally.last_dx, ally.last_dy = pdx, pdy
+                            moved = True
+                        else:
+                            pdx = 1 if tx > ax else (-1 if tx < ax else 0)
+                            pdy = 1 if ty > ay else (-1 if ty < ay else 0)
+                            if pdx != 0 or pdy != 0:
+                                ally.last_dx, ally.last_dy = pdx, pdy
 
     def process_enemy_turns(self):
         """Processes AI turns for all active (non-napping) enemy Pokémon on the floor"""
@@ -2836,6 +3107,20 @@ class Game:
                     tx, ty = get_pokemon_position(self, target)
                     is_adjacent = max(abs(ex - tx), abs(ey - ty)) <= 1
 
+                    # Check if enemy is on a bottleneck tile and should proactively flank into the room
+                    flank_step = self.get_proactive_flank_step(enemy, target)
+                    has_following_allies = any(
+                        p is not enemy and int(getattr(p, "current_hp", 0)) > 0
+                        and max(abs(get_pokemon_position(self, p)[0] - ex), abs(get_pokemon_position(self, p)[1] - ey)) <= 5
+                        for p in self.spawned_pokemon
+                    )
+                    if is_adjacent and flank_step and has_following_allies and (self.is_corridor_tile(ex, ey) or self.is_doorway_tile(ex, ey)):
+                        dx, dy = flank_step
+                        nx, ny = ex + dx, ey + dy
+                        self.set_poke_pos(enemy, nx, ny)
+                        enemy.last_dx, enemy.last_dy = dx, dy
+                        continue
+
                     should_attack = False
                     if ready_moves:
                         if is_adjacent or random.random() < 0.5:
@@ -2890,26 +3175,33 @@ class Game:
                             moved = False
 
                             if is_adjacent:
-                                #Prioritize moving orthogonally adjacent to the target if across a corner wall or in corridor
-                                p_dx = 1 if tx > ex else (-1 if tx < ex else 0)
-                                p_dy = 1 if ty > ey else (-1 if ty < ey else 0)
-                                candidate_dirs = self.get_target_directed_candidate_dirs((p_dx, p_dy))
-                                for dx, dy in candidate_dirs:
+                                flank_step = self.get_proactive_flank_step(enemy, target)
+                                if flank_step:
+                                    dx, dy = flank_step
                                     nx, ny = ex + dx, ey + dy
-                                    if self.can_enemy_step_to(enemy, nx, ny, dx, dy):
-                                        if abs(nx - tx) + abs(ny - ty) == 1:
-                                            enemy.x += dx
-                                            enemy.y += dy
-                                            enemy.last_dx, enemy.last_dy = dx, dy
-                                            moved = True
-                                            break
+                                    self.set_poke_pos(enemy, nx, ny)
+                                    enemy.last_dx, enemy.last_dy = dx, dy
+                                    moved = True
+                                else:
+                                    #Prioritize moving orthogonally adjacent to the target if across a corner wall or in corridor
+                                    p_dx = 1 if tx > ex else (-1 if tx < ex else 0)
+                                    p_dy = 1 if ty > ey else (-1 if ty < ey else 0)
+                                    candidate_dirs = self.get_target_directed_candidate_dirs((p_dx, p_dy))
+                                    for dx, dy in candidate_dirs:
+                                        nx, ny = ex + dx, ey + dy
+                                        if self.can_enemy_step_to(enemy, nx, ny, dx, dy):
+                                            if abs(nx - tx) + abs(ny - ty) == 1:
+                                                self.set_poke_pos(enemy, nx, ny)
+                                                enemy.last_dx, enemy.last_dy = dx, dy
+                                                moved = True
+                                                break
 
                             if not moved:
-                                step = self.get_ai_step_towards(enemy, tx, ty)
+                                step = self.get_ai_step_towards(enemy, tx, ty, target=target)
                                 if step:
                                     best_dx, best_dy = step
-                                    enemy.x += best_dx
-                                    enemy.y += best_dy
+                                    nx, ny = ex + best_dx, ey + best_dy
+                                    self.set_poke_pos(enemy, nx, ny)
                                     enemy.last_dx, enemy.last_dy = best_dx, best_dy
 
                 else:
@@ -10531,24 +10823,24 @@ class Game:
         self.stairs_revealed = False
         self.floor_luminous = False
 
-        # Place player & party
+        #Place player & party
         self.player_x, self.player_y = self._get_starting_position()
         if hasattr(self, "player_pokemon") and self.player_pokemon:
             self.player_pokemon.x, self.player_pokemon.y = self.player_x, self.player_y
         self.spawn_party_members()
 
-        # Place stairs and wonder tile
+        #Place stairs and wonder tile
         self.spawn_stairs()
         self.spawn_wonder_tile()
 
-        # Clear spawned enemies and items, spawn new
+        #Clear spawned enemies and items, spawn new
         self.spawned_pokemon.clear()
         self.generate_floor_spawn_list()
         self.items_on_floor.clear()
         self.spawn_initial_items()
         self.spawn_initial_enemies()
 
-        # Reset floor effects
+        #Reset floor effects
         self.gravity = False
         self.floor_visibility_reduction = self.generate_floor_visibility_reduction(self.floor_number)
         self.base_weather = self.generate_floor_base_weather(self.floor_number)
@@ -10565,7 +10857,7 @@ class Game:
         self.sand_tomb_bindings.clear()
         self.whirlpool_bindings.clear()
 
-        # Cure status effects on party
+        #Cure status effects on party
         for member in getattr(self, "party", []):
             member.fake_out_used_this_floor = False
             member.disable_move_effect = None
