@@ -13947,6 +13947,76 @@ class Game:
         import re
         ansi_escape = re.compile(r'\x1b\[[0-9;]*[a-zA-Z]')
 
+        def parse_sgr_params(tok: str, state: dict):
+            if not (tok.startswith(('\x1b[', '\033[')) and tok.endswith('m')):
+                return
+            params_str = tok[2:-1]
+            params = params_str.split(';') if params_str else ['0']
+            idx = 0
+            while idx < len(params):
+                p = params[idx]
+                if p in ('', '0'):
+                    state['fg'] = None
+                    state['bg'] = None
+                    state['bold'] = False
+                    state['dim'] = False
+                    state['underline'] = False
+                    state['inverse'] = False
+                elif p == '1':
+                    state['bold'] = True
+                elif p == '2':
+                    state['dim'] = True
+                elif p == '4':
+                    state['underline'] = True
+                elif p == '7':
+                    state['inverse'] = True
+                elif p == '22':
+                    state['bold'] = False
+                    state['dim'] = False
+                elif p == '24':
+                    state['underline'] = False
+                elif p == '27':
+                    state['inverse'] = False
+                elif p in ('30', '31', '32', '33', '34', '35', '36', '37', '90', '91', '92', '93', '94', '95', '96', '97'):
+                    state['fg'] = p
+                elif p == '39':
+                    state['fg'] = None
+                elif p in ('40', '41', '42', '43', '44', '45', '46', '47', '100', '101', '102', '103', '104', '105', '106', '107'):
+                    state['bg'] = p
+                elif p == '49':
+                    state['bg'] = None
+                elif p == '38' and idx + 2 < len(params) and params[idx + 1] == '5':
+                    state['fg'] = f"38;5;{params[idx + 2]}"
+                    idx += 2
+                elif p == '48' and idx + 2 < len(params) and params[idx + 1] == '5':
+                    state['bg'] = f"48;5;{params[idx + 2]}"
+                    idx += 2
+                elif p == '38' and idx + 4 < len(params) and params[idx + 1] == '2':
+                    state['fg'] = f"38;2;{params[idx+2]};{params[idx+3]};{params[idx+4]}"
+                    idx += 4
+                elif p == '48' and idx + 4 < len(params) and params[idx + 1] == '2':
+                    state['bg'] = f"48;2;{params[idx+2]};{params[idx+3]};{params[idx+4]}"
+                    idx += 4
+                idx += 1
+
+        def build_sgr_code(state: dict) -> str:
+            parts = []
+            if state.get('bold'):
+                parts.append('1')
+            if state.get('dim'):
+                parts.append('2')
+            if state.get('underline'):
+                parts.append('4')
+            if state.get('inverse'):
+                parts.append('7')
+            if state.get('fg') is not None:
+                parts.append(state['fg'])
+            if state.get('bg') is not None:
+                parts.append(state['bg'])
+            if not parts:
+                return ""
+            return f"\033[{';'.join(parts)}m"
+
         result = list(base_rows)
         for i, ov_line in enumerate(overlay_rows):
             target_y = start_y + i
@@ -13978,9 +14048,12 @@ class Game:
             left_part = []
             right_part = []
             vis_col = 0
+            active_state = {'fg': None, 'bg': None, 'bold': False, 'dim': False, 'underline': False, 'inverse': False}
 
             for tok, is_ansi in tokens:
                 if is_ansi:
+                    if vis_col < start_x + ov_len:
+                        parse_sgr_params(tok, active_state)
                     if vis_col <= start_x:
                         left_part.append(tok)
                     elif vis_col >= start_x + ov_len:
@@ -13994,8 +14067,11 @@ class Game:
 
             left_str = "".join(left_part)
             right_str = "".join(right_part)
+            resume_sgr = build_sgr_code(active_state) if right_str else ""
+            if resume_sgr and not right_str.endswith('\033[0m') and not right_str.endswith('\x1b[0m'):
+                right_str += '\033[0m'
 
-            result[target_y] = f"{left_str}\033[0m{ov_line}\033[0m{right_str}"
+            result[target_y] = f"{left_str}\033[0m{ov_line}\033[0m{resume_sgr}{right_str}"
 
         return result
 
