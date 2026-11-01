@@ -1827,7 +1827,7 @@ class Game:
         offsets = [0, -1, 1, -2, 2, -3, 3, 4]
         return [DIRECTIONS_CW[(idx + off) % 8] for off in offsets]
 
-    def find_path_to_target(self, enemy: Pokemon, tx: int, ty: int) -> tuple[int, int] | None:
+    def find_path_to_target(self, enemy: Pokemon, tx: int, ty: int, ignore_party_at_first_step: bool = False) -> tuple[int, int] | None:
         """Finds the first step (dx, dy) on the shortest path from enemy to (tx, ty) using BFS, with obstacle avoidance"""
         ex, ey = get_pokemon_position(self, enemy)
         if (ex, ey) == (tx, ty):
@@ -1845,7 +1845,26 @@ class Game:
 
         for dx, dy in init_dirs:
             nx, ny = ex + dx, ey + dy
-            if self.can_enemy_step_to(enemy, nx, ny, dx, dy):
+            can_step = self.can_enemy_step_to(enemy, nx, ny, dx, dy)
+            if not can_step and ignore_party_at_first_step and enemy in self.party:
+                is_party_occupied = any(
+                    p is not enemy and int(getattr(p, "current_hp", 0)) > 0 and get_pokemon_position(self, p) == (nx, ny)
+                    for p in self.party
+                )
+                if is_party_occupied:
+                    if 0 <= nx < self.floor.width and 0 <= ny < self.floor.height:
+                        is_wall = (self.floor.grid[ny][nx] == WALL_CHAR)
+                        has_mobile = (enemy.status_effects.get("Mobile", 0) > 0)
+                        if not is_wall or has_mobile:
+                            corner_cut = False
+                            if not has_mobile and dx != 0 and dy != 0:
+                                c1 = self.floor.grid[ey][nx]
+                                c2 = self.floor.grid[ny][ex]
+                                if c1 == WALL_CHAR or c2 == WALL_CHAR:
+                                    corner_cut = True
+                            if not corner_cut:
+                                can_step = True
+            if can_step:
                 if (nx, ny) == (tx, ty):
                     return (dx, dy)
                 visited.add((nx, ny))
@@ -1907,6 +1926,22 @@ class Game:
                 return None
 
         #2. Try finding a full path using BFS
+        if mon in self.party:
+            direct_dir = self.find_path_to_target(mon, tx, ty, ignore_party_at_first_step=True)
+            if direct_dir:
+                pdx, pdy = direct_dir
+                next_x, next_y = mx + pdx, my + pdy
+                teammate_at_next = any(
+                    p is not mon and int(getattr(p, "current_hp", 0)) > 0 and get_pokemon_position(self, p) == (next_x, next_y)
+                    for p in self.party
+                )
+                if teammate_at_next:
+                    if (self.is_corridor_tile(mx, my) or self.is_doorway_tile(mx, my) or
+                        self.is_corridor_tile(next_x, next_y) or self.is_doorway_tile(next_x, next_y)):
+                        return None
+                elif self.can_enemy_step_to(mon, next_x, next_y, pdx, pdy):
+                    return direct_dir
+
         path_dir = self.find_path_to_target(mon, tx, ty)
         if path_dir:
             pdx, pdy = path_dir
@@ -1918,7 +1953,7 @@ class Game:
         p_dy = 1 if ty > my else (-1 if ty < my else 0)
         candidate_dirs = self.get_target_directed_candidate_dirs((p_dx, p_dy))
 
-        is_in_corridor = self.is_corridor_tile(mx, my)
+        is_in_corridor = self.is_corridor_tile(mx, my) or self.is_doorway_tile(mx, my)
 
         for cdx, cdy in candidate_dirs:
             if is_in_corridor:
@@ -1930,6 +1965,21 @@ class Game:
                 return (cdx, cdy)
 
         return None
+
+    def is_walkable_adjacent(self, mon: Pokemon, x1: int, y1: int, x2: int, y2: int) -> bool:
+        """Returns True if (x1, y1) and (x2, y2) are adjacent (Chebyshev dist <= 1) without cutting wall corners."""
+        dx = abs(x1 - x2)
+        dy = abs(y1 - y2)
+        if max(dx, dy) > 1:
+            return False
+        if dx == 0 or dy == 0:
+            return True
+        if mon.status_effects.get("Mobile", 0) > 0:
+            return True
+        from dungeon import WALL_CHAR
+        c1 = self.floor.grid[y1][x2]
+        c2 = self.floor.grid[y2][x1]
+        return c1 != WALL_CHAR and c2 != WALL_CHAR
 
     def is_corridor_tile(self, x: int, y: int) -> bool:
         """Returns True if (x, y) is a walkable floor tile outside a room."""
@@ -2957,18 +3007,42 @@ class Game:
 
                 #Target D: Follow Leader
                 if not moved:
+                    lx, ly = get_pokemon_position(self, self.player_pokemon)
+                    is_adj_to_leader = self.is_walkable_adjacent(ally, ax, ay, lx, ly)
+                    dist_to_leader = max(abs(ax - lx), abs(ay - ly))
                     follow_target = self.player_pokemon
-                    tx, ty = get_pokemon_position(self, follow_target)
-                    dist = max(abs(ax - tx), abs(ay - ty))
-                    if dist > 1:
-                        step = self.get_ai_step_towards(ally, tx, ty, target=follow_target)
+                    tx, ty = lx, ly
+                    is_adj = is_adj_to_leader
+
+                    if not is_adj_to_leader:
+                        #Follow next alive teammate ahead in party order if nearby and closer to leader
+                        ally_idx = self.party.index(ally) if ally in self.party else -1
+                        imm_ahead = None
+                        if ally_idx > 0:
+                            for prev_idx in range(ally_idx - 1, -1, -1):
+                                prev_mon = self.party[prev_idx]
+                                if int(getattr(prev_mon, "current_hp", 0)) > 0:
+                                    imm_ahead = prev_mon
+                                    break
+
+                        if imm_ahead is not None and imm_ahead is not self.player_pokemon:
+                            ix, iy = get_pokemon_position(self, imm_ahead)
+                            dist_to_imm = max(abs(ax - ix), abs(ay - iy))
+                            dist_imm_to_leader = max(abs(ix - lx), abs(iy - ly))
+                            if dist_to_imm <= dist_to_leader and dist_imm_to_leader <= dist_to_leader and dist_to_imm <= 10:
+                                follow_target = imm_ahead
+                                tx, ty = ix, iy
+                                is_adj = self.is_walkable_adjacent(ally, ax, ay, ix, iy)
+
+                    if not is_adj:
+                        step = self.get_ai_step_towards(ally, tx, ty)
                         if step:
                             pdx, pdy = step
                             nx, ny = ax + pdx, ay + pdy
                             self.set_poke_pos(ally, nx, ny)
                             ally.last_dx, ally.last_dy = pdx, pdy
                             moved = True
-                    elif dist == 1:
+                    else:
                         flank_step = self.get_proactive_flank_step(ally, follow_target)
                         if flank_step:
                             pdx, pdy = flank_step
