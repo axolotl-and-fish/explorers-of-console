@@ -1957,6 +1957,31 @@ class Game:
                         return True
         return False
 
+    def is_dead_end_corridor_exit(self, ex_x: int, ex_y: int, room_tiles: set[tuple[int, int]]) -> bool:
+        """Returns True if the corridor starting at (ex_x, ex_y) leads to a dead-end"""
+        if hasattr(self.floor, "dead_end_tiles") and (ex_x, ex_y) in self.floor.dead_end_tiles:
+            return True
+
+        from collections import deque
+        queue = deque([(ex_x, ex_y)])
+        visited = set(room_tiles)
+        visited.add((ex_x, ex_y))
+
+        while queue:
+            cx, cy = queue.popleft()
+            other_room = get_room_tiles_at(self.floor, cx, cy)
+            if other_room and not other_room.issubset(room_tiles):
+                return False
+
+            for dx, dy in [(-1, 0), (1, 0), (0, -1), (0, 1)]:
+                nx, ny = cx + dx, cy + dy
+                if 0 <= nx < self.floor.width and 0 <= ny < self.floor.height:
+                    if (nx, ny) not in visited and self.floor.grid[ny][nx] == FLOOR_CHAR:
+                        visited.add((nx, ny))
+                        queue.append((nx, ny))
+
+        return True
+
     def is_tile_unoccupied(self, sx: int, sy: int, mon: Pokemon | None = None) -> bool:
         """Returns True if no entities (other than mon) occupies (sx, sy)."""
         for p in self.party + self.spawned_pokemon:
@@ -2353,9 +2378,22 @@ class Game:
                         if self.floor.grid[ny][nx] == FLOOR_CHAR and (nx, ny) not in room_tiles:
                             exits.add((nx, ny))
 
-            if not getattr(mon, "target_exit", None) or mon.target_exit not in exits or (ex, ey) == mon.target_exit:
-                if exits:
-                    mon.target_exit = random.choice(list(exits))
+            #Remove corridors that lead to dead-ends from the list so they are not chosen
+            viable_exits = [e for e in exits if not self.is_dead_end_corridor_exit(e[0], e[1], room_tiles)]
+            if not viable_exits:
+                viable_exits = list(exits)
+
+            last_dx = getattr(mon, "last_dx", 0)
+            last_dy = getattr(mon, "last_dy", 0)
+            prev_tile = (ex - last_dx, ey - last_dy) if (last_dx != 0 or last_dy != 0) else None
+
+            #If mon just entered the room from an exit, prefer choosing a different exit ahead
+            forward_exits = [e for e in viable_exits if e != prev_tile]
+            candidate_exits = forward_exits if forward_exits else viable_exits
+
+            if not getattr(mon, "target_exit", None) or mon.target_exit not in viable_exits:
+                if candidate_exits:
+                    mon.target_exit = random.choice(candidate_exits)
                 else:
                     mon.target_exit = None
 
@@ -2369,6 +2407,8 @@ class Game:
                     mon.last_dx, mon.last_dy = best_dx, best_dy
                     if mon in self.party:
                         self.check_ally_auto_pickup(mon, nx, ny)
+                    if (nx, ny) == mon.target_exit:
+                        mon.target_exit = None
                 else:
                     mon.target_exit = None
             else:
@@ -2382,6 +2422,7 @@ class Game:
                         if mon in self.party:
                             self.check_ally_auto_pickup(mon, nx, ny)
         else:
+            mon.target_exit = None
             neighbors = self.get_valid_path_neighbors(ex, ey)
             if not neighbors:
                 return
@@ -2475,8 +2516,10 @@ class Game:
 
                 #Target a safe exit if there is one
                 if safe_exits:
-                    safe_exits.sort(key=lambda exit_pos: max(abs(exit_pos[0] - px), abs(exit_pos[1] - py)))
-                    tx, ty = safe_exits[0]
+                    non_dead_end_safe = [e for e in safe_exits if not self.is_dead_end_corridor_exit(e[0], e[1], room_tiles)]
+                    candidate_safe = non_dead_end_safe if non_dead_end_safe else safe_exits
+                    candidate_safe.sort(key=lambda exit_pos: max(abs(exit_pos[0] - px), abs(exit_pos[1] - py)))
+                    tx, ty = candidate_safe[0]
                     step = self.get_ai_step_towards(mon, tx, ty)
                     if step:
                         pdx, pdy = step
