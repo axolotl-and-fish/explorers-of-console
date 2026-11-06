@@ -142,7 +142,7 @@ simply provided for your convenience.
 						1a. System Requirements
 ===============================================================================
 Since the game is text-based, it will run on just about anything. The game 
-consumes less than 64 MB of RAM on my system. It even runs well on my Pentium 
+consumes less than 64 MB of RAM on my systems. It even runs well on my Pentium 
 N6000 laptop underclocked to 0.8 GHz!
 
 For the executable version however, you will need a x64 processor and a 64-bit 
@@ -156,14 +156,15 @@ vary! The game is intentionally designed to be as multi-platform as possible,
 so feel free to send a bug report if you encounter a problem, though I may not
 be able to help you with more esoteric platforms and terminal emulators.
 
-As long as your terminal emulator supports 16 colors and code page 437 ASCII 
-you should be good. The vast majority of modern terminals should support these.
+As long as your terminal emulator supports 16 colors, ANSI escape characters 
+and code page 437 ASCII you should be good. The vast majority of modern 
+terminals should support these.
 
-If your terminal does NOT support 16 colors then you may see garbage ANSI codes 
-filling the screen. If this is the case, run the game with the --compat flag, 
-which removes all color and ANSI codes from the game. The compat mode is meant
-as a last resort as the game is intended to be played in color, so you should 
-consider using a different terminal in this situation!
+If your terminal does NOT support 16 colors or ANSI escape codes then you may 
+see garbage ANSI codes filling the screen. If this is the case, run the game 
+with the --compat flag, which removes all color and ANSI codes from the game. 
+The compat mode is meant as a last resort as the game is intended to be played 
+in color, so you should consider using a different terminal in this situation!
 
 The minimum (& recommended) terminal size is 76 columns x 48 rows. You must use
 a fixed-width or "monospace" font that supports all CP437 characters, or you
