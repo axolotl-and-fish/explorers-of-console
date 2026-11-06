@@ -1,5 +1,42 @@
 		Pokémon Misery Dungeon: Explorers of the Console CHANGELOG
 ===============================================================================
+						    0.2.1  - November 7, 2026
+===============================================================================
+Save files from 0.2.0 will not be compatible. Yeah, I know, this is the second
+time in a row. Sorry!
+-----------------------------------ADDITIONS-----------------------------------
+- Added an options screen to the main menu, allowing certain animations and
+  other game features to be modified or disabled.
+- New options have been added to the Debug Menu:
+  - Activate All Enemies: Wakes up all napping enemies on the floor.
+  - Freeze Floor Timer: Stops the floor collapse timer from counting down.
+  - Test Pokémon Spawns: Tests the Pokémon spawning algorithm for a given
+    floor. You can export the results to a text file.
+  - Test Item Spawns: Ditto, but with the item spawning algorithm instead.
+------------------------------------CHANGES------------------------------------
+- Wild Pokémon now have a low chance of having one of their spawn moves
+  replaced with a random TM move or earlier move, if applicable.
+- Unevolved Pokémon (and Kakuna) can no longer learn Toxic, Vacuum-Cut or 
+  Dragon Rage by TM.
+- Pokémon AI has been overhauled and should now be more proactive at pursuing
+  and surrounding targets. Wild Pokémon are also less likely to get stuck
+  walking back and forth forever now.
+- Removed unnecessary checksums from save files, since zlib does that anyway.
+- Sleeping, paralyzed, petrified, frozen or wrapped enemies will no longer
+  dodge thrown items.
+- Enemies that are napping (i.e., inactive) will wake up if an item is thrown
+  at them.
+-------------------------------------FIXES-------------------------------------
+- Fixed Zapdos being incompatible with all TMs. Its TM learnset is probably
+  still incorrect, but it's not like Zapdos is obtainable without debug yet
+  anyway. Will properly fix this in the 0.3 update :)
+- Recruited Pokémon have their movement speed reset to normal now.
+- Finally fixed the graphical errors caused by the summary screen context menu.
+- Fixed wrong colors on Pokémon windows when the Pause & Debug menus are
+  opened.
+- Throwing Orbs and other non-edible items (except throwing weapons) no longer
+  triggers their effects. Instead they deal 1 damage.
+===============================================================================
 			   0.2.0 "The Learning Update"  - October 26, 2026
 ===============================================================================
 Save files and highscores from 0.1.x will not be compatible.
