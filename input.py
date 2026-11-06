@@ -284,6 +284,14 @@ def get_char_input(timeout: float | None = None) -> str | None:
             ch2 = msvcrt.getch()
             if ch2 == b"S":  #Delete
                 return "BACKSPACE"
+            if ch2 == b"H":  #Up arrow
+                return MOVE_UP
+            if ch2 == b"P":  #Down arrow
+                return MOVE_DOWN
+            if ch2 == b"K":  #Left arrow
+                return MOVE_LEFT
+            if ch2 == b"M":  #Right arrow
+                return MOVE_RIGHT
             return None
         if ch in (b"\r", b"\n"):
             return "ENTER"
@@ -317,6 +325,19 @@ def get_char_input(timeout: float | None = None) -> str | None:
             if ch_bytes == b"\x1b":
                 rlist, _, _ = select.select([fd], [], [], 0.05)
                 if rlist:
+                    ch2_bytes = os.read(fd, 1)
+                    ch2 = ch2_bytes.decode("utf-8", errors="replace") if ch2_bytes else ""
+                    if ch2 in ("[", "O"):
+                        ch3_bytes = os.read(fd, 1)
+                        ch3 = ch3_bytes.decode("utf-8", errors="replace") if ch3_bytes else ""
+                        if ch3 == "A":
+                            return MOVE_UP
+                        elif ch3 == "B":
+                            return MOVE_DOWN
+                        elif ch3 == "C":
+                            return MOVE_RIGHT
+                        elif ch3 == "D":
+                            return MOVE_LEFT
                     os.read(fd, 10)
                     return None
                 return "ESC"
