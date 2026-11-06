@@ -37,7 +37,7 @@
 	  [33, "Power Whip"],
 	  [36, "Solar Beam"]
     ],
-    "tm_moves": ["Flash", "Strength", "Cut", "Skull Bash", "Reflect", "Solar Beam", "Mega Drain", "Take Down", "Double-Edge", "Body Slam", "Razor Wind", "Swords Dance", "Toxic", "Mimic", "Bide", "Rest", "Double Team", "Vacuum-Cut", "Wide Slash", "Spin Slash", "Rage"],
+    "tm_moves": ["Flash", "Strength", "Cut", "Skull Bash", "Reflect", "Solar Beam", "Mega Drain", "Take Down", "Double-Edge", "Body Slam", "Razor Wind", "Swords Dance", "Mimic", "Bide", "Rest", "Double Team", "Wide Slash", "Spin Slash", "Rage"],
     "evolutions": [
       {
         "to": "Ivysaur",
@@ -170,7 +170,7 @@
 	  [36, "Inferno"],
 	  [40, "Flare Blitz"]
     ],
-    "tm_moves": ["Strength", "Cut", "Rock Slide", "Skull Bash", "Swift", "Fire Blast", "Reflect", "Dig", "Dragon Rage", "Counter", "Seismic Toss","Submission", "Take Down", "Double-Edge", "Body Slam", "Mega Punch", "Swords Dance", "Mega Kick", "Toxic", "Mimic", "Bide", "Rest", "Double Team", "Vacuum-Cut", "Wide Slash", "Spin Slash", "Rage"],
+    "tm_moves": ["Strength", "Cut", "Rock Slide", "Skull Bash", "Swift", "Fire Blast", "Reflect", "Dig", "Counter", "Seismic Toss","Submission", "Take Down", "Double-Edge", "Body Slam", "Mega Punch", "Swords Dance", "Mega Kick", "Mimic", "Bide", "Rest", "Double Team", "Wide Slash", "Spin Slash", "Rage"],
     "evolutions": [
       {
         "to": "Charmeleon",
@@ -298,7 +298,7 @@
 	  [33, "Hydro Pump"],
 	  [36, "Wave Crash"]
     ],
-    "tm_moves": ["Strength", "Surf", "Rock Slide", "Skull Bash", "Reflect", "Dig", "Counter", "Seismic Toss","Submission", "Bubble Beam", "Water Gun", "Ice Beam", "Blizzard", "Take Down", "Double-Edge", "Body Slam", "Mega Punch", "Mega Kick", "Toxic", "Mimic", "Bide", "Rest", "Double Team", "Vacuum-Cut", "Wide Slash", "Spin Slash", "Rage"],
+    "tm_moves": ["Strength", "Surf", "Rock Slide", "Skull Bash", "Reflect", "Dig", "Counter", "Seismic Toss","Submission", "Bubble Beam", "Water Gun", "Ice Beam", "Blizzard", "Take Down", "Double-Edge", "Body Slam", "Mega Punch", "Mega Kick", "Mimic", "Bide", "Rest", "Double Team", "Wide Slash", "Spin Slash", "Rage"],
     "evolutions": [
       {
         "to": "Wartortle",
@@ -530,7 +530,7 @@
 	  [5, "Poison Sting"],
       [9, "Bug Bite"]
     ],
-    "tm_moves": ["Toxic"],
+    "tm_moves": [],
     "evolutions": [
       {
         "to": "Kakuna",
@@ -563,7 +563,7 @@
       [0, "Harden"],
       [1, "Harden"]
     ],
-    "tm_moves": ["Toxic"],
+    "tm_moves": [],
     "evolutions": [
       {
         "to": "Beedrill",
@@ -651,7 +651,7 @@
 	  [49, "Air Slash"],
 	  [53, "Hurricane"]
     ],
-    "tm_moves": ["Fly", "Sky Attack", "Swift", "Reflect", "Take Down", "Double-Edge", "Razor Wind", "Whirlwind", "Toxic", "Mimic", "Bide", "Rest", "Double Team", "Vacuum-Cut", "Wide Slash", "Spin Slash", "Rage"],
+    "tm_moves": ["Fly", "Sky Attack", "Swift", "Reflect", "Take Down", "Double-Edge", "Razor Wind", "Whirlwind", "Mimic", "Bide", "Rest", "Double Team", "Wide Slash", "Spin Slash", "Rage"],
     "evolutions": [
       {
         "to": "Pidgeotto",
@@ -779,7 +779,7 @@
 	  [31, "Double-Edge"],
 	  [34, "Endeavor"]
     ],
-    "tm_moves": ["Cut", "Thunder Wave", "Skull Bash", "Swift", "Dig", "Thunderbolt", "Thunder", "Counter", "Seismic Toss","Bubble Beam", "Water Gun", "Ice Beam", "Blizzard", "Take Down", "Double-Edge", "Body Slam", "Toxic", "Mimic", "Bide", "Rest", "Double Team", "Vacuum-Cut", "Wide Slash", "Spin Slash", "Rage"],
+    "tm_moves": ["Cut", "Thunder Wave", "Skull Bash", "Swift", "Dig", "Thunderbolt", "Thunder", "Counter", "Seismic Toss","Bubble Beam", "Water Gun", "Ice Beam", "Blizzard", "Take Down", "Double-Edge", "Body Slam", "Mimic", "Bide", "Rest", "Double Team", "Wide Slash", "Spin Slash", "Rage"],
     "evolutions": [
       {
         "to": "Raticate",
@@ -823,7 +823,7 @@
 	  [31, "Double-Edge"],
 	  [34, "Endeavor"]
     ],
-    "tm_moves": ["Dig", "Counter", "Blizzard", "Ice Beam", "Toxic", "Mimic", "Bide", "Rest", "Double Team", "Vacuum-Cut", "Wide Slash", "Spin Slash", "Rage"],
+    "tm_moves": ["Dig", "Counter", "Blizzard", "Ice Beam", "Mimic", "Bide", "Rest", "Double Team", "Wide Slash", "Spin Slash", "Rage"],
     "evolutions": [
       {
         "to": "Raticate-A",
@@ -948,7 +948,7 @@
 	  [32, "Roost"],
 	  [36, "Drill Peck"]
     ],
-    "tm_moves": ["Fly", "Tri Attack", "Sky Attack", "Swift", "Take Down", "Double-Edge", "Razor Wind", "Whirlwind", "Toxic", "Mimic", "Bide", "Rest", "Double Team", "Vacuum-Cut", "Wide Slash", "Spin Slash", "Rage"],
+    "tm_moves": ["Fly", "Tri Attack", "Sky Attack", "Swift", "Take Down", "Double-Edge", "Razor Wind", "Whirlwind", "Mimic", "Bide", "Rest", "Double Team", "Wide Slash", "Spin Slash", "Rage"],
     "evolutions": [
       {
         "to": "Fearow",
@@ -1033,7 +1033,7 @@
 	  [44, "Coil"],
 	  [49, "Gunk Shot"]
     ],
-    "tm_moves": ["Strength", "Rock Slide", "Skull Bash", "Dig", "Fissure", "Earthquake", "Mega Drain", "Take Down", "Double-Edge", "Body Slam", "Toxic", "Mimic", "Bide", "Rest", "Double Team", "Vacuum-Cut", "Wide Slash", "Spin Slash", "Rage"],
+    "tm_moves": ["Strength", "Rock Slide", "Skull Bash", "Dig", "Fissure", "Earthquake", "Mega Drain", "Take Down", "Double-Edge", "Body Slam", "Mimic", "Bide", "Rest", "Double Team", "Wide Slash", "Spin Slash", "Rage"],
     "evolutions": [
       {
         "to": "Arbok",
@@ -1266,7 +1266,7 @@
 	  [42, "Sandstorm"],
 	  [45, "Earthquake"]
     ],
-    "tm_moves": ["Strength", "Cut", "Rock Slide", "Skull Bash", "Swift", "Dig", "Fissure", "Earthquake", "Counter", "Seismic Toss","Submission", "Take Down", "Double-Edge", "Body Slam", "Swords Dance", "Toxic", "Mimic", "Bide", "Rest", "Double Team", "Vacuum-Cut", "Wide Slash", "Spin Slash", "Rage"],
+    "tm_moves": ["Strength", "Cut", "Rock Slide", "Skull Bash", "Swift", "Dig", "Fissure", "Earthquake", "Counter", "Seismic Toss","Submission", "Take Down", "Double-Edge", "Body Slam", "Swords Dance", "Mimic", "Bide", "Rest", "Double Team", "Wide Slash", "Spin Slash", "Rage"],
     "evolutions": [
       {
         "to": "Sandslash",
@@ -1314,7 +1314,7 @@
 	  [42, "Snowscape"],
 	  [45, "Blizzard"]
     ],
-    "tm_moves": ["Rock Slide", "Swift", "Dig", "Earthquake", "Seismic Toss", "Counter", "Blizzard", "Ice Beam", "Double-Edge", "Take Down", "Body Slam", "Swords Dance", "Toxic", "Mimic", "Bide", "Rest", "Double Team", "Vacuum-Cut", "Wide Slash", "Spin Slash", "Rage"],
+    "tm_moves": ["Rock Slide", "Swift", "Dig", "Earthquake", "Seismic Toss", "Counter", "Blizzard", "Ice Beam", "Double-Edge", "Take Down", "Body Slam", "Swords Dance", "Mimic", "Bide", "Rest", "Double Team", "Wide Slash", "Spin Slash", "Rage"],
     "evolutions": [
       {
         "to": "Sandslash-A",
@@ -1446,7 +1446,7 @@
 	  [50, "Crunch"],
 	  [55, "Earth Power"]
     ],
-    "tm_moves": ["Strength", "Cut", "Skull Bash", "Reflect", "Dig", "Thunderbolt", "Thunder", "Counter", "Seismic Toss","Take Down", "Double-Edge", "Body Slam", "Toxic", "Mimic", "Bide", "Rest", "Double Team", "Vacuum-Cut", "Wide Slash", "Spin Slash", "Rage"],
+    "tm_moves": ["Strength", "Cut", "Skull Bash", "Reflect", "Dig", "Thunderbolt", "Thunder", "Counter", "Seismic Toss","Take Down", "Double-Edge", "Body Slam", "Mimic", "Bide", "Rest", "Double Team", "Wide Slash", "Spin Slash", "Rage"],
     "evolutions": [
       {
         "to": "Nidorina",
@@ -1570,7 +1570,7 @@
 	  [50, "Poison Jab"],
 	  [55, "Earth Power"]
     ],
-    "tm_moves": ["Strength", "Cut", "Skull Bash", "Reflect", "Dig", "Thunderbolt", "Thunder", "Counter", "Seismic Toss","Take Down", "Double-Edge", "Body Slam", "Guillotine", "Toxic", "Mimic", "Bide", "Rest", "Double Team", "Vacuum-Cut", "Wide Slash", "Spin Slash", "Rage"],
+    "tm_moves": ["Strength", "Cut", "Skull Bash", "Reflect", "Dig", "Thunderbolt", "Thunder", "Counter", "Seismic Toss","Take Down", "Double-Edge", "Body Slam", "Guillotine", "Mimic", "Bide", "Rest", "Double Team", "Wide Slash", "Spin Slash", "Rage"],
     "evolutions": [
       {
         "to": "Nidorino",
@@ -1798,7 +1798,7 @@
 	  [48, "Inferno"],
 	  [52, "Fire Blast"]
     ],
-    "tm_moves": ["Skull Bash", "Swift", "Fire Blast", "Reflect", "Dig", "Take Down", "Double-Edge", "Body Slam", "Toxic", "Mimic", "Bide", "Rest", "Double Team", "Vacuum-Cut", "Wide Slash", "Spin Slash", "Rage"],
+    "tm_moves": ["Skull Bash", "Swift", "Fire Blast", "Reflect", "Dig", "Take Down", "Double-Edge", "Body Slam", "Mimic", "Bide", "Rest", "Double Team", "Wide Slash", "Spin Slash", "Rage"],
     "evolutions": [
       {
         "to": "Ninetales",
@@ -1844,7 +1844,7 @@
 	  [48, "Freeze Dry"],
 	  [52, "Blizzard"]
     ],
-    "tm_moves": ["Swift", "Reflect", "Dig", "Blizzard", "Ice Beam", "Double-Edge", "Take Down", "Body Slam", "Toxic", "Mimic", "Bide", "Rest", "Double Team", "Vacuum-Cut", "Wide Slash", "Spin Slash", "Rage"],
+    "tm_moves": ["Swift", "Reflect", "Dig", "Blizzard", "Ice Beam", "Double-Edge", "Take Down", "Body Slam", "Mimic", "Bide", "Rest", "Double Team", "Wide Slash", "Spin Slash", "Rage"],
     "evolutions": [
       {
         "to": "Ninetales-A",
@@ -2069,7 +2069,7 @@
 	  [50, "Air Slash"],
 	  [55, "Leech Life"]
     ],
-    "tm_moves": ["Fly", "Swift", "Mega Drain", "Take Down", "Double-Edge", "Razor Wind", "Whirlwind", "Toxic", "Mimic", "Bide", "Rest", "Double Team", "Vacuum-Cut", "Wide Slash", "Spin Slash", "Rage"],
+    "tm_moves": ["Fly", "Swift", "Mega Drain", "Take Down", "Double-Edge", "Razor Wind", "Whirlwind", "Mimic", "Bide", "Rest", "Double Team", "Wide Slash", "Spin Slash", "Rage"],
     "evolutions": [
       {
         "to": "Golbat",
@@ -2153,7 +2153,7 @@
 	  [36, "Moonlight"],
 	  [40, "Petal Dance"]
     ],
-    "tm_moves": ["Flash", "Cut", "Reflect", "Solar Beam", "Mega Drain", "Take Down", "Double-Edge", "Swords Dance", "Toxic", "Mimic", "Bide", "Rest", "Double Team", "Vacuum-Cut", "Wide Slash", "Spin Slash", "Rage"],
+    "tm_moves": ["Flash", "Cut", "Reflect", "Solar Beam", "Mega Drain", "Take Down", "Double-Edge", "Swords Dance", "Mimic", "Bide", "Rest", "Double Team", "Wide Slash", "Spin Slash", "Rage"],
     "evolutions": [
       {
         "to": "Gloom",
@@ -2282,7 +2282,7 @@
 	  [49, "Rage Powder"],
 	  [54, "Cross Scissor"]
     ],
-    "tm_moves": ["Flash", "Cut", "Skull Bash", "Reflect", "Dig", "Solar Beam", "Mega Drain", "Counter", "Seismic Toss","Take Down", "Double-Edge", "Body Slam", "Swords Dance", "Toxic", "Mimic", "Bide", "Rest", "Double Team", "Vacuum-Cut", "Wide Slash", "Spin Slash", "Rage"],
+    "tm_moves": ["Flash", "Cut", "Skull Bash", "Reflect", "Dig", "Solar Beam", "Mega Drain", "Counter", "Seismic Toss","Take Down", "Double-Edge", "Body Slam", "Swords Dance", "Mimic", "Bide", "Rest", "Double Team", "Wide Slash", "Spin Slash", "Rage"],
     "evolutions": [
       {
         "to": "Parasect",
@@ -2365,7 +2365,7 @@
 	  [41, "Poison Fang"],
 	  [47, "Psychic"]
     ],
-    "tm_moves": ["Flash", "Psywave", "Swift", "Reflect", "Psychic", "Solar Beam", "Mega Drain", "Take Down", "Double-Edge", "Toxic", "Mimic", "Bide", "Rest", "Double Team", "Vacuum-Cut", "Wide Slash", "Spin Slash", "Rage"],
+    "tm_moves": ["Flash", "Psywave", "Swift", "Reflect", "Psychic", "Solar Beam", "Mega Drain", "Take Down", "Double-Edge", "Mimic", "Bide", "Rest", "Double Team", "Wide Slash", "Spin Slash", "Rage"],
     "evolutions": [
       {
         "to": "Venomoth",
@@ -2450,7 +2450,7 @@
 	  [40, "Earthquake"],
 	  [44, "Fissure"]
     ],
-    "tm_moves": ["Cut", "Rock Slide", "Dig", "Fissure", "Earthquake", "Take Down", "Double-Edge", "Body Slam", "Swords Dance", "Toxic", "Mimic", "Bide", "Rest", "Double Team", "Vacuum-Cut", "Wide Slash", "Spin Slash", "Rage"],
+    "tm_moves": ["Cut", "Rock Slide", "Dig", "Fissure", "Earthquake", "Take Down", "Double-Edge", "Body Slam", "Swords Dance", "Mimic", "Bide", "Rest", "Double Team", "Wide Slash", "Spin Slash", "Rage"],
     "evolutions": [
       {
         "to": "Dugtrio",
@@ -2494,7 +2494,7 @@
 	  [40, "Earthquake"],
 	  [44, "Fissure"]
     ],
-    "tm_moves": ["Rock Slide", "Dig", "Earthquake", "Take Down", "Body Slam", "Swords Dance", "Toxic", "Mimic", "Bide", "Rest", "Double Team", "Vacuum-Cut", "Wide Slash", "Spin Slash", "Rage"],
+    "tm_moves": ["Rock Slide", "Dig", "Earthquake", "Take Down", "Body Slam", "Swords Dance", "Mimic", "Bide", "Rest", "Double Team", "Wide Slash", "Spin Slash", "Rage"],
     "evolutions": [
       {
         "to": "Dugtrio-A",
@@ -2620,7 +2620,7 @@
 	  [40, "Nasty Plot"],
 	  [44, "Play Rough"]
     ],
-    "tm_moves": ["Flash", "Cut", "Thunder Wave", "Dream Eater", "Skull Bash", "Swift", "Metronome", "Dig", "Thunderbolt", "Thunder", "Bubble Beam", "Water Gun", "Ice Beam", "Blizzard", "Take Down", "Double-Edge", "Body Slam", "Toxic", "Mimic", "Bide", "Rest", "Double Team", "Vacuum-Cut", "Wide Slash", "Spin Slash", "Rage"],
+    "tm_moves": ["Flash", "Cut", "Thunder Wave", "Dream Eater", "Skull Bash", "Swift", "Metronome", "Dig", "Thunderbolt", "Thunder", "Bubble Beam", "Water Gun", "Ice Beam", "Blizzard", "Take Down", "Double-Edge", "Body Slam", "Mimic", "Bide", "Rest", "Double Team", "Wide Slash", "Spin Slash", "Rage"],
     "evolutions": [
       {
         "to": "Persian",
@@ -2664,7 +2664,7 @@
 	  [40, "Nasty Plot"],
 	  [44, "Play Rough"]
     ],
-    "tm_moves": ["Thunder Wave", "Dream Eater", "Swift", "Metronome", "Dig", "Thunder", "Thunderbolt", "Pay Day", "Double-Edge", "Take Down", "Body Slam", "Toxic", "Mimic", "Bide", "Rest", "Double Team", "Vacuum-Cut", "Wide Slash", "Spin Slash", "Rage"],
+    "tm_moves": ["Thunder Wave", "Dream Eater", "Swift", "Metronome", "Dig", "Thunder", "Thunderbolt", "Pay Day", "Double-Edge", "Take Down", "Body Slam", "Mimic", "Bide", "Rest", "Double Team", "Wide Slash", "Spin Slash", "Rage"],
     "evolutions": [
       {
         "to": "Persian-A",
@@ -2708,7 +2708,7 @@
 	  [40, "Metal Sound"],
 	  [44, "Thrash"]
     ],
-    "tm_moves": ["Thunder Wave", "Swift", "Metronome", "Dig", "Thunder", "Thunderbolt", "Pay Day", "Double-Edge", "Take Down", "Body Slam", "Swords Dance", "Toxic", "Mimic", "Bide", "Rest", "Double Team", "Vacuum-Cut", "Wide Slash", "Spin Slash", "Rage"],
+    "tm_moves": ["Thunder Wave", "Swift", "Metronome", "Dig", "Thunder", "Thunderbolt", "Pay Day", "Double-Edge", "Take Down", "Body Slam", "Swords Dance", "Mimic", "Bide", "Rest", "Double Team", "Wide Slash", "Spin Slash", "Rage"],
     "evolutions": []
   },
   {
@@ -2827,7 +2827,7 @@
 	  [34, "Amnesia"],
 	  [39, "Wonder Room"]
     ],
-    "tm_moves": ["Flash", "Strength", "Surf", "Tri Attack", "Skull Bash", "Swift", "Metronome", "Psychic", "Dig", "Counter", "Seismic Toss","Submission", "Pay Day", "Bubble Beam", "Water Gun", "Ice Beam", "Blizzard", "Take Down", "Double-Edge", "Body Slam", "Mega Punch", "Mega Kick", "Toxic", "Mimic", "Bide", "Rest", "Double Team", "Vacuum-Cut", "Wide Slash", "Spin Slash", "Rage"],
+    "tm_moves": ["Flash", "Strength", "Surf", "Tri Attack", "Skull Bash", "Swift", "Metronome", "Psychic", "Dig", "Counter", "Seismic Toss","Submission", "Pay Day", "Bubble Beam", "Water Gun", "Ice Beam", "Blizzard", "Take Down", "Double-Edge", "Body Slam", "Mega Punch", "Mega Kick", "Mimic", "Bide", "Rest", "Double Team", "Wide Slash", "Spin Slash", "Rage"],
     "evolutions": [
       {
         "to": "Golduck",
@@ -2915,7 +2915,7 @@
 	  [44, "Outrage"],
 	  [48, "Final Gambit"]
     ],
-    "tm_moves": ["Strength", "Rock Slide", "Skull Bash", "Swift", "Metronome", "Dig", "Earthquake", "Thunderbolt", "Thunder", "Counter", "Seismic Toss","Submission", "Pay Day", "Take Down", "Double-Edge", "Body Slam", "Mega Punch", "Mega Kick", "Toxic", "Mimic", "Bide", "Rest", "Double Team", "Vacuum-Cut", "Wide Slash", "Spin Slash", "Rage"],
+    "tm_moves": ["Strength", "Rock Slide", "Skull Bash", "Swift", "Metronome", "Dig", "Earthquake", "Thunderbolt", "Thunder", "Counter", "Seismic Toss","Submission", "Pay Day", "Take Down", "Double-Edge", "Body Slam", "Mega Punch", "Mega Kick", "Mimic", "Bide", "Rest", "Double Team", "Wide Slash", "Spin Slash", "Rage"],
     "evolutions": [
       {
         "to": "Primeape",
@@ -3005,7 +3005,7 @@
 	  [52, "Reversal"],
 	  [56, "Flare Blitz"]
     ],
-    "tm_moves": ["Strength", "Skull Bash", "Swift", "Fire Blast", "Reflect", "Dig", "Dragon Rage", "Take Down", "Double-Edge", "Body Slam", "Toxic", "Mimic", "Bide", "Rest", "Double Team", "Vacuum-Cut", "Wide Slash", "Spin Slash", "Rage"],
+    "tm_moves": ["Strength", "Skull Bash", "Swift", "Fire Blast", "Reflect", "Dig", "Take Down", "Double-Edge", "Body Slam", "Mimic", "Bide", "Rest", "Double Team", "Wide Slash", "Spin Slash", "Rage"],
     "evolutions": [
       {
         "to": "Arcanine",
@@ -3051,7 +3051,7 @@
 	  [52, "Reversal"],
 	  [56, "Flare Blitz"]
     ],
-    "tm_moves": ["Rock Slide", "Swift", "Fire Blast", "Dig", "Double-Edge", "Take Down", "Body Slam", "Toxic", "Mimic", "Bide", "Rest", "Double Team", "Vacuum-Cut", "Wide Slash", "Spin Slash", "Rage"],
+    "tm_moves": ["Rock Slide", "Swift", "Fire Blast", "Dig", "Double-Edge", "Take Down", "Body Slam", "Mimic", "Bide", "Rest", "Double Team", "Wide Slash", "Spin Slash", "Rage"],
     "evolutions": [
       {
         "to": "Arcanine-H",
@@ -3181,7 +3181,7 @@
 	  [48, "Belly Drum"],
 	  [54, "Double-Edge"]
     ],
-    "tm_moves": ["Surf", "Psywave", "Skull Bash", "Swift", "Psychic", "Dig", "Fissure", "Bubble Beam", "Water Gun", "Ice Beam", "Blizzard", "Take Down", "Double-Edge", "Body Slam", "Toxic", "Mimic", "Bide", "Rest", "Double Team", "Vacuum-Cut", "Wide Slash", "Spin Slash", "Rage"],
+    "tm_moves": ["Surf", "Psywave", "Skull Bash", "Swift", "Psychic", "Dig", "Fissure", "Bubble Beam", "Water Gun", "Ice Beam", "Blizzard", "Take Down", "Double-Edge", "Body Slam", "Mimic", "Bide", "Rest", "Double Team", "Wide Slash", "Spin Slash", "Rage"],
     "evolutions": [
       {
         "to": "Poliwhirl",
@@ -3293,7 +3293,7 @@
     "level_up_moves": [
       [1, "Teleport"]
     ],
-    "tm_moves": ["Flash", "Tri Attack", "Psywave", "Thunder Wave", "Dream Eater", "Skull Bash", "Swift", "Metronome", "Reflect", "Teleport", "Psychic", "Counter", "Seismic Toss","Submission", "Take Down", "Double-Edge", "Body Slam", "Mega Punch", "Mega Kick", "Toxic", "Mimic", "Bide", "Rest", "Double Team", "Vacuum-Cut", "Wide Slash", "Spin Slash", "Rage"],
+    "tm_moves": ["Flash", "Tri Attack", "Psywave", "Thunder Wave", "Dream Eater", "Skull Bash", "Swift", "Metronome", "Reflect", "Teleport", "Psychic", "Counter", "Seismic Toss","Submission", "Take Down", "Double-Edge", "Body Slam", "Mega Punch", "Mega Kick", "Mimic", "Bide", "Rest", "Double Team", "Wide Slash", "Spin Slash", "Rage"],
     "evolutions": [
       {
         "to": "Kadabra",
@@ -3422,7 +3422,7 @@
 	  [48, "Cross Chop"],
 	  [52, "Double-Edge"]
     ],
-    "tm_moves": ["Strength", "Rock Slide", "Skull Bash", "Fire Blast", "Metronome", "Dig", "Earthquake", "Counter", "Seismic Toss","Submission", "Take Down", "Double-Edge", "Body Slam", "Mega Punch", "Mega Kick", "Toxic", "Mimic", "Bide", "Rest", "Double Team", "Vacuum-Cut", "Wide Slash", "Spin Slash", "Rage"],
+    "tm_moves": ["Strength", "Rock Slide", "Skull Bash", "Fire Blast", "Metronome", "Dig", "Earthquake", "Counter", "Seismic Toss","Submission", "Take Down", "Double-Edge", "Body Slam", "Mega Punch", "Mega Kick", "Mimic", "Bide", "Rest", "Double Team", "Wide Slash", "Spin Slash", "Rage"],
     "evolutions": [
       {
         "to": "Machoke",
@@ -3554,7 +3554,7 @@
 	  [47, "Slam"],
 	  [53, "Power Whip"]
     ],
-    "tm_moves": ["Flash", "Cut", "Reflect", "Solar Beam", "Mega Drain", "Take Down", "Double-Edge", "Swords Dance", "Toxic", "Mimic", "Bide", "Rest", "Double Team", "Vacuum-Cut", "Wide Slash", "Spin Slash", "Rage"],
+    "tm_moves": ["Flash", "Cut", "Reflect", "Solar Beam", "Mega Drain", "Take Down", "Double-Edge", "Swords Dance", "Mimic", "Bide", "Rest", "Double Team", "Wide Slash", "Spin Slash", "Rage"],
     "evolutions": [
       {
         "to": "Weepinbell",
@@ -3688,7 +3688,7 @@
 	  [44, "Sludge Wave"],
 	  [48, "Hydro Pump"]
     ],
-    "tm_moves": ["Surf", "Cut", "Skull Bash", "Swift", "Reflect", "Mega Drain", "Bubble Beam", "Water Gun", "Ice Beam", "Blizzard", "Take Down", "Double-Edge", "Swords Dance", "Toxic", "Mimic", "Bide", "Rest", "Double Team", "Vacuum-Cut", "Wide Slash", "Spin Slash", "Rage"],
+    "tm_moves": ["Surf", "Cut", "Skull Bash", "Swift", "Reflect", "Mega Drain", "Bubble Beam", "Water Gun", "Ice Beam", "Blizzard", "Take Down", "Double-Edge", "Swords Dance", "Mimic", "Bide", "Rest", "Double Team", "Wide Slash", "Spin Slash", "Rage"],
     "evolutions": [
       {
         "to": "Tentacruel",
@@ -3772,7 +3772,7 @@
 	  [40, "Double-Edge"],
 	  [42, "Stone Edge"]
     ],
-    "tm_moves": ["Strength", "Rock Slide", "Explosion", "Fire Blast", "Self-Destruct", "Metronome", "Dig", "Fissure", "Earthquake", "Counter", "Seismic Toss","Submission", "Take Down", "Double-Edge", "Body Slam", "Mega Punch", "Toxic", "Mimic", "Bide", "Rest", "Double Team", "Vacuum-Cut", "Wide Slash", "Spin Slash", "Rage"],
+    "tm_moves": ["Strength", "Rock Slide", "Explosion", "Fire Blast", "Self-Destruct", "Metronome", "Dig", "Fissure", "Earthquake", "Counter", "Seismic Toss","Submission", "Take Down", "Double-Edge", "Body Slam", "Mega Punch", "Mimic", "Bide", "Rest", "Double Team", "Wide Slash", "Spin Slash", "Rage"],
     "evolutions": [
       {
         "to": "Graveler",
@@ -3818,7 +3818,7 @@
 	  [40, "Double-Edge"],
 	  [42, "Stone Edge"]
     ],
-    "tm_moves": ["Rock Slide", "Explosion", "Thunder Wave", "Fire Blast", "Self-Destruct", "Dig", "Earthquake", "Thunder", "Thunderbolt", "Seismic Toss", "Counter", "Double-Edge", "Take Down", "Body Slam", "Toxic", "Mimic", "Bide", "Rest", "Double Team", "Vacuum-Cut", "Wide Slash", "Spin Slash", "Rage"],
+    "tm_moves": ["Rock Slide", "Explosion", "Thunder Wave", "Fire Blast", "Self-Destruct", "Dig", "Earthquake", "Thunder", "Thunderbolt", "Seismic Toss", "Counter", "Double-Edge", "Take Down", "Body Slam", "Mimic", "Bide", "Rest", "Double Team", "Wide Slash", "Spin Slash", "Rage"],
     "evolutions": [
       {
         "to": "Graveler-A",
@@ -4032,7 +4032,7 @@
 	  [50, "Fire Blast"],
 	  [55, "Flare Blitz"]
     ],
-    "tm_moves": ["Strength", "Skull Bash", "Swift", "Fire Blast", "Reflect", "Solar Beam", "Take Down", "Double-Edge", "Body Slam", "Guillotine", "Toxic", "Mimic", "Bide", "Rest", "Double Team", "Vacuum-Cut", "Wide Slash", "Spin Slash", "Rage"],
+    "tm_moves": ["Strength", "Skull Bash", "Swift", "Fire Blast", "Reflect", "Solar Beam", "Take Down", "Double-Edge", "Body Slam", "Guillotine", "Mimic", "Bide", "Rest", "Double Team", "Wide Slash", "Spin Slash", "Rage"],
     "evolutions": [
       {
         "to": "Rapidash",
@@ -4076,7 +4076,7 @@
 	  [50, "Psychic"],
 	  [55, "Healing Wish"]
     ],
-    "tm_moves": ["Swift", "Psychic", "Body Slam", "Guillotine", "Toxic", "Mimic", "Bide", "Rest", "Double Team", "Vacuum-Cut", "Wide Slash", "Spin Slash", "Rage"],
+    "tm_moves": ["Swift", "Psychic", "Body Slam", "Guillotine", "Mimic", "Bide", "Rest", "Double Team", "Wide Slash", "Spin Slash", "Rage"],
     "evolutions": [
       {
         "to": "Rapidash-G",
@@ -4207,7 +4207,7 @@
 	  [42, "Rain Dance"],
 	  [45, "Heal Pulse"]
     ],
-    "tm_moves": ["Flash", "Strength", "Surf", "Tri Attack", "Psywave", "Thunder Wave", "Dream Eater", "Skull Bash", "Swift", "Fire Blast", "Reflect", "Teleport", "Psychic", "Dig", "Fissure", "Earthquake", "Pay Day", "Bubble Beam", "Water Gun", "Ice Beam", "Blizzard", "Take Down", "Double-Edge", "Body Slam", "Toxic", "Mimic", "Bide", "Rest", "Double Team", "Vacuum-Cut", "Wide Slash", "Spin Slash", "Rage"],
+    "tm_moves": ["Flash", "Strength", "Surf", "Tri Attack", "Psywave", "Thunder Wave", "Dream Eater", "Skull Bash", "Swift", "Fire Blast", "Reflect", "Teleport", "Psychic", "Dig", "Fissure", "Earthquake", "Pay Day", "Bubble Beam", "Water Gun", "Ice Beam", "Blizzard", "Take Down", "Double-Edge", "Body Slam", "Mimic", "Bide", "Rest", "Double Team", "Wide Slash", "Spin Slash", "Rage"],
     "evolutions": [
       {
         "to": "Slowbro",
@@ -4255,7 +4255,7 @@
 	  [42, "Rain Dance"],
 	  [45, "Heal Pulse"]
     ],
-    "tm_moves": ["Surf", "Rock Slide", "Thunder Wave", "Dream Eater", "Swift", "Fire Blast", "Psychic", "Dig", "Earthquake", "Pay Day", "Blizzard", "Ice Beam", "Body Slam", "Toxic", "Mimic", "Bide", "Rest", "Double Team", "Vacuum-Cut", "Wide Slash", "Spin Slash", "Rage"],
+    "tm_moves": ["Surf", "Rock Slide", "Thunder Wave", "Dream Eater", "Swift", "Fire Blast", "Psychic", "Dig", "Earthquake", "Pay Day", "Blizzard", "Ice Beam", "Body Slam", "Mimic", "Bide", "Rest", "Double Team", "Wide Slash", "Spin Slash", "Rage"],
     "evolutions": [
       {
         "to": "Slowbro-G",
@@ -4389,7 +4389,7 @@
 	  [48, "Lock On"],
 	  [52, "Zap Cannon"]
     ],
-    "tm_moves": ["Flash", "Explosion", "Thunder Wave", "Swift", "Reflect", "Teleport", "Thunderbolt", "Thunder", "Take Down", "Double-Edge", "Toxic", "Mimic", "Bide", "Rest", "Double Team", "Vacuum-Cut", "Wide Slash", "Spin Slash", "Rage"],
+    "tm_moves": ["Flash", "Explosion", "Thunder Wave", "Swift", "Reflect", "Teleport", "Thunderbolt", "Thunder", "Take Down", "Double-Edge", "Mimic", "Bide", "Rest", "Double Team", "Wide Slash", "Spin Slash", "Rage"],
     "evolutions": [
       {
         "to": "Magneton",
@@ -4477,7 +4477,7 @@
 	  [60, "Agility"],
 	  [65, "Brave Bird"]
     ],
-    "tm_moves": ["Fly", "Cut", "Sky Attack", "Skull Bash", "Swift", "Reflect", "Take Down", "Double-Edge", "Body Slam", "Razor Wind", "Swords Dance", "Whirlwind", "Toxic", "Mimic", "Bide", "Rest", "Double Team", "Vacuum-Cut", "Wide Slash", "Spin Slash", "Rage"]
+    "tm_moves": ["Fly", "Cut", "Sky Attack", "Skull Bash", "Swift", "Reflect", "Take Down", "Double-Edge", "Body Slam", "Razor Wind", "Swords Dance", "Whirlwind", "Mimic", "Bide", "Rest", "Double Team", "Wide Slash", "Spin Slash", "Rage"]
   },
   {
     "id": "083G",
@@ -4517,7 +4517,7 @@
 	  [60, "Final Gambit"],
 	  [65, "Brave Bird"]
     ],
-    "tm_moves": ["Fly", "Sky Attack", "Swift", "Counter", "Double-Edge", "Body Slam", "Swords Dance", "Razor Wind", "Toxic", "Mimic", "Bide", "Rest", "Double Team", "Vacuum-Cut", "Wide Slash", "Spin Slash", "Rage"]
+    "tm_moves": ["Fly", "Sky Attack", "Swift", "Counter", "Double-Edge", "Body Slam", "Swords Dance", "Razor Wind", "Mimic", "Bide", "Rest", "Double Team", "Wide Slash", "Spin Slash", "Rage"]
   },
   {
     "id": "84",
@@ -4555,7 +4555,7 @@
 	  [39, "Endeavor"],
 	  [43, "Thrash"]
     ],
-    "tm_moves": ["Fly", "Tri Attack", "Sky Attack", "Skull Bash", "Swift", "Reflect", "Take Down", "Double-Edge", "Body Slam", "Swords Dance", "Whirlwind", "Toxic", "Mimic", "Bide", "Rest", "Double Team", "Vacuum-Cut", "Wide Slash", "Spin Slash", "Rage"],
+    "tm_moves": ["Fly", "Tri Attack", "Sky Attack", "Skull Bash", "Swift", "Reflect", "Take Down", "Double-Edge", "Body Slam", "Swords Dance", "Whirlwind", "Mimic", "Bide", "Rest", "Double Team", "Wide Slash", "Spin Slash", "Rage"],
     "evolutions": [
       {
         "to": "Dodrio",
@@ -4642,7 +4642,7 @@
 	  [51, "Safeguard"],
 	  [53, "Snowscape"]
     ],
-    "tm_moves": ["Strength", "Surf", "Skull Bash", "Swift", "Pay Day", "Bubble Beam", "Water Gun", "Ice Beam", "Blizzard", "Take Down", "Double-Edge", "Body Slam", "Guillotine", "Toxic", "Mimic", "Bide", "Rest", "Double Team", "Vacuum-Cut", "Wide Slash", "Spin Slash", "Rage"],
+    "tm_moves": ["Strength", "Surf", "Skull Bash", "Swift", "Pay Day", "Bubble Beam", "Water Gun", "Ice Beam", "Blizzard", "Take Down", "Double-Edge", "Body Slam", "Guillotine", "Mimic", "Bide", "Rest", "Double Team", "Wide Slash", "Spin Slash", "Rage"],
     "evolutions": [
       {
         "to": "Dewgong",
@@ -4731,7 +4731,7 @@
 	  [46, "Belch"],
 	  [48, "Memento"]
     ],
-    "tm_moves": ["Strength", "Rock Slide", "Explosion", "Swift", "Fire Blast", "Self-Destruct", "Metronome", "Dig", "Thunderbolt", "Thunder", "Mega Drain", "Take Down", "Double-Edge", "Body Slam", "Toxic", "Mimic", "Bide", "Rest", "Double Team", "Vacuum-Cut", "Wide Slash", "Spin Slash", "Rage"],
+    "tm_moves": ["Strength", "Rock Slide", "Explosion", "Swift", "Fire Blast", "Self-Destruct", "Metronome", "Dig", "Thunderbolt", "Thunder", "Mega Drain", "Take Down", "Double-Edge", "Body Slam", "Mimic", "Bide", "Rest", "Double Team", "Wide Slash", "Spin Slash", "Rage"],
     "evolutions": [
       {
         "to": "Muk",
@@ -4778,7 +4778,7 @@
 	  [46, "Belch"],
 	  [48, "Memento"]
     ],
-    "tm_moves": ["Rock Slide", "Explosion", "Swift", "Fire Blast", "Self-Destruct", "Metronome", "Dig", "Thunder", "Thunderbolt", "Mega Drain", "Hyper Beam", "Take Down", "Body Slam", "Toxic", "Mimic", "Bide", "Rest", "Double Team", "Vacuum-Cut", "Wide Slash", "Spin Slash", "Rage"],
+    "tm_moves": ["Rock Slide", "Explosion", "Swift", "Fire Blast", "Self-Destruct", "Metronome", "Dig", "Thunder", "Thunderbolt", "Mega Drain", "Hyper Beam", "Take Down", "Body Slam", "Mimic", "Bide", "Rest", "Double Team", "Wide Slash", "Spin Slash", "Rage"],
     "evolutions": [
       {
         "to": "Muk-A",
@@ -4907,7 +4907,7 @@
 	  [44, "Shell Smash"],
 	  [48, "Hydro Pump"]
     ],
-    "tm_moves": ["Surf", "Tri Attack", "Explosion", "Swift", "Self-Destruct", "Reflect", "Teleport", "Bubble Beam", "Water Gun", "Ice Beam", "Blizzard", "Take Down", "Double-Edge", "Toxic", "Mimic", "Bide", "Rest", "Double Team", "Vacuum-Cut", "Wide Slash", "Spin Slash", "Rage"],
+    "tm_moves": ["Surf", "Tri Attack", "Explosion", "Swift", "Self-Destruct", "Reflect", "Teleport", "Bubble Beam", "Water Gun", "Ice Beam", "Blizzard", "Take Down", "Double-Edge", "Mimic", "Bide", "Rest", "Double Team", "Wide Slash", "Spin Slash", "Rage"],
     "evolutions": [
       {
         "to": "Cloyster",
@@ -4993,7 +4993,7 @@
 	  [44, "Destiny Bond"],
 	  [48, "Dream Eater"]
     ],
-    "tm_moves": ["Explosion", "Psywave", "Dream Eater", "Self-Destruct", "Psychic", "Thunderbolt", "Thunder", "Mega Drain", "Toxic", "Mimic", "Bide", "Rest", "Double Team", "Vacuum-Cut", "Wide Slash", "Spin Slash", "Rage"],
+    "tm_moves": ["Explosion", "Psywave", "Dream Eater", "Self-Destruct", "Psychic", "Thunderbolt", "Thunder", "Mega Drain", "Mimic", "Bide", "Rest", "Double Team", "Wide Slash", "Spin Slash", "Rage"],
     "evolutions": [
       {
         "to": "Haunter",
@@ -5129,7 +5129,7 @@
 	  [52, "Stone Edge"],
 	  [56, "Double-Edge"]
     ],
-    "tm_moves": ["Strength", "Rock Slide", "Explosion", "Skull Bash", "Self-Destruct", "Dig", "Fissure", "Earthquake", "Take Down", "Double-Edge", "Body Slam", "Toxic", "Mimic", "Bide", "Rest", "Double Team", "Vacuum-Cut", "Wide Slash", "Spin Slash", "Rage"]
+    "tm_moves": ["Strength", "Rock Slide", "Explosion", "Skull Bash", "Self-Destruct", "Dig", "Fissure", "Earthquake", "Take Down", "Double-Edge", "Body Slam", "Mimic", "Bide", "Rest", "Double Team", "Wide Slash", "Spin Slash", "Rage"]
   },
   {
     "id": "96",
@@ -5168,7 +5168,7 @@
 	  [45, "Psyshock"],
 	  [49, "Future Sight"]
     ],
-    "tm_moves": ["Flash", "Tri Attack", "Psywave", "Thunder Wave", "Dream Eater", "Skull Bash", "Swift", "Metronome", "Reflect", "Teleport", "Psychic", "Counter", "Seismic Toss","Submission", "Take Down", "Double-Edge", "Body Slam", "Mega Punch", "Mega Kick", "Toxic", "Mimic", "Bide", "Rest", "Double Team", "Vacuum-Cut", "Wide Slash", "Spin Slash", "Rage"],
+    "tm_moves": ["Flash", "Tri Attack", "Psywave", "Thunder Wave", "Dream Eater", "Skull Bash", "Swift", "Metronome", "Reflect", "Teleport", "Psychic", "Counter", "Seismic Toss","Submission", "Take Down", "Double-Edge", "Body Slam", "Mega Punch", "Mega Kick", "Mimic", "Bide", "Rest", "Double Team", "Wide Slash", "Spin Slash", "Rage"],
     "evolutions": [
       {
         "to": "Hypno",
@@ -5252,7 +5252,7 @@
 	  [44, "Crabhammer"],
 	  [48, "Guillotine"]
     ],
-    "tm_moves": ["Strength", "Surf", "Cut", "Rock Slide", "Skull Bash", "Dig", "Bubble Beam", "Water Gun", "Ice Beam", "Blizzard", "Take Down", "Double-Edge", "Body Slam", "Swords Dance", "Toxic", "Mimic", "Bide", "Rest", "Double Team", "Vacuum-Cut", "Wide Slash", "Spin Slash", "Rage"],
+    "tm_moves": ["Strength", "Surf", "Cut", "Rock Slide", "Skull Bash", "Dig", "Bubble Beam", "Water Gun", "Ice Beam", "Blizzard", "Take Down", "Double-Edge", "Body Slam", "Swords Dance", "Mimic", "Bide", "Rest", "Double Team", "Wide Slash", "Spin Slash", "Rage"],
     "evolutions": [
       {
         "to": "Kingler",
@@ -5341,7 +5341,7 @@
 	  [46, "Gyro Ball"],
 	  [50, "Mirror Coat"]
     ],
-    "tm_moves": ["Flash", "Explosion", "Thunder Wave", "Swift", "Self-Destruct", "Reflect", "Teleport", "Thunderbolt", "Thunder", "Take Down", "Double-Edge", "Toxic", "Mimic", "Bide", "Rest", "Double Team", "Vacuum-Cut", "Wide Slash", "Spin Slash", "Rage"],
+    "tm_moves": ["Flash", "Explosion", "Thunder Wave", "Swift", "Self-Destruct", "Reflect", "Teleport", "Thunderbolt", "Thunder", "Take Down", "Double-Edge", "Mimic", "Bide", "Rest", "Double Team", "Wide Slash", "Spin Slash", "Rage"],
     "evolutions": [
       {
         "to": "Electrode",
@@ -5389,7 +5389,7 @@
 	  [46, "Gyro Ball"],
 	  [50, "Grassy Terrain"]
     ],
-    "tm_moves": ["Thunder Wave", "Swift", "Reflect", "Thunder", "Thunderbolt", "Solar Beam", "Double-Edge", "Take Down", "Toxic", "Mimic", "Bide", "Rest", "Double Team", "Vacuum-Cut", "Wide Slash", "Spin Slash", "Rage"],
+    "tm_moves": ["Thunder Wave", "Swift", "Reflect", "Thunder", "Thunderbolt", "Solar Beam", "Double-Edge", "Take Down", "Mimic", "Bide", "Rest", "Double Team", "Wide Slash", "Spin Slash", "Rage"],
     "evolutions": [
       {
         "to": "Electrode-H",
@@ -5519,7 +5519,7 @@
 	  [50, "Worry Seed"],
 	  [55, "Solar Beam"]
     ],
-    "tm_moves": ["Flash", "Strength", "Explosion", "Psywave", "Dream Eater", "Egg Bomb", "Self-Destruct", "Reflect", "Teleport", "Psychic", "Solar Beam", "Mega Drain", "Take Down", "Double-Edge", "Swords Dance", "Toxic", "Mimic", "Bide", "Rest", "Double Team", "Vacuum-Cut", "Wide Slash", "Spin Slash", "Rage"],
+    "tm_moves": ["Flash", "Strength", "Explosion", "Psywave", "Dream Eater", "Egg Bomb", "Self-Destruct", "Reflect", "Teleport", "Psychic", "Solar Beam", "Mega Drain", "Take Down", "Double-Edge", "Swords Dance", "Mimic", "Bide", "Rest", "Double Team", "Wide Slash", "Spin Slash", "Rage"],
     "evolutions": [
       { "to": "Exeggutor", "item": "Leaf Stone" },
       { "to": "Exeggutor-A", "item": "Leaf Stone" }
@@ -5649,7 +5649,7 @@
 	  [44, "Thrash"],
 	  [48, "Double-Edge"]
     ],
-    "tm_moves": ["Strength", "Rock Slide", "Skull Bash", "Swift", "Fire Blast", "Dig", "Fissure", "Earthquake", "Mega Drain", "Counter", "Seismic Toss","Submission", "Bubble Beam", "Water Gun", "Ice Beam", "Blizzard", "Take Down", "Double-Edge", "Body Slam", "Mega Punch", "Swords Dance", "Mega Kick", "Toxic", "Mimic", "Bide", "Rest", "Double Team", "Vacuum-Cut", "Wide Slash", "Spin Slash", "Rage"],
+    "tm_moves": ["Strength", "Rock Slide", "Skull Bash", "Swift", "Fire Blast", "Dig", "Fissure", "Earthquake", "Mega Drain", "Counter", "Seismic Toss","Submission", "Bubble Beam", "Water Gun", "Ice Beam", "Blizzard", "Take Down", "Double-Edge", "Body Slam", "Mega Punch", "Swords Dance", "Mega Kick", "Mimic", "Bide", "Rest", "Double Team", "Wide Slash", "Spin Slash", "Rage"],
     "evolutions": [
       { "to": "Marowak", "min_level": 28 },
       { "to": "Marowak-A", "min_level": 28 }
@@ -5775,7 +5775,7 @@
 	  [44, "High Jump Kick"],
 	  [50, "Axe Kick"]
     ],
-    "tm_moves": ["Strength", "Rock Slide", "Skull Bash", "Swift", "Metronome", "Earthquake", "Counter", "Seismic Toss","Submission", "Take Down", "Double-Edge", "Body Slam", "Mega Punch", "Swords Dance", "Mega Kick", "Toxic", "Mimic", "Bide", "Rest", "Double Team", "Vacuum-Cut", "Wide Slash", "Spin Slash", "Rage"]
+    "tm_moves": ["Strength", "Rock Slide", "Skull Bash", "Swift", "Metronome", "Earthquake", "Counter", "Seismic Toss","Submission", "Take Down", "Double-Edge", "Body Slam", "Mega Punch", "Swords Dance", "Mega Kick", "Mimic", "Bide", "Rest", "Double Team", "Wide Slash", "Spin Slash", "Rage"]
   },
   {
     "id": "107",
@@ -5819,7 +5819,7 @@
 	  [40, "Counter"],
 	  [44, "Focus Punch"]
     ],
-    "tm_moves": ["Strength", "Rock Slide", "Skull Bash", "Swift", "Metronome", "Earthquake", "Counter", "Seismic Toss","Submission", "Take Down", "Double-Edge", "Body Slam", "Mega Punch", "Swords Dance", "Mega Kick", "Toxic", "Mimic", "Bide", "Rest", "Double Team", "Vacuum-Cut", "Wide Slash", "Spin Slash", "Rage"]
+    "tm_moves": ["Strength", "Rock Slide", "Skull Bash", "Swift", "Metronome", "Earthquake", "Counter", "Seismic Toss","Submission", "Take Down", "Double-Edge", "Body Slam", "Mega Punch", "Swords Dance", "Mega Kick", "Mimic", "Bide", "Rest", "Double Team", "Wide Slash", "Spin Slash", "Rage"]
   },
   {
     "id": "108",
@@ -5856,7 +5856,7 @@
 	  [54, "Power Whip"],
 	  [60, "Belly Drum"]
     ],
-    "tm_moves": ["Strength", "Surf", "Cut", "Rock Slide", "Dream Eater", "Skull Bash", "Fire Blast", "Dig", "Fissure", "Earthquake", "Thunderbolt", "Thunder", "Solar Beam", "Counter", "Seismic Toss","Submission", "Hyper Beam", "Bubble Beam", "Water Gun", "Ice Beam", "Blizzard", "Take Down", "Double-Edge", "Body Slam", "Mega Punch", "Swords Dance", "Mega Kick", "Toxic", "Mimic", "Bide", "Rest", "Double Team", "Vacuum-Cut", "Wide Slash", "Spin Slash", "Rage"]
+    "tm_moves": ["Strength", "Surf", "Cut", "Rock Slide", "Dream Eater", "Skull Bash", "Fire Blast", "Dig", "Fissure", "Earthquake", "Thunderbolt", "Thunder", "Solar Beam", "Counter", "Seismic Toss","Submission", "Hyper Beam", "Bubble Beam", "Water Gun", "Ice Beam", "Blizzard", "Take Down", "Double-Edge", "Body Slam", "Mega Punch", "Swords Dance", "Mega Kick", "Mimic", "Bide", "Rest", "Double Team", "Wide Slash", "Spin Slash", "Rage"]
   },
   {
     "id": "109",
@@ -5896,7 +5896,7 @@
 	  [48, "Memento"],
 	  [52, "Destiny Bond"]
     ],
-    "tm_moves": ["Flash", "Explosion", "Fire Blast", "Self-Destruct", "Thunderbolt", "Thunder", "Take Down", "Double-Edge", "Body Slam", "Toxic", "Mimic", "Bide", "Rest", "Double Team", "Vacuum-Cut", "Wide Slash", "Spin Slash", "Rage"],
+    "tm_moves": ["Flash", "Explosion", "Fire Blast", "Self-Destruct", "Thunderbolt", "Thunder", "Take Down", "Double-Edge", "Body Slam", "Toxic", "Mimic", "Bide", "Rest", "Double Team", "Wide Slash", "Spin Slash", "Rage"],
     "evolutions": [
       { "to": "Weezing", "min_level": 35 },
       { "to": "Weezing-G", "min_level": 35 }
@@ -6027,7 +6027,7 @@
 	  [55, "Megahorn"],
 	  [60, "Guillotine"]
     ],
-    "tm_moves": ["Strength", "Rock Slide", "Skull Bash", "Fire Blast", "Dig", "Fissure", "Earthquake", "Thunderbolt", "Thunder", "Counter","Hyper Beam", "Take Down", "Double-Edge", "Body Slam", "Guillotine", "Swords Dance", "Toxic", "Mimic", "Bide", "Rest", "Double Team", "Vacuum-Cut", "Wide Slash", "Spin Slash", "Rage"],
+    "tm_moves": ["Strength", "Rock Slide", "Skull Bash", "Fire Blast", "Dig", "Fissure", "Earthquake", "Thunderbolt", "Thunder", "Counter","Hyper Beam", "Take Down", "Double-Edge", "Body Slam", "Guillotine", "Swords Dance", "Mimic", "Bide", "Rest", "Double Team", "Wide Slash", "Spin Slash", "Rage"],
     "evolutions": [
       {
         "to": "Rhydon",
@@ -6159,7 +6159,7 @@
 	  [52, "Ingrain"],
 	  [56, "Grassy Terrain"]
     ],
-    "tm_moves": ["Flash", "Cut", "Skull Bash", "Reflect", "Solar Beam", "Hyper Beam", "Take Down", "Double-Edge", "Body Slam", "Swords Dance", "Toxic", "Mimic", "Bide", "Rest", "Double Team", "Vacuum-Cut", "Wide Slash", "Spin Slash", "Rage"]
+    "tm_moves": ["Flash", "Cut", "Skull Bash", "Reflect", "Solar Beam", "Hyper Beam", "Take Down", "Double-Edge", "Body Slam", "Swords Dance", "Mimic", "Bide", "Rest", "Double Team", "Wide Slash", "Spin Slash", "Rage"]
   },
   {
     "id": "115",
@@ -6199,7 +6199,7 @@
 	  [48, "Outrage"],
 	  [52, "Last Resort"]
     ],
-    "tm_moves": ["Strength", "Surf", "Cut", "Rock Slide", "Skull Bash", "Fire Blast", "Dig", "Fissure", "Earthquake", "Thunderbolt", "Thunder", "Solar Beam", "Counter", "Seismic Toss","Submission", "Hyper Beam", "Bubble Beam", "Water Gun", "Ice Beam", "Blizzard", "Take Down", "Double-Edge", "Body Slam", "Mega Punch", "Mega Kick", "Toxic", "Mimic", "Bide", "Rest", "Double Team", "Vacuum-Cut", "Wide Slash", "Spin Slash", "Rage"]
+    "tm_moves": ["Strength", "Surf", "Cut", "Rock Slide", "Skull Bash", "Fire Blast", "Dig", "Fissure", "Earthquake", "Thunderbolt", "Thunder", "Solar Beam", "Counter", "Seismic Toss","Submission", "Hyper Beam", "Bubble Beam", "Water Gun", "Ice Beam", "Blizzard", "Take Down", "Double-Edge", "Body Slam", "Mega Punch", "Mega Kick", "Mimic", "Bide", "Rest", "Double Team", "Wide Slash", "Spin Slash", "Rage"]
   },
   {
     "id": "116",
@@ -6237,7 +6237,7 @@
 	  [50, "Dragon Dance"],
 	  [55, "Rain Dance"]
     ],
-    "tm_moves": ["Surf", "Skull Bash", "Swift", "Dragon Rage", "Bubble Beam", "Water Gun", "Ice Beam", "Blizzard", "Take Down", "Double-Edge", "Razor Wind", "Toxic", "Mimic", "Bide", "Rest", "Double Team", "Vacuum-Cut", "Wide Slash", "Spin Slash", "Rage"],
+    "tm_moves": ["Surf", "Skull Bash", "Swift", "Bubble Beam", "Water Gun", "Ice Beam", "Blizzard", "Take Down", "Double-Edge", "Razor Wind", "Mimic", "Bide", "Rest", "Double Team", "Wide Slash", "Spin Slash", "Rage"],
     "evolutions": [
       {
         "to": "Seadra",
@@ -6319,7 +6319,7 @@
 	  [45, "Megahorn"],
 	  [50, "Guillotine"]
     ],
-    "tm_moves": ["Surf", "Skull Bash", "Swift", "Bubble Beam", "Water Gun", "Ice Beam", "Blizzard", "Take Down", "Double-Edge", "Body Slam", "Guillotine", "Swords Dance", "Toxic", "Mimic", "Bide", "Rest", "Double Team", "Vacuum-Cut", "Wide Slash", "Spin Slash", "Rage"],
+    "tm_moves": ["Surf", "Skull Bash", "Swift", "Bubble Beam", "Water Gun", "Ice Beam", "Blizzard", "Take Down", "Double-Edge", "Body Slam", "Guillotine", "Swords Dance", "Mimic", "Bide", "Rest", "Double Team", "Wide Slash", "Spin Slash", "Rage"],
     "evolutions": [
       {
         "to": "Seaking",
@@ -6403,7 +6403,7 @@
 	  [52, "Cosmic Power"],
 	  [56, "Hydro Pump"]
     ],
-    "tm_moves": ["Flash", "Surf", "Tri Attack", "Psywave", "Thunder Wave", "Skull Bash", "Swift", "Self-Destruct", "Reflect", "Teleport", "Psychic", "Thunderbolt", "Thunder", "Bubble Beam", "Water Gun", "Ice Beam", "Blizzard", "Take Down", "Double-Edge", "Toxic", "Mimic", "Bide", "Rest", "Double Team", "Vacuum-Cut", "Wide Slash", "Spin Slash", "Rage"],
+    "tm_moves": ["Flash", "Surf", "Tri Attack", "Psywave", "Thunder Wave", "Skull Bash", "Swift", "Self-Destruct", "Reflect", "Teleport", "Psychic", "Thunderbolt", "Thunder", "Bubble Beam", "Water Gun", "Ice Beam", "Blizzard", "Take Down", "Double-Edge", "Mimic", "Bide", "Rest", "Double Team", "Wide Slash", "Spin Slash", "Rage"],
     "evolutions": [
       {
         "to": "Starmie",
@@ -6495,7 +6495,7 @@
 	  [48, "Psychic"],
 	  [52, "Teeter Dance"]
     ],
-    "tm_moves": ["Flash", "Psywave", "Thunder Wave", "Dream Eater", "Skull Bash", "Metronome", "Reflect", "Teleport", "Psychic", "Thunderbolt", "Thunder", "Solar Beam", "Counter", "Seismic Toss","Submission", "Hyper Beam", "Take Down", "Double-Edge", "Body Slam", "Mega Punch", "Mega Kick", "Toxic", "Mimic", "Bide", "Rest", "Double Team", "Vacuum-Cut", "Wide Slash", "Spin Slash", "Rage"]
+    "tm_moves": ["Flash", "Psywave", "Thunder Wave", "Dream Eater", "Skull Bash", "Metronome", "Reflect", "Teleport", "Psychic", "Thunderbolt", "Thunder", "Solar Beam", "Counter", "Seismic Toss","Submission", "Hyper Beam", "Take Down", "Double-Edge", "Body Slam", "Mega Punch", "Mega Kick", "Mimic", "Bide", "Rest", "Double Team", "Wide Slash", "Spin Slash", "Rage"]
   },
   {
     "id": "122G",
@@ -6583,7 +6583,7 @@
 	  [40, "Cross Scissor"],
 	  [44, "Swords Dance"]
     ],
-    "tm_moves": ["Cut", "Skull Bash", "Swift", "Counter", "Seismic Toss","Hyper Beam", "Take Down", "Double-Edge", "Razor Wind", "Swords Dance", "Toxic", "Mimic", "Bide", "Rest", "Double Team", "Vacuum-Cut", "Wide Slash", "Spin Slash", "Rage"]
+    "tm_moves": ["Cut", "Skull Bash", "Swift", "Counter", "Seismic Toss","Hyper Beam", "Take Down", "Double-Edge", "Razor Wind", "Swords Dance", "Mimic", "Bide", "Rest", "Double Team", "Wide Slash", "Spin Slash", "Rage"]
   },
   {
     "id": "124",
@@ -6743,7 +6743,7 @@
 	  [48, "Guillotine"],
 	  [52, "Superpower"]
     ],
-    "tm_moves": ["Strength", "Cut", "Rock Slide", "Dig", "Earthquake", "Seismic Toss", "Submission", "Hyper Beam", "Take Down", "Double-Edge", "Body Slam", "Swords Dance", "Toxic", "Mimic", "Bide", "Rest", "Double Team", "Vacuum-Cut", "Wide Slash", "Spin Slash", "Rage"]
+    "tm_moves": ["Strength", "Cut", "Rock Slide", "Dig", "Earthquake", "Seismic Toss", "Submission", "Hyper Beam", "Take Down", "Double-Edge", "Body Slam", "Swords Dance", "Mimic", "Bide", "Rest", "Double Team", "Wide Slash", "Spin Slash", "Rage"]
   },
   {
     "id": "128",
@@ -6782,7 +6782,7 @@
 	  [55, "Double-Edge"],
 	  [60, "Giga Impact"]
     ],
-    "tm_moves": ["Strength", "Surf", "Rock Slide", "Skull Bash", "Fire Blast", "Dig", "Fissure", "Earthquake", "Thunderbolt", "Thunder", "Solar Beam", "Hyper Beam", "Ice Beam", "Blizzard", "Take Down", "Double-Edge", "Body Slam", "Guillotine", "Toxic", "Mimic", "Bide", "Rest", "Double Team", "Vacuum-Cut", "Wide Slash", "Spin Slash", "Rage"]
+    "tm_moves": ["Strength", "Surf", "Rock Slide", "Skull Bash", "Fire Blast", "Dig", "Fissure", "Earthquake", "Thunderbolt", "Thunder", "Solar Beam", "Hyper Beam", "Ice Beam", "Blizzard", "Take Down", "Double-Edge", "Body Slam", "Guillotine", "Mimic", "Bide", "Rest", "Double Team", "Wide Slash", "Spin Slash", "Rage"]
   },
   {
     "id": "128A",
@@ -6821,7 +6821,7 @@
 	  [55, "Wave Crash"],
 	  [60, "Close Combat"]
     ],
-    "tm_moves": ["Surf", "Rock Slide", "Dig", "Earthquake", "Hyper Beam", "Double-Edge", "Take Down", "Body Slam", "Toxic", "Mimic", "Bide", "Rest", "Double Team", "Vacuum-Cut", "Wide Slash", "Spin Slash", "Rage"]
+    "tm_moves": ["Surf", "Rock Slide", "Dig", "Earthquake", "Hyper Beam", "Double-Edge", "Take Down", "Body Slam", "Mimic", "Bide", "Rest", "Double Team", "Wide Slash", "Spin Slash", "Rage"]
   },
   {
     "id": "128B",
@@ -6860,7 +6860,7 @@
 	  [55, "Flare Blitz"],
 	  [60, "Close Combat"]
     ],
-    "tm_moves": ["Rock Slide", "Fire Blast", "Dig", "Earthquake", "Hyper Beam", "Double-Edge", "Take Down", "Body Slam", "Toxic", "Mimic", "Bide", "Rest", "Double Team", "Vacuum-Cut", "Wide Slash", "Spin Slash", "Rage"]
+    "tm_moves": ["Rock Slide", "Fire Blast", "Dig", "Earthquake", "Hyper Beam", "Double-Edge", "Take Down", "Body Slam", "Mimic", "Bide", "Rest", "Double Team", "Wide Slash", "Spin Slash", "Rage"]
   },
   {
     "id": "128C",
@@ -6899,7 +6899,7 @@
 	  [55, "Double-Edge"],
 	  [60, "Close Combat"]
     ],
-    "tm_moves": ["Surf", "Rock Slide", "Dig", "Earthquake", "Hyper Beam", "Double-Edge", "Take Down", "Body Slam", "Toxic", "Mimic", "Bide", "Rest", "Double Team", "Vacuum-Cut", "Wide Slash", "Spin Slash", "Rage"]
+    "tm_moves": ["Surf", "Rock Slide", "Dig", "Earthquake", "Hyper Beam", "Double-Edge", "Take Down", "Body Slam", "Mimic", "Bide", "Rest", "Double Team", "Wide Slash", "Spin Slash", "Rage"]
   },
   {
     "id": "129",
@@ -7017,7 +7017,7 @@
 	  [60, "Perish Song"],
 	  [65, "Sheer Cold"]
     ],
-    "tm_moves": ["Strength", "Surf", "Psywave", "Dream Eater", "Skull Bash", "Reflect", "Psychic", "Earthquake", "Thunderbolt", "Thunder", "Dragon Rage", "Solar Beam", "Hyper Beam", "Bubble Beam", "Water Gun", "Ice Beam", "Blizzard", "Take Down", "Double-Edge", "Body Slam", "Guillotine", "Toxic", "Mimic", "Bide", "Rest", "Double Team", "Vacuum-Cut", "Wide Slash", "Spin Slash", "Rage"]
+    "tm_moves": ["Strength", "Surf", "Psywave", "Dream Eater", "Skull Bash", "Reflect", "Psychic", "Earthquake", "Thunderbolt", "Thunder", "Solar Beam", "Hyper Beam", "Bubble Beam", "Water Gun", "Ice Beam", "Blizzard", "Take Down", "Double-Edge", "Body Slam", "Guillotine", "Mimic", "Bide", "Rest", "Double Team", "Wide Slash", "Spin Slash", "Rage"]
   },
   {
     "id": "132",
@@ -7089,7 +7089,7 @@
 	  [50, "Double-Edge"],
 	  [55, "Last Resort"]
     ],
-    "tm_moves": ["Skull Bash", "Swift", "Reflect", "Dig", "Pay Day", "Take Down", "Double-Edge", "Body Slam", "Toxic", "Mimic", "Bide", "Rest", "Double Team", "Vacuum-Cut", "Wide Slash", "Spin Slash", "Rage"],
+    "tm_moves": ["Skull Bash", "Swift", "Reflect", "Dig", "Pay Day", "Take Down", "Double-Edge", "Body Slam", "Mimic", "Bide", "Rest", "Double Team", "Wide Slash", "Spin Slash", "Rage"],
     "evolutions": [
       { "to": "Vaporeon", "item": "Water Stone" },
       { "to": "Jolteon", "item": "Thunder Stone" },
@@ -7274,7 +7274,7 @@
 	  [55, "Lock-On"],
 	  [60, "Zap Cannon"]
     ],
-    "tm_moves": ["Flash", "Tri Attack", "Psywave", "Thunder Wave", "Dream Eater", "Skull Bash", "Swift", "Self-Destruct", "Reflect", "Teleport", "Psychic", "Thunderbolt", "Thunder", "Solar Beam", "Hyper Beam", "Take Down", "Double-Edge", "Toxic", "Mimic", "Bide", "Rest", "Double Team", "Vacuum-Cut", "Wide Slash", "Spin Slash", "Rage"]
+    "tm_moves": ["Flash", "Tri Attack", "Psywave", "Thunder Wave", "Dream Eater", "Skull Bash", "Swift", "Self-Destruct", "Reflect", "Teleport", "Psychic", "Thunderbolt", "Thunder", "Solar Beam", "Hyper Beam", "Take Down", "Double-Edge", "Mimic", "Bide", "Rest", "Double Team", "Wide Slash", "Spin Slash", "Rage"]
   },
   {
     "id": "138",
@@ -7313,7 +7313,7 @@
 	  [55, "Shell Smash"],
 	  [60, "Hydro Pump"]
     ],
-    "tm_moves": ["Surf", "Rock Slide", "Reflect", "Bubble Beam", "Water Gun", "Ice Beam", "Blizzard", "Take Down", "Double-Edge", "Body Slam", "Toxic", "Mimic", "Bide", "Rest", "Double Team", "Vacuum-Cut", "Wide Slash", "Spin Slash", "Rage"],
+    "tm_moves": ["Surf", "Rock Slide", "Reflect", "Bubble Beam", "Water Gun", "Ice Beam", "Blizzard", "Take Down", "Double-Edge", "Body Slam", "Mimic", "Bide", "Rest", "Double Team", "Wide Slash", "Spin Slash", "Rage"],
     "evolutions": [
       {
         "to": "Omastar",
@@ -7398,7 +7398,7 @@
 	  [55, "Metal Sound"],
 	  [60, "Stone Edge"]
     ],
-    "tm_moves": ["Surf", "Rock Slide", "Reflect", "Dig", "Mega Drain", "Bubble Beam", "Water Gun", "Ice Beam", "Blizzard", "Take Down", "Double-Edge", "Body Slam", "Toxic", "Mimic", "Bide", "Rest", "Double Team", "Vacuum-Cut", "Wide Slash", "Spin Slash", "Rage"],
+    "tm_moves": ["Surf", "Rock Slide", "Reflect", "Dig", "Mega Drain", "Bubble Beam", "Water Gun", "Ice Beam", "Blizzard", "Take Down", "Double-Edge", "Body Slam", "Mimic", "Bide", "Rest", "Double Team", "Wide Slash", "Spin Slash", "Rage"],
     "evolutions": [
       {
         "to": "Kabutops",
@@ -7483,7 +7483,7 @@
 	  [55, "Hyper Beam"],
 	  [60, "Giga Impact"]
     ],
-    "tm_moves": ["Strength", "Fly", "Rock Slide", "Sky Attack", "Swift", "Fire Blast", "Reflect", "Earthquake", "Dragon Rage", "Take Down", "Double-Edge", "Razor Wind", "Whirlwind", "Toxic", "Mimic", "Bide", "Rest", "Double Team", "Vacuum-Cut", "Wide Slash", "Spin Slash", "Rage"]
+    "tm_moves": ["Strength", "Fly", "Rock Slide", "Sky Attack", "Swift", "Fire Blast", "Reflect", "Earthquake", "Take Down", "Double-Edge", "Razor Wind", "Whirlwind", "Mimic", "Bide", "Rest", "Double Team", "Wide Slash", "Spin Slash", "Rage"]
   },
   {
     "id": "143",
@@ -7823,7 +7823,7 @@
 	  [55, "Outrage"],
 	  [60, "Hyper Beam"]
     ],
-    "tm_moves": ["Surf", "Thunder Wave", "Skull Bash", "Swift", "Fire Blast", "Reflect", "Thunderbolt", "Thunder", "Dragon Rage", "Hyper Beam", "Bubble Beam", "Water Gun", "Ice Beam", "Blizzard", "Take Down", "Double-Edge", "Body Slam", "Toxic", "Mimic", "Bide", "Rest", "Double Team", "Vacuum-Cut", "Wide Slash", "Spin Slash", "Rage"],
+    "tm_moves": ["Surf", "Thunder Wave", "Skull Bash", "Swift", "Fire Blast", "Reflect", "Thunderbolt", "Thunder", "Hyper Beam", "Bubble Beam", "Water Gun", "Ice Beam", "Blizzard", "Take Down", "Double-Edge", "Body Slam", "Mimic", "Bide", "Rest", "Double Team", "Wide Slash", "Spin Slash", "Rage"],
     "evolutions": [
       {
         "to": "Dragonair",
