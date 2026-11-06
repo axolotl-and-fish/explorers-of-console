@@ -1,6 +1,6 @@
 		Pokémon Misery Dungeon: Explorers of the Console CHANGELOG
 ===============================================================================
-						    0.2.1  - November 7, 2026
+						    0.2.1 - November 7, 2026
 ===============================================================================
 Save files from 0.2.0 will not be compatible. Yeah, I know, this is the second
 time in a row. Sorry!
@@ -13,6 +13,7 @@ time in a row. Sorry!
   - Test Pokémon Spawns: Tests the Pokémon spawning algorithm for a given
     floor. You can export the results to a text file.
   - Test Item Spawns: Ditto, but with the item spawning algorithm instead.
+- 5 new title screen tips.
 ------------------------------------CHANGES------------------------------------
 - Wild Pokémon now have a low chance of having one of their spawn moves
   replaced with a random TM move or earlier move, if applicable.
@@ -26,6 +27,8 @@ time in a row. Sorry!
   dodge thrown items.
 - Enemies that are napping (i.e., inactive) will wake up if an item is thrown
   at them.
+- 2 changed title screen tips.
+- Updated manual
 -------------------------------------FIXES-------------------------------------
 - Fixed Zapdos being incompatible with all TMs. Its TM learnset is probably
   still incorrect, but it's not like Zapdos is obtainable without debug yet

@@ -180,11 +180,15 @@ TIPS_OF_THE_DAY = [
     "Natures can completely change a Pokémon's viability!",
     "Keep rerolling when starting a run to get your perfect set of stats!",
     "Use your stat locks wisely!",
-    "0.3 coming Christmas 2026! Follow me on Bsky for updates.",
+    "0.3 hopefully coming Christmas 2026! Follow me on Bsky for updates.",
     "Regret your teammate's name? You can rename them from their summary.",
     "Use [;] to enable Auto Leader Switch, for manual control of your team.",
     "Floors get larger and denser the further up you go.",
-    "Have you had your Weetabix today?"
+    "Certified 16 colors and 256 characters!",
+    "Don't like certain animations? You can turn them off from the options.",
+    "If you like this game, you should play PMD Origins!",
+    "Shout outs to Danirbu, Joshowott, Bathrobe Hero and the rest of the EPU!",
+    "Smilometers go for kilometers!",
 ]
 
 
@@ -14357,7 +14361,7 @@ class Game:
                         if is_hallucinating: #Change tile colors randomly while hallucinating
                             row_chars.append(f"{random.choice(SCINTILLATING_COLORS)}>\033[0m")
                         else:
-                            row_chars.append(">")
+                            row_chars.append("►")
                     elif (src_x, src_y) == getattr(self, "wonder_tile_position", None):
                         if is_hallucinating: #Change tile colors randomly while hallucinating
                             row_chars.append(f"{random.choice(SCINTILLATING_COLORS)}↑\033[0m")
