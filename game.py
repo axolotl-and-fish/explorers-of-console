@@ -10264,8 +10264,13 @@ class Game:
                 if m.get("dangerous", False):
                     m["enabled"] = False
 
+            was_slowed = getattr(target, "movement_speed_stage", 0) < 0 or target.status_effects.get("Slow", 0) > 0
             target.status_effects = {s: (False if isinstance(v, bool) else 0) for s, v in target.status_effects.items()}
             target.stat_modifiers = {s: 0 for s in target.stat_modifiers}
+            if was_slowed:
+                target.movement_speed_stage = 0
+                target.movement_speed_duration = 0
+                target.slow_turn_toggle = False
             target.last_damage_source = None
 
             if target in self.spawned_pokemon:
@@ -11047,7 +11052,7 @@ class Game:
         """Exports Pokemon spawn simulation results to a formatted text file"""
         filename = f"pokemon_spawns_floor_{floor_number}.txt"
         lines = [
-            f"POKEMON SPAWN TEST RESULTS - FLOOR {floor_number}F",
+            f"POKEMON SPAWN TEST RESULTS - {floor_number}F",
             f"Total Spawns Tested: {num_spawns}",
             f"Unique Species Chosen: {len(results)}",
             "=" * 56,
@@ -11065,7 +11070,7 @@ class Game:
         """Exports item spawn simulation results to a formatted text file."""
         filename = f"item_spawns_floor_{floor_number}.txt"
         lines = [
-            f"ITEM SPAWN TEST RESULTS - {floor_number}F",
+            f"ITEM SPAWN TEST RESULTS - FLOOR {floor_number}F",
             f"Total Spawns Tested: {num_spawns}",
             f"Unique Items Chosen: {len(results)}",
             "=" * 56,
