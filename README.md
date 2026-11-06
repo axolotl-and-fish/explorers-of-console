@@ -90,13 +90,13 @@ Head to the Releases tab and download the Source Code (zip), extract the file, a
 
 ````--generate````: Generates and displays a dungeon using the game's generation algorithm.
 
-````--compat````: Runs the game in compatibility mode, which removes all ANSI color. The game is designed with color in mind, so this should only be used as a last resort if your terminal is incompatible, but you should really just use a different terminal.
+````--compat````: Runs the game in compatibility mode, which removes all ANSI color. The game is designed with color in mind, so this should only be used as a last resort if your terminal is incompatible, but you should really just use a different terminal. You can also enable compatibility mode from in-game in the Options screen.
 
 ````--width````: Specify a width between 32 and 56 for the generated floor. Can only be used with ````--generate````.
 
 ````--debug````: Starts the game in Debug Mode. See the Debug Mode section in the [Manual](manual.txt) for more information.
 
-# Features (as of v0.2)
+# Features (as of v0.2.1)
 - 181 currently encounterable and recruitable Pokémon (plus 8 legendaries, currently unused)
 - Over 400 individually implemented moves, many with animations
 - PMD Rescue Team style dungeon generation
@@ -110,7 +110,7 @@ Head to the Releases tab and download the Source Code (zip), extract the file, a
 
 Human-written issues and PRs are welcome, though I will mainly be accepting PRs for bug fixes and additions to the JSON files in the data folder. Apologies in advance if I determine your feature request is out of scope, as I do have a specific roadmap for this project in mind. Maybe this will change in future once I finally get to 1.0.
 
-**LLM-WRITTEN ISSUES & PRs ARE STRICTLY PROHIBITED.** You will be banned from the repo. Don't even try it. I will know. All contributions to this repo **must** be human-written.
+**LLM-WRITTEN ISSUES & PRs ARE STRICTLY PROHIBITED.** You will be banned from the repo. Don't even try it, I will know. All contributions to this repo **must** be human-written. You are expected to have a full understanding of any code in any pull requests you submit.
 
 # Legal
 Pokémon Misery Dungeon: Explorers of the Console's engine & code are 
