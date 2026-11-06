@@ -21,8 +21,8 @@
 								 ██                   ██                  
 							   
 						✩ Explorers of the Console ✩                          
-							  beta ver. 0.2.0
-							  October 26, 2026
+							     ver. 0.2.1
+							  November 7, 2026
 								  
 						2026 C437RP13 / Axolotl and Fish
 						   
@@ -211,7 +211,8 @@ To navigate menus, use the arrow keys or numpad keys, as with movement.
 						  3. Starting the Game
 ===============================================================================
 When the game starts, you will be presented with the title screen, from which
-you can begin a new game, load an existing game, or view the high score list.
+you can begin a new game, load an existing game, configure graphical-related
+options, or view the high score list.
 
 To start a new game, select "New Game". You will be asked to choose which
 Pokémon you would like to play as initially (the "starter Pokémon"). Each of
@@ -1186,6 +1187,16 @@ as follows:
   defeated, even without Reviver Seeds.
 - Always Recruit Pokémon: When enabled, Pokémon recruitment rolls will always
   succeed.
+- Activate All Enemies: Changes all inactive (napping) enemies on the floor to
+  an active state immediately.
+- Freeze Floor Timer: Stops the floor timer (which causes the dungeon to
+  collapse after a certain number of turns on the floor) from counting down.
+- Test Pokémon Spawns: Tests the robustness of the Pokémon species chooser. You 
+  can specify the number of tests and what floor number to simulate, and export
+  the results to a text file.
+- Test Item Spawns: Tests the robustness of the item spawner. You can specify
+  the number of tests and what floor number to simulate, and export the results
+  to a text file.  
 ===============================================================================
 								G. Legal Crap
 ===============================================================================
