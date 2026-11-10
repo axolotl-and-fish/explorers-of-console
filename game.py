@@ -3015,30 +3015,9 @@ class Game:
                 if not moved:
                     lx, ly = get_pokemon_position(self, self.player_pokemon)
                     is_adj_to_leader = self.is_walkable_adjacent(ally, ax, ay, lx, ly)
-                    dist_to_leader = max(abs(ax - lx), abs(ay - ly))
                     follow_target = self.player_pokemon
                     tx, ty = lx, ly
                     is_adj = is_adj_to_leader
-
-                    if not is_adj_to_leader:
-                        #Follow next alive teammate ahead in party order if nearby and closer to leader
-                        ally_idx = self.party.index(ally) if ally in self.party else -1
-                        imm_ahead = None
-                        if ally_idx > 0:
-                            for prev_idx in range(ally_idx - 1, -1, -1):
-                                prev_mon = self.party[prev_idx]
-                                if int(getattr(prev_mon, "current_hp", 0)) > 0:
-                                    imm_ahead = prev_mon
-                                    break
-
-                        if imm_ahead is not None and imm_ahead is not self.player_pokemon:
-                            ix, iy = get_pokemon_position(self, imm_ahead)
-                            dist_to_imm = max(abs(ax - ix), abs(ay - iy))
-                            dist_imm_to_leader = max(abs(ix - lx), abs(iy - ly))
-                            if dist_to_imm <= dist_to_leader and dist_imm_to_leader <= dist_to_leader and dist_to_imm <= 10:
-                                follow_target = imm_ahead
-                                tx, ty = ix, iy
-                                is_adj = self.is_walkable_adjacent(ally, ax, ay, ix, iy)
 
                     if not is_adj:
                         step = self.get_ai_step_towards(ally, tx, ty)
