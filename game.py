@@ -705,11 +705,16 @@ class Game:
         if enemy is None or self.is_team_pokemon(enemy):
             return
         if defeater is not None and self.is_team_pokemon(defeater):
-            defeater.defeat_pokemon(enemy, game=self, is_finishing_blow=True)
+            if int(getattr(defeater, "current_hp", 0)) > 0:
+                defeater.defeat_pokemon(enemy, game=self, is_finishing_blow=True)
+            else:
+                living = next((p for p in self.party if int(getattr(p, "current_hp", 0)) > 0), None)
+                if living:
+                    living.defeat_pokemon(enemy, game=self, is_finishing_blow=True)
         elif getattr(enemy, "has_been_attacked_by_team", False):
-            leader = getattr(self, "player_pokemon", None)
-            if leader:
-                leader.defeat_pokemon(enemy, game=self, is_finishing_blow=False)
+            living = next((p for p in self.party if int(getattr(p, "current_hp", 0)) > 0), None)
+            if living:
+                living.defeat_pokemon(enemy, game=self, is_finishing_blow=False)
 
     def on_enemy_defeated(self, enemy, exp_gained: int):
         """Called when an enemy Pokémon is defeated by a team member"""
@@ -7895,43 +7900,67 @@ class Game:
                                 attacker.current_hp -= recoil
                                 self.log_message(f"{attacker.name} was damaged by the recoil!")
                                 if int(attacker.current_hp) <= 0:
+                                    if attacker in self.party and self.attempt_revive_member(attacker):
+                                        break
                                     self.log_pokemon_defeat(attacker)
+                                    self.handle_enemy_defeat(attacker)
                                     if attacker in self.party:
                                         self.remove_party_member(attacker)
                                     elif attacker in self.spawned_pokemon:
                                         self.spawned_pokemon.remove(attacker)
+                                    break
 
                 #Handle Counter physical damage reflection
                 if move.get("category") == "Physical" and damage > 0 and defender.status_effects.get("Counter", 0) > 0 and attacker != defender and int(attacker.current_hp) > 0:
                     refl = max(1, damage // 2)
                     attacker.last_damage_source = f"{defender.name}'s Counter"
                     attacker.current_hp = float(int(attacker.current_hp) - refl)
+                    if self.is_team_pokemon(defender) and not self.is_team_pokemon(attacker):
+                        attacker.has_been_attacked_by_team = True
+                        attacker.has_had_move_used_on_it = True
+                        if not hasattr(attacker, "team_attackers"):
+                            attacker.team_attackers = set()
+                        attacker.team_attackers.add(defender)
                     self.log_message(f"{defender.name}'s Counter reflected {refl} damage back to {attacker.name}!")
                     ax, ay = get_pokemon_position(self, attacker)
                     self.flash_damages[(ax, ay)] = (refl, 1.0)
                     self.trigger_damage_flash()
                     if int(attacker.current_hp) <= 0:
+                        if attacker in self.party and self.attempt_revive_member(attacker):
+                            break
                         self.log_pokemon_defeat(attacker)
+                        self.handle_enemy_defeat(attacker, defender)
                         if attacker in self.spawned_pokemon:
                             self.spawned_pokemon.remove(attacker)
                         elif attacker in self.party:
                             self.remove_party_member(attacker)
+                        break
 
                 #Handle Mirror Coat special damage reflection
                 if move.get("category") == "Special" and damage > 0 and defender.status_effects.get("Mirror Coat", 0) > 0 and attacker != defender and int(attacker.current_hp) > 0:
                     refl = max(1, damage // 2)
                     attacker.last_damage_source = f"{defender.name}'s Mirror Coat"
                     attacker.current_hp = float(int(attacker.current_hp) - refl)
+                    if self.is_team_pokemon(defender) and not self.is_team_pokemon(attacker):
+                        attacker.has_been_attacked_by_team = True
+                        attacker.has_had_move_used_on_it = True
+                        if not hasattr(attacker, "team_attackers"):
+                            attacker.team_attackers = set()
+                        attacker.team_attackers.add(defender)
                     self.log_message(f"{defender.name}'s Mirror Coat reflected {refl} damage back to {attacker.name}!")
                     ax, ay = get_pokemon_position(self, attacker)
                     self.flash_damages[(ax, ay)] = (refl, 1.0)
                     self.trigger_damage_flash()
                     if int(attacker.current_hp) <= 0:
+                        if attacker in self.party and self.attempt_revive_member(attacker):
+                            break
                         self.log_pokemon_defeat(attacker)
+                        self.handle_enemy_defeat(attacker, defender)
                         if attacker in self.spawned_pokemon:
                             self.spawned_pokemon.remove(attacker)
                         elif attacker in self.party:
                             self.remove_party_member(attacker)
+                        break
 
                 #Handle Metal Burst damage reflection
                 if damage > 0 and defender.status_effects.get("Metal Burst", 0) > 0:
@@ -7948,16 +7977,26 @@ class Game:
                     for enemy in adj_enemies:
                         enemy.last_damage_source = f"{defender.name}'s Metal Burst"
                         enemy.current_hp = float(int(enemy.current_hp) - refl)
+                        if self.is_team_pokemon(defender) and not self.is_team_pokemon(enemy):
+                            enemy.has_been_attacked_by_team = True
+                            enemy.has_had_move_used_on_it = True
+                            if not hasattr(enemy, "team_attackers"):
+                                enemy.team_attackers = set()
+                            enemy.team_attackers.add(defender)
                         self.log_message(f"{defender.name}'s Metal Burst reflected {refl} damage to {enemy.name}!")
                         ex, ey = get_pokemon_position(self, enemy)
                         self.flash_damages[(ex, ey)] = (refl, 1.0)
                         self.trigger_damage_flash()
                         if int(enemy.current_hp) <= 0:
-                            self.log_pokemon_defeat(enemy)
-                            if enemy in self.spawned_pokemon:
-                                self.spawned_pokemon.remove(enemy)
-                            elif enemy in self.party:
-                                self.remove_party_member(enemy)
+                            if enemy in self.party and self.attempt_revive_member(enemy):
+                                pass
+                            else:
+                                self.log_pokemon_defeat(enemy)
+                                self.handle_enemy_defeat(enemy, defender)
+                                if enemy in self.spawned_pokemon:
+                                    self.spawned_pokemon.remove(enemy)
+                                elif enemy in self.party:
+                                    self.remove_party_member(enemy)
 
                 if int(defender.current_hp) <= 0:
                     self.log_pokemon_defeat(defender)
@@ -7966,6 +8005,13 @@ class Game:
                         self.log_message(f"{defender.name} took {attacker.name} down with it!")
                         attacker.last_damage_source = f"{defender.name}'s Destiny Bond"
                         attacker.current_hp = 0.0
+                        if self.is_team_pokemon(defender) and not self.is_team_pokemon(attacker):
+                            attacker.has_been_attacked_by_team = True
+                            attacker.has_had_move_used_on_it = True
+                            if not hasattr(attacker, "team_attackers"):
+                                attacker.team_attackers = set()
+                            attacker.team_attackers.add(defender)
+                        self.handle_enemy_defeat(attacker, defender)
                         if attacker in self.spawned_pokemon:
                             self.spawned_pokemon.remove(attacker)
                         elif attacker in self.party:
