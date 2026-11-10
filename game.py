@@ -14375,7 +14375,7 @@ class Game:
                         if is_hallucinating: #Change tile colors randomly while hallucinating
                             row_chars.append(f"{random.choice(SCINTILLATING_COLORS)}>\033[0m")
                         else:
-                            row_chars.append("►")
+                            row_chars.append(">")
                     elif (src_x, src_y) == getattr(self, "wonder_tile_position", None):
                         if is_hallucinating: #Change tile colors randomly while hallucinating
                             row_chars.append(f"{random.choice(SCINTILLATING_COLORS)}↑\033[0m")
