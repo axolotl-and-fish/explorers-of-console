@@ -308,7 +308,7 @@ class Game:
         self.floor_timer_collapsed = False
         self.map_shake_offset = (0, 0)
         self.collapse_blanked_tiles: set[tuple[int, int]] = set()
-        self.build_string = "Beta 0.2.1"
+        self.build_string = "Beta 0.2.2-dev"
         self.message = self.build_string
         self.stairs_position = (0, 0)
         self.spawn_stairs()
@@ -376,6 +376,7 @@ class Game:
         self.targeting_move: dict | None = None
         self.targeting_cursor = (0, 0) #Position of the cursor in targeting mode
         self.targeting_targets: list[Pokemon] = [] #List of valid targets for the targeting mode cursor
+        self.last_target_2_3_tiles: Pokemon | None = None
         self.waiting_for_direction = False
         self.direction_move: dict | None = None
         self.flash_damages: dict[tuple[int, int], tuple[int | str, float | str] | tuple[int | str, float | str, bool]] = {} #Pop-ups that appear when a Pokémon is damaged, healed or gains EXP
@@ -4551,6 +4552,8 @@ class Game:
             #Single-target move
             if len(targets) == 1:
                 #Auto-use on the single target
+                if range_str in ("Enemy up to 2 tiles away", "Enemy up to 3 tiles away"):
+                    self.last_target_2_3_tiles = targets[0]
                 self.execute_single_move(self.player_pokemon, targets[0], move)
                 self.on_turn_completed()
             else:
@@ -4565,8 +4568,16 @@ class Game:
                     self.targeting_mode = True
                     self.targeting_move = move
                     self.targeting_targets = targets
-                    #Start cursor at first target position
-                    tx, ty = get_pokemon_position(self, targets[0])
+                    #Start cursor at remembered target if valid, else first target position
+                    chosen_target = targets[0]
+                    if range_str in ("Enemy up to 2 tiles away", "Enemy up to 3 tiles away"):
+                        if (
+                            self.last_target_2_3_tiles is not None
+                            and self.last_target_2_3_tiles in targets
+                            and int(getattr(self.last_target_2_3_tiles, "current_hp", 0)) > 0
+                        ):
+                            chosen_target = self.last_target_2_3_tiles
+                    tx, ty = get_pokemon_position(self, chosen_target)
                     self.targeting_cursor = (tx, ty)
                     self.log_message(f"Who to target for {move['name']}? ([Return] to confirm, [Esc] to cancel)")
 
@@ -11218,6 +11229,7 @@ class Game:
 
         #Clear spawned enemies and items, spawn new
         self.spawned_pokemon.clear()
+        self.last_target_2_3_tiles = None
         self.generate_floor_spawn_list()
         self.items_on_floor.clear()
         self.spawn_initial_items()
@@ -13245,6 +13257,7 @@ class Game:
         self.move_replacement_queue = []
         self.targeting_mode = False
         self.targeting_move = None
+        self.last_target_2_3_tiles = None
         self.look_around_mode = False
         self.waiting_for_direction = False
         self.direction_move = None
@@ -13585,6 +13598,7 @@ class Game:
         self.future_sight_effects = []
         self.targeting_mode = False
         self.targeting_move = None
+        self.last_target_2_3_tiles = None
         self.waiting_for_direction = False
         self.direction_move = None
         self.look_around_mode = False
@@ -16855,7 +16869,9 @@ class Game:
                         self.targeting_targets = []
 
                         if move is not None:
-                            range_str = move.get("range", "")
+                            range_str = get_effective_move_range(self.player_pokemon, move)
+                            if range_str in ("Enemy up to 2 tiles away", "Enemy up to 3 tiles away"):
+                                self.last_target_2_3_tiles = selected_target
                             if range_str == "Straight line piercing":
                                 ax, ay = get_pokemon_position(self, self.player_pokemon)
                                 tx, ty = get_pokemon_position(self, selected_target)
@@ -16877,10 +16893,12 @@ class Game:
                     ny = cy + dy
                     if 0 <= nx < self.floor.width and 0 <= ny < self.floor.height:
                         if self.targeting_move is not None:
-                            range_str = self.targeting_move.get("range", "")
+                            range_str = get_effective_move_range(self.player_pokemon, self.targeting_move)
                             max_range = 10
                             if range_str == "Enemy up to 2 tiles away":
                                 max_range = 2
+                            elif range_str == "Enemy up to 3 tiles away":
+                                max_range = 3
                             if max(abs(nx - self.player_x), abs(ny - self.player_y)) <= max_range:
                                 self.targeting_cursor = (nx, ny)
 
@@ -17017,6 +17035,7 @@ class Game:
                         
                         #Clear spawned enemies and generate new floor spawn list
                         self.spawned_pokemon.clear()
+                        self.last_target_2_3_tiles = None
                         self.generate_floor_spawn_list()
                         self.spawn_initial_items()
                         self.spawn_initial_enemies()

@@ -697,6 +697,7 @@ def apply_game_state(game, state_dict: dict):
     game.high_scores_state = None
     game.pause_menu_state = None
     game.load_game_state = None
+    game.last_target_2_3_tiles = None
     game.is_running = True
 
 
