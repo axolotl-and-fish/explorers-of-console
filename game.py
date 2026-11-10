@@ -5030,6 +5030,7 @@ class Game:
             elif eff_type == "status_apply":
                 status_name = effect.get("status")
                 duration = effect.get("duration")
+                is_damaging = move.get("category") in ("Physical", "Special")
                 
                 #Check custom failure logic
                 #Ghost-types are unaffected by Mean Look (you can't scare a ghost!)
@@ -5037,46 +5038,32 @@ class Game:
                     if "Ghost" in eff_target.species_data.get("types", []):
                         self.log_message(f"{eff_target.name} is unaffected!")
                         continue
-                elif status_name == "Leech Seed":
-                    if eff_target.status_effects.get("Leech Seed", 0) > 0:
-                        self.log_message(f"{eff_target.name} is already seeded.")
-                        continue
-                elif status_name == "Poison":
-                    if eff_target.status_effects.get("Poison") or eff_target.status_effects.get("Toxic"):
-                        self.log_message(f"{eff_target.name} is already poisoned.")
-                        continue
-                elif status_name == "Sleep":
+                elif status_name == "Sleep" and move.get("name") == "Hypnosis":
                     if eff_target.status_effects.get("Sleep", 0) > 0 or eff_target.status_effects.get("Resting", 0) > 0:
-                        if move.get("name") == "Hypnosis":
-                            rem_sleep = eff_target.status_effects.get("Sleep", 0) or eff_target.status_effects.get("Resting", 0)
-                            attacker_is_team = attacker in self.party
-                            target_is_team = eff_target in self.party
-                            if attacker_is_team and not target_is_team:
-                                if eff_target.status_effects.get("Sleep", 0) > 0:
-                                    eff_target.cure_status("Sleep", self)
-                                elif eff_target.status_effects.get("Resting", 0) > 0:
-                                    eff_target.cure_status("Resting", self)
-                                eff_target.apply_status("Terrified", self, duration=rem_sleep)
-                                continue
-                            elif not attacker_is_team and target_is_team:
-                                if eff_target.status_effects.get("Sleep", 0) > 0:
-                                    eff_target.cure_status("Sleep", self)
-                                elif eff_target.status_effects.get("Resting", 0) > 0:
-                                    eff_target.cure_status("Resting", self)
-                                eff_target.apply_status("Puppet", self, duration=rem_sleep)
-                                continue
-                        self.log_message(f"{eff_target.name} is already asleep.")
-                        continue
-                elif status_name == "Sleepless":
-                    if eff_target.status_effects.get("Sleepless"):
-                        self.log_message(f"{eff_target.name} is already sleepless.")
-                        continue
+                        rem_sleep = eff_target.status_effects.get("Sleep", 0) or eff_target.status_effects.get("Resting", 0)
+                        attacker_is_team = attacker in self.party
+                        target_is_team = eff_target in self.party
+                        if attacker_is_team and not target_is_team:
+                            if eff_target.status_effects.get("Sleep", 0) > 0:
+                                eff_target.cure_status("Sleep", self)
+                            elif eff_target.status_effects.get("Resting", 0) > 0:
+                                eff_target.cure_status("Resting", self)
+                            eff_target.apply_status("Terrified", self, duration=rem_sleep)
+                            continue
+                        elif not attacker_is_team and target_is_team:
+                            if eff_target.status_effects.get("Sleep", 0) > 0:
+                                eff_target.cure_status("Sleep", self)
+                            elif eff_target.status_effects.get("Resting", 0) > 0:
+                                eff_target.cure_status("Resting", self)
+                            eff_target.apply_status("Puppet", self, duration=rem_sleep)
+                            continue
                         
-                eff_target.apply_status(status_name, self, duration=duration)
-                if status_name == "Leech Seed":
-                    self.leech_seed_sources[eff_target] = attacker
-                elif status_name == "Taunted":
-                    self.taunt_sources[eff_target] = attacker
+                applied = eff_target.apply_status(status_name, self, duration=duration, from_damaging_move=is_damaging)
+                if applied:
+                    if status_name == "Leech Seed":
+                        self.leech_seed_sources[eff_target] = attacker
+                    elif status_name == "Taunted":
+                        self.taunt_sources[eff_target] = attacker
 
             elif eff_type == "soak":
                 if eff_target.types == ["Water"]:
@@ -5131,11 +5118,11 @@ class Game:
             elif eff_type == "tri_attack_effects":
                 import random
                 if random.randint(1, 100) <= 20:
-                    eff_target.apply_status("Paralysis", self)
+                    eff_target.apply_status("Paralysis", self, from_damaging_move=True)
                 if random.randint(1, 100) <= 20:
-                    eff_target.apply_status("Frozen", self)
+                    eff_target.apply_status("Frozen", self, from_damaging_move=True)
                 if random.randint(1, 100) <= 20:
-                    eff_target.apply_status("Burn", self)
+                    eff_target.apply_status("Burn", self, from_damaging_move=True)
             elif eff_type == "fire_spin":
                 already_bound = False
                 for binding in self.fire_spin_bindings:
@@ -7377,7 +7364,7 @@ class Game:
                 if move.get("name") == "Freeze-Dry":
                     def_types = getattr(defender, "temp_types", None) or getattr(defender, "types", defender.species_data.get("types", []))
                     if "Water" in def_types:
-                        defender.apply_status("Frozen", self)
+                        defender.apply_status("Frozen", self, from_damaging_move=True)
                 val_petr = defender.status_effects.get("Petrified", 0)
                 if val_petr > 0 or val_petr == -1:
                     defender.cure_status("Petrified", self)
@@ -7853,7 +7840,7 @@ class Game:
                 if move.get("name") == "Freeze-Dry":
                     def_types = getattr(defender, "temp_types", None) or getattr(defender, "types", defender.species_data.get("types", []))
                     if "Water" in def_types:
-                        defender.apply_status("Frozen", self)
+                        defender.apply_status("Frozen", self, from_damaging_move=True)
 
                 #Check Vital Throw counter-throw effect
                 if damage > 0 and defender.status_effects.get("Vital Throw", 0) > 0 and int(attacker.current_hp) > 0 and attacker != defender:

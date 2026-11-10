@@ -1193,13 +1193,13 @@ class Pokemon:
             elif new_stage == 3:
                 game.log_message(f"{self.name} is moving at quadruple speed!")
 
-    def apply_status(self, status: str, game, duration: int | None = None):
+    def apply_status(self, status: str, game, duration: int | None = None, from_damaging_move: bool = False) -> bool:
         """Applies a negative status effect to the Pokémon and prints the log message."""
         orig_suppress = getattr(game, "suppress_target_logs", False) if game else False
         if game and hasattr(game, "is_in_team_sight") and not game.is_in_team_sight(self):
             game.suppress_target_logs = True
         try:
-            self._apply_status_internal(status, game, duration=duration)
+            return bool(self._apply_status_internal(status, game, duration=duration, from_damaging_move=from_damaging_move))
         finally:
             if game:
                 game.suppress_target_logs = orig_suppress
@@ -1235,7 +1235,7 @@ class Pokemon:
                 game.flash_damages[pos] = (text, color)
                 game.trigger_damage_flash()
 
-    def _apply_status_internal(self, status: str, game, duration: int | None = None):
+    def _apply_status_internal(self, status: str, game, duration: int | None = None, from_damaging_move: bool = False) -> bool:
         """Applies a negative status effect to the Pokémon and prints the log message."""
         import random
         if status == "Confused":
@@ -1244,108 +1244,179 @@ class Pokemon:
         #Type immunities for specific status effects
         p_types = self.types
         if status in ("Poison", "Toxic", "Toxic Poison") and any(t in p_types for t in ("Poison", "Steel")):
-            return
+            return False
         if status == "Burn" and "Fire" in p_types:
-            return
+            return False
         if status in ("Paralysis", "Paralyzed") and "Electric" in p_types:
-            return
+            return False
         if status == "Frozen" and any(t in p_types for t in ("Fire", "Ice")):
-            return
+            return False
 
         #Check Safeguard protection
         if status in ("Sleep", "Paralysis", "Paralyzed", "Poison", "Toxic", "Toxic Poison", "Burn", "Frozen", "Flinch", "Petrified", "Confusion", "Leech Seed", "Fire Spin", "Slow", "Stuck", "Curse", "Cursed", "Drowsy", "Whirlpool", "Perishing", "Terrified", "Puppet", "Hallucinating", "Blind"):
             if self.status_effects.get("Safeguard", 0) > 0:
-                game.log_message(f"{self.name} is protected by Safeguard!")
-                return
+                if game:
+                    game.log_message(f"{self.name} is protected by Safeguard!")
+                return False
 
         #Check Electric Terrain immunity for non-Flying Pokemon
         if status in ("Sleep", "Resting", "Drowsy"):
             if game and getattr(game, "weather", None) == "Electric Terrain":
                 p_types = getattr(self, "temp_types", None) or self.species_data.get("types", [])
                 if "Flying" not in p_types:
-                    return
+                    return False
 
         #Check Misty Terrain immunity for grounded Pokemon
         if status in ("Sleep", "Resting", "Paralysis", "Poison", "Toxic", "Burn", "Frozen"):
             if game and getattr(game, "weather", None) == "Misty Terrain":
                 from combat import is_pokemon_grounded
                 if is_pokemon_grounded(self, game):
-                    return
+                    return False
 
         if status == "Sleep":
             if self.status_effects.get("Sleepless"):
-                return
+                return False
+            if self.status_effects.get("Sleep", 0) > 0 or self.status_effects.get("Resting", 0) > 0:
+                if not from_damaging_move and game:
+                    game.log_message(f"{self.name} is already sleeping.")
+                return False
             self.status_effects["Sleep"] = duration if duration is not None else random.randint(3, 6)
-            game.log_message(f"{self.name} fell asleep!")
+            if game:
+                game.log_message(f"{self.name} fell asleep!")
             self._trigger_status_popup("Sleep", game)
             if self.charging_move:
                 c_move_name = self.charging_move.get("move", {}).get("name", "move")
-                game.log_message(f"{self.name}'s {c_move_name} was interrupted!")
+                if game:
+                    game.log_message(f"{self.name}'s {c_move_name} was interrupted!")
                 self.charging_move = None
                 if self.status_effects.get("Digging", 0) > 0:
                     self.status_effects["Digging"] = 0
                 if self.status_effects.get("Diving", 0) > 0:
                     self.status_effects["Diving"] = 0
+            return True
         elif status == "Resting":
             if self.status_effects.get("Sleepless"):
-                return
+                return False
+            if self.status_effects.get("Resting", 0) > 0 or self.status_effects.get("Sleep", 0) > 0:
+                if not from_damaging_move and game:
+                    game.log_message(f"{self.name} is already sleeping.")
+                return False
             self.status_effects["Resting"] = 3
-            game.log_message(f"{self.name} went to sleep!")
+            if game:
+                game.log_message(f"{self.name} went to sleep!")
+            return True
         elif status in ("Paralysis", "Paralyzed"):
+            if self.status_effects.get("Paralysis", 0) > 0 or self.status_effects.get("Paralyzed", 0) > 0:
+                if not from_damaging_move and game:
+                    game.log_message(f"{self.name} is already paralyzed.")
+                return False
             self.status_effects["Paralysis"] = 5
-            game.log_message(f"{self.name} became paralyzed!")
+            if game:
+                game.log_message(f"{self.name} became paralyzed!")
             self._trigger_status_popup("Paralysis", game)
+            return True
         elif status == "Poison":
+            if self.status_effects.get("Poison") or self.status_effects.get("Toxic"):
+                if not from_damaging_move and game:
+                    game.log_message(f"{self.name} is already poisoned.")
+                return False
             self.status_effects["Poison"] = True
-            game.log_message(f"{self.name} was poisoned!")
+            if game:
+                game.log_message(f"{self.name} was poisoned!")
             self._trigger_status_popup("Poison", game)
+            return True
         elif status in ("Toxic", "Toxic Poison"):
+            if self.status_effects.get("Toxic") or self.status_effects.get("Poison"):
+                if not from_damaging_move and game:
+                    game.log_message(f"{self.name} is already poisoned.")
+                return False
             self.status_effects["Toxic"] = True
-            game.log_message(f"{self.name} was badly poisoned!")
+            if game:
+                game.log_message(f"{self.name} was badly poisoned!")
             self._trigger_status_popup("Toxic", game)
+            return True
         elif status == "Burn":
             if self.status_effects.get("Frozen", 0) > 0:
                 #Can't burn a frozen target or frozen cures it, let's just ignore or thaw
-                return
+                return False
             if hasattr(game, "weather") and game.weather in ("Rain", "Heavy Rain"):
                 #Rain and Heavy Rain prevent burn
-                return
+                return False
+            if self.status_effects.get("Burn"):
+                if not from_damaging_move and game:
+                    game.log_message(f"{self.name} is already burned.")
+                return False
             self.status_effects["Burn"] = True
-            game.log_message(f"{self.name} sustained a burn!")
+            if game:
+                game.log_message(f"{self.name} sustained a burn!")
             self._trigger_status_popup("Burn", game)
+            return True
         elif status == "Frozen":
             if hasattr(game, "weather") and game.weather == "Harsh Sunlight":
                 #Harsh Sunlight prevents frozen
-                return
+                return False
+            if self.status_effects.get("Frozen", 0) > 0:
+                if not from_damaging_move and game:
+                    game.log_message(f"{self.name} is already frozen.")
+                return False
             self.status_effects["Frozen"] = duration if duration is not None else random.randint(3, 6)
-            game.log_message(f"{self.name} was frozen solid!")
+            if game:
+                game.log_message(f"{self.name} was frozen solid!")
             self._trigger_status_popup("Frozen", game)
             #Being frozen cures burn
             if self.status_effects.get("Burn"):
                 self.cure_status("Burn", game)
+            return True
         elif status == "Flinch":
+            if self.status_effects.get("Flinch", 0) > 0:
+                if not from_damaging_move and game:
+                    game.log_message(f"{self.name} is already flinching.")
+                return False
             self.status_effects["Flinch"] = 1
-            game.log_message(f"{self.name} flinched!")
+            if game:
+                game.log_message(f"{self.name} flinched!")
             self._trigger_status_popup("Flinch", game)
+            return True
         elif status == "Petrified":
+            val_petr = self.status_effects.get("Petrified", 0)
+            if val_petr > 0 or val_petr == -1:
+                if not from_damaging_move and game:
+                    game.log_message(f"{self.name} is already petrified.")
+                return False
             is_team = hasattr(game, "party") and self in game.party
             self.status_effects["Petrified"] = 20 if is_team else -1
-            game.log_message(f"{self.name} became petrified!")
+            if game:
+                game.log_message(f"{self.name} became petrified!")
             self._trigger_status_popup("Petrified", game)
+            return True
         elif status == "Confusion":
             if self.status_effects.get("Confusion", 0) > 0:
-                game.log_message(f"{self.name} is already confused.")
-                return
+                if not from_damaging_move and game:
+                    game.log_message(f"{self.name} is already confused.")
+                return False
             self.status_effects["Confusion"] = duration if duration is not None else random.randint(6, 10)
-            game.log_message(f"{self.name} became confused!")
+            if game:
+                game.log_message(f"{self.name} became confused!")
             self._trigger_status_popup("Confusion", game)
+            return True
         elif status == "Leech Seed":
+            if self.status_effects.get("Leech Seed", 0) > 0:
+                if not from_damaging_move and game:
+                    game.log_message(f"{self.name} is already seeded.")
+                return False
             self.status_effects["Leech Seed"] = duration if duration is not None else random.randint(6, 9)
-            game.log_message(f"{self.name} was seeded!")
+            if game:
+                game.log_message(f"{self.name} was seeded!")
             self._trigger_status_popup("Leech Seed", game)
+            return True
         elif status == "Sleepless":
+            if self.status_effects.get("Sleepless"):
+                if not from_damaging_move and game:
+                    game.log_message(f"{self.name} is already sleepless.")
+                return False
             self.status_effects["Sleepless"] = True
-            game.log_message(f"{self.name} became sleepless!")
+            if game:
+                game.log_message(f"{self.name} became sleepless!")
             self.napping = False
             if self.status_effects.get("Sleep", 0) > 0:
                 self.cure_status("Sleep", game)
@@ -1353,206 +1424,462 @@ class Pokemon:
                 self.cure_status("Drowsy", game)
             if self.status_effects.get("Resting", 0) > 0:
                 self.cure_status("Resting", game, early=True)
+            return True
         elif status == "Fire Spin":
             self.status_effects["Fire Spin"] = duration if duration is not None else random.randint(2, 5)
-            game.log_message(f"{self.name} became trapped by Fire Spin!")
+            if game:
+                game.log_message(f"{self.name} became trapped by Fire Spin!")
+            return True
         elif status == "Protect":
+            if self.status_effects.get("Protect", 0) > 0:
+                if not from_damaging_move and game:
+                    game.log_message(f"{self.name} is already under protection.")
+                return False
             self.status_effects["Protect"] = duration if duration is not None else 1
-            game.log_message(f"{self.name} protected itself!")
+            if game:
+                game.log_message(f"{self.name} protected itself!")
+            return True
         elif status == "Safeguard":
+            if self.status_effects.get("Safeguard", 0) > 0:
+                if not from_damaging_move and game:
+                    game.log_message(f"{self.name} is already protected by Safeguard.")
+                return False
             self.status_effects["Safeguard"] = duration if duration is not None else random.randint(10, 15)
-            game.log_message(f"{self.name} is protected by Safeguard!")
+            if game:
+                game.log_message(f"{self.name} is protected by Safeguard!")
+            return True
         elif status == "Slow":
             self.change_movement_speed(-1, game)
+            return True
         elif status == "2x Speed":
             self.change_movement_speed(self.movement_speed_stage + 1, game)
+            return True
         elif status == "3x Speed":
             self.change_movement_speed(self.movement_speed_stage + 2, game)
+            return True
         elif status == "4x Speed":
             self.change_movement_speed(self.movement_speed_stage + 3, game)
+            return True
         elif status == "Laser Focus":
+            if self.status_effects.get("Laser Focus"):
+                if not from_damaging_move and game:
+                    game.log_message(f"{self.name} is already focusing.")
+                return False
             self.status_effects["Laser Focus"] = True
-            game.log_message(f"{self.name} focused its sights!")
+            if game:
+                game.log_message(f"{self.name} focused its sights!")
+            return True
         elif status == "Focus Energy":
+            if self.status_effects.get("Focus Energy", 0) > 0:
+                if not from_damaging_move and game:
+                    game.log_message(f"{self.name} is already getting pumped.")
+                return False
             self.status_effects["Focus Energy"] = duration if duration is not None else 3
-            game.log_message(f"{self.name} is getting pumped!")
+            if game:
+                game.log_message(f"{self.name} is getting pumped!")
+            return True
         elif status == "Charging":
             self.status_effects["Charging"] = duration if duration is not None else 1
             if game:
                 game.log_message(f"{self.name} began charging power!")
+            return True
         elif status == "Wrapping":
             dur = duration if duration is not None else random.randint(2, 5)
             self.status_effects["Wrapping"] = dur
             self.status_effects["Wrap"] = dur
+            return True
         elif status in ("Wrap", "Wrapped"):
             dur = duration if duration is not None else random.randint(2, 5)
             self.status_effects["Wrapped"] = dur
             self.status_effects["Wrap"] = dur
-            game.log_message(f"{self.name} was wrapped!")
+            if game:
+                game.log_message(f"{self.name} was wrapped!")
+            return True
         elif status == "Light Screen":
+            if self.status_effects.get("Light Screen", 0) > 0:
+                if not from_damaging_move and game:
+                    game.log_message(f"{self.name} is already protected by Light Screen.")
+                return False
             self.status_effects["Light Screen"] = duration if duration is not None else 10
-            game.log_message(f"{self.name} is protected by Light Screen!")
+            if game:
+                game.log_message(f"{self.name} is protected by Light Screen!")
+            return True
         elif status == "Reflect":
+            if self.status_effects.get("Reflect", 0) > 0:
+                if not from_damaging_move and game:
+                    game.log_message(f"{self.name} is already protected by Reflect.")
+                return False
             self.status_effects["Reflect"] = duration if duration is not None else 10
-            game.log_message(f"{self.name} is protected by Reflect!")
+            if game:
+                game.log_message(f"{self.name} is protected by Reflect!")
+            return True
         elif status == "Sand Tomb":
             self.status_effects["Sand Tomb"] = duration if duration is not None else random.randint(2, 5)
-            game.log_message(f"{self.name} became trapped by Sand Tomb!")
+            if game:
+                game.log_message(f"{self.name} became trapped by Sand Tomb!")
+            return True
         elif status == "Digging":
             self.status_effects["Digging"] = duration if duration is not None else 1
-            game.log_message(f"{self.name} dug a hole!")
+            if game:
+                game.log_message(f"{self.name} dug a hole!")
+            return True
         elif status == "Encore":
+            if self.status_effects.get("Encore", 0) > 0:
+                if not from_damaging_move and game:
+                    game.log_message(f"{self.name} already has an Encore!")
+                return False
             self.status_effects["Encore"] = duration if duration is not None else random.randint(5, 8)
-            game.log_message(f"{self.name} received an Encore!")
+            if game:
+                game.log_message(f"{self.name} received an Encore!")
+            return True
         elif status == "Magnet Rise":
+            if self.status_effects.get("Magnet Rise", 0) > 0:
+                if not from_damaging_move and game:
+                    game.log_message(f"{self.name} is already levitating.")
+                return False
             self.status_effects["Magnet Rise"] = duration if duration is not None else 5
-            game.log_message(f"{self.name} levitated with Magnet Rise!")
+            if game:
+                game.log_message(f"{self.name} levitated with Magnet Rise!")
+            return True
         elif status == "Telekinesis":
+            if self.status_effects.get("Telekinesis", 0) > 0:
+                if not from_damaging_move and game:
+                    game.log_message(f"{self.name} is already floating.")
+                return False
             self.status_effects["Telekinesis"] = duration if duration is not None else 3
-            game.log_message(f"{self.name} was floated by Telekinesis!")
+            if game:
+                game.log_message(f"{self.name} was floated by Telekinesis!")
+            return True
         elif status == "Stuck":
+            if self.status_effects.get("Stuck", 0) > 0:
+                if not from_damaging_move and game:
+                    game.log_message(f"{self.name} is already stuck.")
+                return False
             self.status_effects["Stuck"] = duration if duration is not None else random.randint(5, 7)
-            game.log_message(f"{self.name} became stuck!")
+            if game:
+                game.log_message(f"{self.name} became stuck!")
+            return True
         elif status == "Quick Guard":
             self.status_effects["Quick Guard"] = duration if duration is not None else 1
-            game.log_message(f"{self.name} is protected by Quick Guard!")
+            if game:
+                game.log_message(f"{self.name} is protected by Quick Guard!")
+            return True
         elif status == "Wide Guard":
             self.status_effects["Wide Guard"] = duration if duration is not None else 1
-            game.log_message(f"{self.name} is protected by Wide Guard!")
+            if game:
+                game.log_message(f"{self.name} is protected by Wide Guard!")
+            return True
         elif status == "Vital Throw":
             self.status_effects["Vital Throw"] = duration if duration is not None else random.randint(15, 20)
-            game.log_message(f"{self.name} readied Vital Throw!")
+            if game:
+                game.log_message(f"{self.name} readied Vital Throw!")
+            return True
         elif status == "Taunted":
+            if self.status_effects.get("Taunted"):
+                if not from_damaging_move and game:
+                    game.log_message(f"{self.name} is already taunted.")
+                return False
             self.status_effects["Taunted"] = True
-            game.log_message(f"{self.name} fell for the Taunt!")
+            if game:
+                game.log_message(f"{self.name} fell for the Taunt!")
+            return True
         elif status in ("Curse", "Cursed"):
+            if self.status_effects.get("Curse") or self.status_effects.get("Cursed"):
+                if not from_damaging_move and game:
+                    game.log_message(f"{self.name} is already cursed.")
+                return False
             self.status_effects["Curse"] = True
-            game.log_message(f"{self.name} was cursed!")
+            if game:
+                game.log_message(f"{self.name} was cursed!")
             self._trigger_status_popup("Curse", game)
+            return True
         elif status == "Decoy":
+            if self.status_effects.get("Decoy", 0) > 0:
+                if not from_damaging_move and game:
+                    game.log_message(f"{self.name} is already a Decoy.")
+                return False
             self.status_effects["Decoy"] = duration if duration is not None else 6
-            game.log_message(f"{self.name} became a Decoy!")
+            if game:
+                game.log_message(f"{self.name} became a Decoy!")
+            return True
         elif status == "Pierce Throw":
+            if self.status_effects.get("Pierce Throw"):
+                if not from_damaging_move and game:
+                    game.log_message(f"{self.name} already has Pierce Throw.")
+                return False
             self.status_effects["Pierce Throw"] = True
-            game.log_message(f"{self.name} gained Pierce Throw status!")
+            if game:
+                game.log_message(f"{self.name} gained Pierce Throw status!")
+            return True
         elif status == "Rebound":
+            if self.status_effects.get("Rebound", 0) > 0:
+                if not from_damaging_move and game:
+                    game.log_message(f"{self.name} already has Rebound status.")
+                return False
             self.status_effects["Rebound"] = duration if duration is not None else 10
-            game.log_message(f"{self.name} gained Rebound status!")
+            if game:
+                game.log_message(f"{self.name} gained Rebound status!")
+            return True
         elif status == "Cowering":
+            if self.status_effects.get("Cowering", 0) > 0:
+                if not from_damaging_move and game:
+                    game.log_message(f"{self.name} is already cowering.")
+                return False
             self.status_effects["Cowering"] = duration if duration is not None else random.randint(4, 6)
-            game.log_message(f"{self.name} began cowering!")
+            if game:
+                game.log_message(f"{self.name} began cowering!")
+            return True
         elif status == "Silenced":
+            if self.status_effects.get("Silenced", 0) > 0:
+                if not from_damaging_move and game:
+                    game.log_message(f"{self.name} is already silenced.")
+                return False
             self.status_effects["Silenced"] = duration if duration is not None else random.randint(5, 8)
-            game.log_message(f"{self.name} was silenced!")
+            if game:
+                game.log_message(f"{self.name} was silenced!")
+            return True
         elif status == "Snatch":
+            if self.status_effects.get("Snatch", 0) > 0:
+                if not from_damaging_move and game:
+                    game.log_message(f"{self.name} is already waiting to Snatch!")
+                return False
             self.status_effects["Snatch"] = duration if duration is not None else random.randint(10, 15)
-            game.log_message(f"{self.name} is ready to Snatch!")
+            if game:
+                game.log_message(f"{self.name} is ready to Snatch!")
+            return True
         elif status == "Landed":
             self.status_effects["Landed"] = duration if duration is not None else 1
+            return True
         elif status == "Drowsy":
             if self.status_effects.get("Sleepless") or self.status_effects.get("Sleep", 0) > 0:
-                return
+                return False
             if self.status_effects.get("Drowsy", 0) > 0:
-                game.log_message(f"{self.name} is already drowsy.")
-                return
+                if not from_damaging_move and game:
+                    game.log_message(f"{self.name} is already drowsy.")
+                return False
             self.status_effects["Drowsy"] = duration if duration is not None else 3
-            game.log_message(f"{self.name} became drowsy!")
+            if game:
+                game.log_message(f"{self.name} became drowsy!")
+            return True
         elif status == "Lock-On":
+            if self.status_effects.get("Lock-On"):
+                if not from_damaging_move and game:
+                    game.log_message(f"{self.name} is already taking aim.")
+                return False
             self.status_effects["Lock-On"] = True
-            game.log_message(f"{self.name} took aim!")
+            if game:
+                game.log_message(f"{self.name} took aim!")
+            return True
         elif status == "Aqua Ring":
+            if self.status_effects.get("Aqua Ring"):
+                if not from_damaging_move and game:
+                    game.log_message(f"{self.name} is already surrounded by a veil of water.")
+                return False
             self.status_effects["Aqua Ring"] = True
-            game.log_message(f"{self.name} surrounded itself with a veil of water!")
+            if game:
+                game.log_message(f"{self.name} surrounded itself with a veil of water!")
+            return True
         elif status == "Diving":
             self.status_effects["Diving"] = duration if duration is not None else 1
-            game.log_message(f"{self.name} dived underwater!")
+            if game:
+                game.log_message(f"{self.name} dived underwater!")
+            return True
         elif status == "Minimized":
             self.status_effects["Minimized"] = True
+            return True
         elif status == "Whirlpool":
             self.status_effects["Whirlpool"] = duration if duration is not None else random.randint(2, 5)
-            game.log_message(f"{self.name} became trapped by Whirlpool!")
+            if game:
+                game.log_message(f"{self.name} became trapped by Whirlpool!")
+            return True
         elif status == "Perishing":
             if self.status_effects.get("Perishing", 0) > 0:
-                game.log_message(f"{self.name} already heard the song!")
-                return
+                if not from_damaging_move and game:
+                    game.log_message(f"{self.name} already heard the song!")
+                return False
             self.status_effects["Perishing"] = duration if duration is not None else 5
-            game.log_message(f"{self.name} heard the Perish Song!")
+            if game:
+                game.log_message(f"{self.name} heard the Perish Song!")
+            return True
         elif status == "Counter":
+            if self.status_effects.get("Counter", 0) > 0:
+                if not from_damaging_move and game:
+                    game.log_message(f"{self.name} has already readied Counter.")
+                return False
             self.status_effects["Counter"] = duration if duration is not None else random.randint(7, 10)
-            game.log_message(f"{self.name} readied Counter!")
+            if game:
+                game.log_message(f"{self.name} readied Counter!")
+            return True
         elif status == "Destiny Bond":
             self.status_effects["Destiny Bond"] = duration if duration is not None else 6
-            game.log_message(f"{self.name} is trying to take down its foes with it!")
+            if game:
+                game.log_message(f"{self.name} is trying to take down its foes with it!")
+            return True
         elif status == "Focusing":
             self.status_effects["Focusing"] = True
-            game.log_message(f"{self.name} is focusing its mind!")
+            if game:
+                game.log_message(f"{self.name} is focusing its mind!")
+            return True
         elif status == "Mirror Coat":
+            if self.status_effects.get("Mirror Coat", 0) > 0:
+                if not from_damaging_move and game:
+                    game.log_message(f"{self.name} has already readied Mirror Coat.")
+                return False
             self.status_effects["Mirror Coat"] = duration if duration is not None else random.randint(7, 10)
-            game.log_message(f"{self.name} readied Mirror Coat!")
+            if game:
+                game.log_message(f"{self.name} readied Mirror Coat!")
+            return True
         elif status == "Endure":
+            if self.status_effects.get("Endure", 0) > 0:
+                if not from_damaging_move and game:
+                    game.log_message(f"{self.name} is already set to endure.")
+                return False
             self.status_effects["Endure"] = duration if duration is not None else random.randint(2, 3)
-            game.log_message(f"{self.name} is set to endure!")
+            if game:
+                game.log_message(f"{self.name} is set to endure!")
+            return True
         elif status == "Paused":
             self.status_effects["Paused"] = duration if duration is not None else 1
-            game.log_message(f"{self.name} must recharge!")
+            if game:
+                game.log_message(f"{self.name} must recharge!")
+            return True
         elif status == "Ingrain":
+            if self.status_effects.get("Ingrain", 0) > 0:
+                if not from_damaging_move and game:
+                    game.log_message(f"{self.name} has already planted its roots.")
+                return False
             self.status_effects["Ingrain"] = duration if duration is not None else random.randint(10, 15)
-            game.log_message(f"{self.name} planted its roots!")
-        elif status in ("Light Screen", "Reflect"):
-            self.status_effects[status] = duration if duration is not None else random.randint(5, 7)
-            game.log_message(f"{self.name}'s {status} took effect!")
+            if game:
+                game.log_message(f"{self.name} planted its roots!")
+            return True
         elif status == "Terrified":
+            if self.status_effects.get("Terrified", 0) > 0:
+                if not from_damaging_move and game:
+                    game.log_message(f"{self.name} is already terrified.")
+                return False
             self.status_effects["Terrified"] = duration if duration is not None else random.randint(10, 15)
-            game.log_message(f"{self.name} became terrified!")
+            if game:
+                game.log_message(f"{self.name} became terrified!")
             self._trigger_status_popup("Terrified", game)
+            return True
         elif status == "Blind":
+            if self.status_effects.get("Blind", 0) > 0:
+                if not from_damaging_move and game:
+                    game.log_message(f"{self.name} is already blind.")
+                return False
             self.status_effects["Blind"] = duration if duration is not None else 10
-            game.log_message(f"{self.name} was blinded!")
+            if game:
+                game.log_message(f"{self.name} was blinded!")
+            return True
         elif status == "Hallucinating":
+            if self.status_effects.get("Hallucinating", 0) > 0:
+                if not from_damaging_move and game:
+                    game.log_message(f"{self.name} is already hallucinating.")
+                return False
             self.status_effects["Hallucinating"] = duration if duration is not None else 10
-            game.log_message(f"{self.name} can't see straight!")
+            if game:
+                game.log_message(f"{self.name} can't see straight!")
+            return True
         elif status == "Sluggish":
+            if self.status_effects.get("Sluggish", 0) > 0:
+                if not from_damaging_move and game:
+                    game.log_message(f"{self.name} is already slowed.")
+                return False
             self.status_effects["Sluggish"] = duration if duration is not None else 99999
-            game.log_message(f"{self.name} was slowed!")
+            if game:
+                game.log_message(f"{self.name} was slowed!")
+            return True
         elif status == "Invisible":
+            if self.status_effects.get("Invisible", 0) > 0:
+                if not from_damaging_move and game:
+                    game.log_message(f"{self.name} is already invisible.")
+                return False
             self.status_effects["Invisible"] = duration if duration is not None else 10
-            game.log_message(f"{self.name} vanished from sight!")
+            if game:
+                game.log_message(f"{self.name} vanished from sight!")
+            return True
         elif status == "Power Toss":
+            if self.status_effects.get("Power Toss", 0) > 0:
+                if not from_damaging_move and game:
+                    game.log_message(f"{self.name} already has Power Toss.")
+                return False
             self.status_effects["Power Toss"] = duration if duration is not None else 99999
-            game.log_message(f"{self.name}'s throws became more powerful!")
+            if game:
+                game.log_message(f"{self.name}'s throws became more powerful!")
+            return True
         elif status == "Mobile":
+            if self.status_effects.get("Mobile", 0) > 0:
+                if not from_damaging_move and game:
+                    game.log_message(f"{self.name} is already mobile.")
+                return False
             self.status_effects["Mobile"] = duration if duration is not None else 99999
-            game.log_message(f"{self.name} can walk through walls!")
-        elif status == "Decoy":
-            self.status_effects["Decoy"] = duration if duration is not None else 99999
-            game.log_message(f"{self.name} became a Decoy!")
+            if game:
+                game.log_message(f"{self.name} can walk through walls!")
+            return True
         elif status == "Puppet":
             # Only intended to be obtainable by teammate Pokémon
             is_team = hasattr(game, "party") and self in game.party
             if not is_team:
-                return
+                return False
             if self.status_effects.get("Puppet", 0) > 0:
-                return
+                if not from_damaging_move and game:
+                    game.log_message(f"{self.name} is already a puppet.")
+                return False
             self.status_effects["Puppet"] = duration if duration is not None else random.randint(5, 8)
-            game.log_message(f"{self.name} became a puppet!")
+            if game:
+                game.log_message(f"{self.name} became a puppet!")
+            return True
         elif status == "Enraged":
+            if self.status_effects.get("Enraged", 0) > 0:
+                if not from_damaging_move and game:
+                    game.log_message(f"{self.name} is already enraged.")
+                return False
             self.status_effects["Enraged"] = duration if duration is not None else 5
-            game.log_message(f"{self.name} became enraged!")
+            if game:
+                game.log_message(f"{self.name} became enraged!")
+            return True
         elif status == "Biding":
             self.status_effects["Biding"] = duration if duration is not None else 3
-            game.log_message(f"{self.name} is storing energy!")
+            if game:
+                game.log_message(f"{self.name} is storing energy!")
+            return True
         elif status == "Substitute":
+            if self.status_effects.get("Substitute", 0) > 0:
+                if not from_damaging_move and game:
+                    game.log_message(f"{self.name} already has a substitute.")
+                return False
             self.status_effects["Substitute"] = duration if duration is not None else 10
-            game.log_message(f"{self.name} put in a substitute!")
+            if game:
+                game.log_message(f"{self.name} put in a substitute!")
+            return True
         elif status == "Metal Burst":
+            if self.status_effects.get("Metal Burst", 0) > 0:
+                if not from_damaging_move and game:
+                    game.log_message(f"{self.name} has already readied Metal Burst.")
+                return False
             self.status_effects["Metal Burst"] = duration if duration is not None else 99999
-            game.log_message(f"{self.name} readied Metal Burst!")
+            if game:
+                game.log_message(f"{self.name} readied Metal Burst!")
+            return True
         elif status == "Aurora Veil":
+            if self.status_effects.get("Aurora Veil", 0) > 0:
+                if not from_damaging_move and game:
+                    game.log_message(f"{self.name} is already protected by Aurora Veil.")
+                return False
             self.status_effects["Aurora Veil"] = duration if duration is not None else 20
-            game.log_message(f"{self.name} was protected by Aurora Veil!")
+            if game:
+                game.log_message(f"{self.name} was protected by Aurora Veil!")
+            return True
         elif status == "Trick Room":
+            if self.status_effects.get("Trick Room", 0) > 0:
+                if not from_damaging_move and game:
+                    game.log_message(f"{self.name} is already affected by Trick Room.")
+                return False
             self.status_effects["Trick Room"] = duration if duration is not None else 99999
-            game.log_message(f"{self.name} is affected by Trick Room!")
+            if game:
+                game.log_message(f"{self.name} is affected by Trick Room!")
+            return True
+        return False
 
     def cure_status(self, status: str, game, early: bool = False):
         """Cures a status effect from the Pokémon and prints the log message if it was active."""
