@@ -431,6 +431,7 @@ class Game:
         self.suppress_animation_delay: bool = False #TODO: Add a settings screen that allows this to be toggled at any time
         self.explosion_overlays: dict[tuple[int, int], str] = {}
         self.move_animation_overlays: dict[tuple[int, int], str] = {}
+        self.poof_overlays: dict[tuple[int, int], str] = {}
         self.exp_batching_active: bool = False
         self.pending_team_exp: int = 0
         self.pending_member_exp: dict = {}
@@ -3661,7 +3662,7 @@ class Game:
 
         for fainted in fainted_members:
             if fainted in self.party:
-                self.remove_party_member(fainted)
+                self.remove_defeated_pokemon(fainted)
 
         #Update Protect consecutive counters
         for p in list(self.party + self.spawned_pokemon):
@@ -3773,10 +3774,7 @@ class Game:
                 if int(p.current_hp) <= 0:
                     self.log_pokemon_defeat(p)
                     self.handle_enemy_defeat(p)
-                    if p in self.party:
-                        self.remove_party_member(p)
-                    if p in self.spawned_pokemon:
-                        self.spawned_pokemon.remove(p)
+                    self.remove_defeated_pokemon(p)
                     continue  #Pokémon fainted, skip duration decrement
 
             #2. Periodic weather damage (Hail, Sandstorm)
@@ -3796,10 +3794,7 @@ class Game:
                         if self.is_in_team_sight(p):
                             self.log_pokemon_defeat(p)
                         self.handle_enemy_defeat(p)
-                        if p in self.party:
-                            self.remove_party_member(p)
-                        if p in self.spawned_pokemon:
-                            self.spawned_pokemon.remove(p)
+                        self.remove_defeated_pokemon(p)
                         self.leech_seed_sources.pop(p, None)
                         continue
 
@@ -3817,10 +3812,7 @@ class Game:
                         if self.is_in_team_sight(p):
                             self.log_pokemon_defeat(p)
                         self.handle_enemy_defeat(p)
-                        if p in self.party:
-                            self.remove_party_member(p)
-                        if p in self.spawned_pokemon:
-                            self.spawned_pokemon.remove(p)
+                        self.remove_defeated_pokemon(p)
                         self.leech_seed_sources.pop(p, None)
                         continue
 
@@ -3844,10 +3836,7 @@ class Game:
                     if int(p.current_hp) <= 0:
                         self.log_pokemon_defeat(p)
                         self.handle_enemy_defeat(p, src)
-                        if p in self.party:
-                            self.remove_party_member(p)
-                        if p in self.spawned_pokemon:
-                            self.spawned_pokemon.remove(p)
+                        self.remove_defeated_pokemon(p)
                         self.leech_seed_sources.pop(p, None)
                         continue
 
@@ -3882,10 +3871,7 @@ class Game:
                             p.current_hp = 0.0
                             self.log_message(f"{p.name} perished!")
                             self.handle_enemy_defeat(p)
-                            if p in self.party:
-                                self.remove_party_member(p)
-                            elif p in self.spawned_pokemon:
-                                self.spawned_pokemon.remove(p)
+                            self.remove_defeated_pokemon(p)
                     else:
                         p.status_effects[status] = new_val
 
@@ -4182,10 +4168,7 @@ class Game:
         self.trigger_damage_flash()
         if int(attacker.current_hp) <= 0:
             self.log_pokemon_defeat(attacker)
-            if attacker in self.spawned_pokemon:
-                self.spawned_pokemon.remove(attacker)
-            elif attacker in self.party:
-                self.remove_party_member(attacker)
+            self.remove_defeated_pokemon(attacker, (ax, ay))
 
     def _has_line_of_sight(self, x1: int, y1: int, x2: int, y2: int) -> bool:
         """Returns True if there is a clear line-of-sight from (x1, y1) to (x2, y2) using Bresenham's algorithm. Used for the lighting engine"""
@@ -4733,6 +4716,61 @@ class Game:
                 if not getattr(self, "suppress_animation_delay", False):
                     time.sleep(0.1)
 
+    def play_poof_animation(self, x: int, y: int):
+        """Plays a short poofing animation when a Pokémon is defeated."""
+        if getattr(self, "other_animations", "On") == "Off":
+            return
+        if not hasattr(self, "floor") or not (0 <= x < self.floor.width and 0 <= y < self.floor.height):
+            return
+        shade_chars = ["█", "▓", "▒", "░"]
+        color = "\033[97m"
+        reset = "\033[0m"
+        is_suppressed = getattr(self, "suppress_animation_delay", False)
+        with self.animation_pause():
+            for char in shade_chars:
+                self.poof_overlays = {(x, y): f"{color}{char}{reset}"}
+                self.render()
+                if not is_suppressed:
+                    try:
+                        sys.stdout.flush()
+                    except Exception:
+                        pass
+                    time.sleep(0.06)
+            self.poof_overlays = {}
+            self.render()
+            if not is_suppressed:
+                try:
+                    sys.stdout.flush()
+                except Exception:
+                    pass
+
+    def remove_defeated_pokemon(self, pokemon: Pokemon, pos: tuple[int, int] | None = None):
+        """Removes a defeated Pokémon entity and plays the poof animation."""
+        if pokemon is None:
+            return
+        if pos is None:
+            from targeting import get_pokemon_position
+            pos = get_pokemon_position(self, pokemon)
+
+        if self.is_team_pokemon(pokemon):
+            was_visible = True
+        elif pos is not None and hasattr(self, "_compute_currently_visible"):
+            was_visible = pos in self._compute_currently_visible()
+        elif hasattr(self, "is_in_team_sight"):
+            was_visible = self.is_in_team_sight(pokemon)
+        else:
+            was_visible = True
+
+        if pokemon in self.spawned_pokemon:
+            self.spawned_pokemon.remove(pokemon)
+        elif pokemon in self.party:
+            self.remove_party_member(pokemon)
+            if pokemon in self.party:
+                return
+
+        if pos is not None and was_visible:
+            self.play_poof_animation(pos[0], pos[1])
+
     def trigger_explosion(
         self,
         center_x: int,
@@ -4872,10 +4910,7 @@ class Game:
                 self.log_pokemon_defeat(target)
                 if dummy_attacker != target and dummy_attacker in self.party and int(dummy_attacker.current_hp) > 0:
                     dummy_attacker.defeat_pokemon(target, game=self)
-                if target in self.spawned_pokemon:
-                    self.spawned_pokemon.remove(target)
-                elif target in self.party:
-                    self.remove_party_member(target)
+                self.remove_defeated_pokemon(target, (tx, ty))
 
     def play_move_animation(self, attacker: Pokemon, targets: Pokemon | list[Pokemon] | None, move: dict) -> None:
         """Plays a move's animation before damage or status effects are applied.
@@ -5195,10 +5230,7 @@ class Game:
                     self.log_message(f"{attacker.name} collided with a wall!")
                     if int(attacker.current_hp) <= 0:
                         self.log_pokemon_defeat(attacker)
-                        if attacker in self.party:
-                            self.remove_party_member(attacker)
-                        elif attacker in self.spawned_pokemon:
-                            self.spawned_pokemon.remove(attacker)
+                        self.remove_defeated_pokemon(attacker)
                 else:
                     collided_poke = None
                     for p in self.party + self.spawned_pokemon:
@@ -5212,12 +5244,7 @@ class Game:
                         for p in (attacker, collided_poke):
                             if int(p.current_hp) <= 0:
                                 self.log_pokemon_defeat(p)
-                                if p in self.party:
-                                    self.remove_party_member(p)
-                                elif p in self.spawned_pokemon:
-                                    self.spawned_pokemon.remove(p)
-                                elif p in self.spawned_pokemon:
-                                    self.spawned_pokemon.remove(p)
+                                self.remove_defeated_pokemon(p)
                     else:
                         if attacker == self.player_pokemon:
                             self.player_x, self.player_y = tx, ty
@@ -5316,10 +5343,7 @@ class Game:
                         #Once again, all negative statuses go here
                         for status in ["Sleep", "Paralysis", "Poison", "Toxic", "Burn", "Frozen", "Flinch", "Petrified", "Confusion", "Leech Seed", "Slow", "Encore", "Stuck"]:
                             p.cure_status(status, self)
-                if attacker in self.party:
-                    self.remove_party_member(attacker)
-                elif attacker in self.spawned_pokemon:
-                    self.spawned_pokemon.remove(attacker)
+                self.remove_defeated_pokemon(attacker)
             elif eff_type == "copycat":
                 if not self.last_move_used_successfully:
                     self.log_message("The move failed!")
@@ -5492,10 +5516,7 @@ class Game:
                         if int(defender.current_hp) <= 0:
                             self.log_pokemon_defeat(defender)
                             attacker.defeat_pokemon(defender, game=self)
-                            if defender in self.spawned_pokemon:
-                                self.spawned_pokemon.remove(defender)
-                            elif defender in self.party:
-                                self.remove_party_member(defender)
+                            self.remove_defeated_pokemon(defender, (lx, ly))
 
                     elif collided_pokemon is not None:
                         self.log_message(f"{defender.name} collided with {collided_pokemon.name}!")
@@ -5513,18 +5534,12 @@ class Game:
                         if int(defender.current_hp) <= 0:
                             self.log_pokemon_defeat(defender)
                             attacker.defeat_pokemon(defender, game=self)
-                            if defender in self.spawned_pokemon:
-                                self.spawned_pokemon.remove(defender)
-                            elif defender in self.party:
-                                self.remove_party_member(defender)
+                            self.remove_defeated_pokemon(defender, (lx, ly))
 
                         if int(collided_pokemon.current_hp) <= 0:
                             self.log_pokemon_defeat(collided_pokemon)
                             attacker.defeat_pokemon(collided_pokemon, game=self)
-                            if collided_pokemon in self.spawned_pokemon:
-                                self.spawned_pokemon.remove(collided_pokemon)
-                            elif collided_pokemon in self.party:
-                                self.remove_party_member(collided_pokemon)
+                            self.remove_defeated_pokemon(collided_pokemon, (cx, cy))
                 else:
                     if defender is self.player_pokemon:
                         self.player_x, self.player_y = final_x, final_y
@@ -5591,10 +5606,7 @@ class Game:
                 if int(defender.current_hp) <= 0:
                     self.log_pokemon_defeat(defender)
                     attacker.defeat_pokemon(defender, game=self)
-                    if defender in self.spawned_pokemon:
-                        self.spawned_pokemon.remove(defender)
-                    elif defender in self.party:
-                        self.remove_party_member(defender)
+                    self.remove_defeated_pokemon(defender, (tx, ty))
                     
                     if int(attacker.current_hp) > 0:
                         attacker.cure_status("Fire Spin", self)
@@ -5648,10 +5660,7 @@ class Game:
             if int(defender.current_hp) <= 0:
                 self.log_pokemon_defeat(defender)
                 attacker.defeat_pokemon(defender, game=self)
-                if defender in self.spawned_pokemon:
-                    self.spawned_pokemon.remove(defender)
-                elif defender in self.party:
-                    self.remove_party_member(defender)
+                self.remove_defeated_pokemon(defender, (tx, ty))
                 
                 if int(attacker.current_hp) > 0:
                     attacker.cure_status("Wrapping", self)
@@ -5719,10 +5728,7 @@ class Game:
                 if int(defender.current_hp) <= 0:
                     self.log_pokemon_defeat(defender)
                     attacker.defeat_pokemon(defender, game=self)
-                    if defender in self.spawned_pokemon:
-                        self.spawned_pokemon.remove(defender)
-                    elif defender in self.party:
-                        self.remove_party_member(defender)
+                    self.remove_defeated_pokemon(defender, (tx, ty))
                     
                     if int(attacker.current_hp) > 0:
                         attacker.cure_status("Sand Tomb", self)
@@ -5787,10 +5793,7 @@ class Game:
                 if int(defender.current_hp) <= 0:
                     self.log_pokemon_defeat(defender)
                     attacker.defeat_pokemon(defender, game=self)
-                    if defender in self.spawned_pokemon:
-                        self.spawned_pokemon.remove(defender)
-                    elif defender in self.party:
-                        self.remove_party_member(defender)
+                    self.remove_defeated_pokemon(defender, (tx, ty))
                     
                     if int(attacker.current_hp) > 0:
                         attacker.cure_status("Whirlpool", self)
@@ -6890,10 +6893,7 @@ class Game:
 
                 if int(attacker.current_hp) <= 0:
                     self.log_pokemon_defeat(attacker)
-                    if attacker in self.party:
-                        self.remove_party_member(attacker)
-                    elif attacker in self.spawned_pokemon:
-                        self.spawned_pokemon.remove(attacker)
+                    self.remove_defeated_pokemon(attacker, (tx, ty))
             else:
                 attacker.change_movement_speed(attacker.movement_speed_stage - 1, self)
                 attacker.apply_stat_modifier("Attack", 1, self)
@@ -6938,10 +6938,7 @@ class Game:
                     enemy.stat_modifiers[stat] = -6
                 self.log_message(f"{enemy.name}'s stats fell severely!")
 
-            if attacker in self.party:
-                self.remove_party_member(attacker)
-            elif attacker in self.spawned_pokemon:
-                self.spawned_pokemon.remove(attacker)
+            self.remove_defeated_pokemon(attacker, (ax, ay))
             return
 
         #Yawn custom handling
@@ -7167,10 +7164,7 @@ class Game:
                 if int(defender.current_hp) <= 0:
                     self.log_pokemon_defeat(defender)
                     attacker.defeat_pokemon(defender, game=self)
-                    if defender in self.spawned_pokemon:
-                        self.spawned_pokemon.remove(defender)
-                    elif defender in self.party:
-                        self.remove_party_member(defender)
+                    self.remove_defeated_pokemon(defender, (tx, ty))
 
             #Reset stockpile charges and stats (always happens, even on a miss!)
             attacker.status_effects["Stockpile"] = 0
@@ -7278,10 +7272,7 @@ class Game:
 
             self.log_message("It's a one-hit KO!")
             attacker.defeat_pokemon(defender, game=self)
-            if defender in self.spawned_pokemon:
-                self.spawned_pokemon.remove(defender)
-            elif defender in self.party:
-                self.remove_party_member(defender)
+            self.remove_defeated_pokemon(defender, (tx, ty))
 
             if attacker.status_effects.get("Laser Focus"):
                 attacker.cure_status("Laser Focus", self)
@@ -7364,10 +7355,7 @@ class Game:
             if int(defender.current_hp) <= 0:
                 self.log_pokemon_defeat(defender)
                 attacker.defeat_pokemon(defender, game=self)
-                if defender in self.spawned_pokemon:
-                    self.spawned_pokemon.remove(defender)
-                elif defender in self.party:
-                    self.remove_party_member(defender)
+                self.remove_defeated_pokemon(defender, (tx, ty))
 
             #Remove laser focus
             if attacker.status_effects.get("Laser Focus"):
@@ -7444,10 +7432,7 @@ class Game:
             if int(defender.current_hp) <= 0:
                 self.log_pokemon_defeat(defender)
                 attacker.defeat_pokemon(defender, game=self)
-                if defender in self.spawned_pokemon:
-                    self.spawned_pokemon.remove(defender)
-                elif defender in self.party:
-                    self.remove_party_member(defender)
+                self.remove_defeated_pokemon(defender, (tx, ty))
 
             #Laser Focus wears off
             if attacker.status_effects.get("Laser Focus"):
@@ -7537,10 +7522,7 @@ class Game:
                 if int(defender.current_hp) <= 0:
                     self.log_pokemon_defeat(defender)
                     attacker.defeat_pokemon(defender, game=self)
-                    if defender in self.spawned_pokemon:
-                        self.spawned_pokemon.remove(defender)
-                    elif defender in self.party:
-                        self.remove_party_member(defender)
+                    self.remove_defeated_pokemon(defender, (tx, ty))
                     break
 
                 curr_power *= 2
@@ -7631,10 +7613,7 @@ class Game:
                 if int(defender.current_hp) <= 0:
                     self.log_pokemon_defeat(defender)
                     attacker.defeat_pokemon(defender, game=self)
-                    if defender in self.spawned_pokemon:
-                        self.spawned_pokemon.remove(defender)
-                    elif defender in self.party:
-                        self.remove_party_member(defender)
+                    self.remove_defeated_pokemon(defender, (tx, ty))
                     break
 
                 curr_power *= 2
@@ -7904,10 +7883,7 @@ class Game:
                                         break
                                     self.log_pokemon_defeat(attacker)
                                     self.handle_enemy_defeat(attacker)
-                                    if attacker in self.party:
-                                        self.remove_party_member(attacker)
-                                    elif attacker in self.spawned_pokemon:
-                                        self.spawned_pokemon.remove(attacker)
+                                    self.remove_defeated_pokemon(attacker)
                                     break
 
                 #Handle Counter physical damage reflection
@@ -7930,10 +7906,7 @@ class Game:
                             break
                         self.log_pokemon_defeat(attacker)
                         self.handle_enemy_defeat(attacker, defender)
-                        if attacker in self.spawned_pokemon:
-                            self.spawned_pokemon.remove(attacker)
-                        elif attacker in self.party:
-                            self.remove_party_member(attacker)
+                        self.remove_defeated_pokemon(attacker, (ax, ay))
                         break
 
                 #Handle Mirror Coat special damage reflection
@@ -7956,10 +7929,7 @@ class Game:
                             break
                         self.log_pokemon_defeat(attacker)
                         self.handle_enemy_defeat(attacker, defender)
-                        if attacker in self.spawned_pokemon:
-                            self.spawned_pokemon.remove(attacker)
-                        elif attacker in self.party:
-                            self.remove_party_member(attacker)
+                        self.remove_defeated_pokemon(attacker, (ax, ay))
                         break
 
                 #Handle Metal Burst damage reflection
@@ -7993,10 +7963,7 @@ class Game:
                             else:
                                 self.log_pokemon_defeat(enemy)
                                 self.handle_enemy_defeat(enemy, defender)
-                                if enemy in self.spawned_pokemon:
-                                    self.spawned_pokemon.remove(enemy)
-                                elif enemy in self.party:
-                                    self.remove_party_member(enemy)
+                                self.remove_defeated_pokemon(enemy, (ex, ey))
 
                 if int(defender.current_hp) <= 0:
                     self.log_pokemon_defeat(defender)
@@ -8012,17 +7979,14 @@ class Game:
                                 attacker.team_attackers = set()
                             attacker.team_attackers.add(defender)
                         self.handle_enemy_defeat(attacker, defender)
-                        if attacker in self.spawned_pokemon:
-                            self.spawned_pokemon.remove(attacker)
-                        elif attacker in self.party:
-                            self.remove_party_member(attacker)
+                        self.remove_defeated_pokemon(attacker)
                     if move.get("name") == "Fell Stinger":
                         attacker.apply_stat_modifier("Attack", 2, self)
                     if move.get("name") == "Smack Down":
                         if defender.status_effects.get("Magnet Rise", 0) > 0:
                             defender.cure_status("Magnet Rise", self)
+                    tx, ty = get_pokemon_position(self, defender)
                     if move.get("name") == "Pay Day":
-                        tx, ty = get_pokemon_position(self, defender)
                         money_item = {
                             "name": "Poké",
                             "type": "Money",
@@ -8036,10 +8000,7 @@ class Game:
                             "drop_percentage": 0
                         }
                         self.place_item_on_floor(tx, ty, money_item)
-                    if defender in self.spawned_pokemon:
-                        self.spawned_pokemon.remove(defender)
-                    elif defender in self.party:
-                        self.remove_party_member(defender)
+                    self.remove_defeated_pokemon(defender, (tx, ty))
                     break
 
             if multi_hit_effect and actual_hits > 0:
@@ -9406,8 +9367,7 @@ class Game:
                         ex, ey = get_pokemon_position(self, target_enemy)
                         target_enemy.cannot_be_revived = True
                         target_enemy.current_hp = 0
-                        if target_enemy in self.spawned_pokemon:
-                            self.spawned_pokemon.remove(target_enemy)
+                        self.remove_defeated_pokemon(target_enemy, (ex, ey))
                         self.spawn_random_item_at(ex, ey)
                         self.log_message(f"{target_enemy.name} was turned into an item!")
 
@@ -9458,10 +9418,7 @@ class Game:
                 else:
                     self.player_pokemon.defeat_pokemon(target, game=self)
 
-                if target in self.spawned_pokemon:
-                    self.spawned_pokemon.remove(target)
-                elif target in self.party:
-                    self.remove_party_member(target)
+                self.remove_defeated_pokemon(target, (tx, ty))
         finally:
             if suppressed_here:
                 self.suppress_target_logs = False
@@ -14217,13 +14174,13 @@ class Game:
         #Create a mapping from position to pokemon on floor (for spawned pokemon)
         spawned_map = {}
         for p in self.spawned_pokemon:
-            if hasattr(p, "x") and hasattr(p, "y") and int(getattr(p, "current_hp", 0)) > 0:
+            if hasattr(p, "x") and hasattr(p, "y"):
                 spawned_map[(p.x, p.y)] = p
 
         #Create a mapping from position to (ally_pokemon, slot_str) for non-leader party members
         ally_map = {}
         for idx, ally in enumerate(self.party):
-            if ally is not self.player_pokemon and not getattr(ally, "is_leader", False) and int(getattr(ally, "current_hp", 0)) > 0:
+            if ally is not self.player_pokemon and not getattr(ally, "is_leader", False):
                 ax, ay = get_pokemon_position(self, ally)
                 slot_num = idx + 1
                 slot_str = str(slot_num) if slot_num < 10 else str(slot_num % 10) #Indices start at zero
@@ -14313,7 +14270,9 @@ class Game:
 
                 #Animation overlays
                 anim = self.flying_item_animation
-                if (src_x, src_y) in getattr(self, "explosion_overlays", {}):
+                if (src_x, src_y) in getattr(self, "poof_overlays", {}):
+                    row_chars.append(self.poof_overlays[(src_x, src_y)])
+                elif (src_x, src_y) in getattr(self, "explosion_overlays", {}):
                     row_chars.append(self.explosion_overlays[(src_x, src_y)])
                 elif (src_x, src_y) in getattr(self, "move_animation_overlays", {}) and (src_x, src_y) in currently_visible:
                     row_chars.append(self.move_animation_overlays[(src_x, src_y)])
@@ -14361,26 +14320,25 @@ class Game:
                 elif ((src_x, src_y) in currently_visible or getattr(self, "radar_active", False)) and (src_x, src_y) in spawned_map:
                     is_hallucinating = bool(getattr(self.player_pokemon, "status_effects", {}).get("Hallucinating", 0) > 0)
                     poke = spawned_map[(src_x, src_y)]
-                    if int(getattr(poke, "current_hp", 0)) > 0:
-                        if is_hallucinating:
-                            fake_p = random.choice(self.pokemon_db) if self.pokemon_db else {"name": "Eevee", "types": ["Normal"]}
-                            fake_type = fake_p.get("types", ["Normal"])[0] if fake_p.get("types") else "Normal"
-                            color = TYPE_COLORS.get(fake_type, "\033[37m")
-                            if (src_x, src_y) in currently_visible:
-                                row_chars.append(f"{color}{fake_p['name'][0]}\033[0m")
-                            else:
-                                row_chars.append(f"\033[91m{fake_p['name'][0]}\033[0m")
-                        elif poke.status_effects.get("Substitute", 0) > 0:
-                            row_chars.append("\033[94m?\033[0m")
-                        elif poke.status_effects.get("Decoy", 0) > 0 and not getattr(poke, "is_leader", False):
-                            row_chars.append("\033[92m?\033[0m")
+                    if is_hallucinating:
+                        fake_p = random.choice(self.pokemon_db) if self.pokemon_db else {"name": "Eevee", "types": ["Normal"]}
+                        fake_type = fake_p.get("types", ["Normal"])[0] if fake_p.get("types") else "Normal"
+                        color = TYPE_COLORS.get(fake_type, "\033[37m")
+                        if (src_x, src_y) in currently_visible:
+                            row_chars.append(f"{color}{fake_p['name'][0]}\033[0m")
                         else:
-                            primary_type = poke.species_data["types"][0] if "types" in poke.species_data and poke.species_data["types"] else "Typeless"
-                            color = TYPE_COLORS.get(primary_type, "\033[37m")
-                            if (src_x, src_y) in currently_visible:
-                                row_chars.append(f"{color}{poke.name[0]}\033[0m")
-                            else:
-                                row_chars.append(f"\033[91m{poke.name[0]}\033[0m")
+                            row_chars.append(f"\033[91m{fake_p['name'][0]}\033[0m")
+                    elif poke.status_effects.get("Substitute", 0) > 0:
+                        row_chars.append("\033[94m?\033[0m")
+                    elif poke.status_effects.get("Decoy", 0) > 0 and not getattr(poke, "is_leader", False):
+                        row_chars.append("\033[92m?\033[0m")
+                    else:
+                        primary_type = poke.species_data["types"][0] if "types" in poke.species_data and poke.species_data["types"] else "Typeless"
+                        color = TYPE_COLORS.get(primary_type, "\033[37m")
+                        if (src_x, src_y) in currently_visible:
+                            row_chars.append(f"{color}{poke.name[0]}\033[0m")
+                        else:
+                            row_chars.append(f"\033[91m{poke.name[0]}\033[0m")
                 elif (src_x, src_y) in currently_visible:
                     is_hallucinating = bool(getattr(self.player_pokemon, "status_effects", {}).get("Hallucinating", 0) > 0)
                     if (src_x, src_y) == getattr(self, "stairs_position", None):
