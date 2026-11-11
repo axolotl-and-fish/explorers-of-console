@@ -16071,9 +16071,16 @@ class Game:
                             if len(eligible) == 1:
                                 target_sp = eligible[0]["to"]
                                 req_item = eligible[0].get("item", eligible[0].get("evolution_item"))
+                                self.start_player_action()
                                 target.evolve(target_sp, game=self, consumed_item_name=req_item)
                                 self.summary_context_menu_state = None
-                                self.render()
+                                self.active_status_pokemon = None
+                                self.summary_scroll_offset = 0
+                                self.on_turn_completed()
+                                if self.message_log.has_pending():
+                                    self.process_messages()
+                                else:
+                                    self.render()
                                 return
                             elif len(eligible) > 1:
                                 context_state["mode"] = "evolve_select"
@@ -16129,9 +16136,16 @@ class Game:
                             if e["to"] == chosen_sp:
                                 req_item = e.get("item", e.get("evolution_item"))
                                 break
+                        self.start_player_action()
                         target.evolve(chosen_sp, game=self, consumed_item_name=req_item)
                         self.summary_context_menu_state = None
-                        self.render()
+                        self.active_status_pokemon = None
+                        self.summary_scroll_offset = 0
+                        self.on_turn_completed()
+                        if self.message_log.has_pending():
+                            self.process_messages()
+                        else:
+                            self.render()
                         return
                 if action == game_input.QUIT:
                     context_state["mode"] = "menu"
