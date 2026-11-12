@@ -954,10 +954,20 @@ class Game:
             return 18
         return 0
 
+    def _get_weather_bounds(self) -> tuple[int, int, int]:
+        """Returns (min_x, max_x, height) covering the full map window in dungeon-relative coordinates."""
+        w_floor = getattr(self.floor, "width", 56) if hasattr(self, "floor") and self.floor else 56
+        h_floor = getattr(self.floor, "height", 32) if hasattr(self, "floor") and self.floor else 32
+        map_w = max(56, w_floor)
+        pad_left = (56 - w_floor) // 2 if w_floor < 56 else 0
+        min_x = -pad_left
+        max_x = min_x + map_w - 1
+        h = max(32, h_floor)
+        return min_x, max_x, h
+
     def create_weather_particle(self, weather: str, x: int | None = None, y: int | None = None) -> dict | None:
         """Creates a single particle dict for the given weather"""
-        w = getattr(self.floor, "width", 56) if hasattr(self, "floor") and self.floor else 56
-        h = getattr(self.floor, "height", 32) if hasattr(self, "floor") and self.floor else 32
+        min_x, max_x, h = self._get_weather_bounds()
 
         if weather in ("Rain", "Heavy Rain", "Thunderstorm"):
             char = ","
@@ -965,7 +975,7 @@ class Game:
             is_fast = weather in ("Heavy Rain", "Thunderstorm")
             dy = 2 if is_fast else 1
             dx = random.choice([-2, -1, 0, 1, 2]) if is_fast else random.choice([-1, 0, 1])
-            spawn_x = random.randint(0, max(0, w - 1)) if x is None else x
+            spawn_x = random.randint(min_x, max_x) if x is None else x
             spawn_y = 0 if y is None else y
             return {"x": spawn_x, "y": spawn_y, "char": char, "color": color, "dx": dx, "dy": dy}
         elif weather == "Hail":
@@ -973,7 +983,7 @@ class Game:
             color = "\033[97m"
             dy = 1
             dx = random.choice([-1, 0, 1])
-            spawn_x = random.randint(0, max(0, w - 1)) if x is None else x
+            spawn_x = random.randint(min_x, max_x) if x is None else x
             spawn_y = 0 if y is None else y
             return {"x": spawn_x, "y": spawn_y, "char": char, "color": color, "dx": dx, "dy": dy}
         elif weather in ("Snow", "Blizzard"):
@@ -982,7 +992,7 @@ class Game:
             is_fast = weather == "Blizzard"
             dy = 2 if is_fast else 1
             dx = random.choice([-2, -1, 0, 1, 2]) if is_fast else random.choice([-1, 0, 1])
-            spawn_x = random.randint(0, max(0, w - 1)) if x is None else x
+            spawn_x = random.randint(min_x, max_x) if x is None else x
             spawn_y = 0 if y is None else y
             return {"x": spawn_x, "y": spawn_y, "char": char, "color": color, "dx": dx, "dy": dy}
         elif weather == "Sandstorm":
@@ -990,7 +1000,7 @@ class Game:
             color = "\033[93m"
             dx = random.choice([1, 2])
             dy = random.choice([-1, 0, 1])
-            spawn_x = 0 if x is None else x
+            spawn_x = min_x if x is None else x
             spawn_y = random.randint(0, max(0, h - 1)) if y is None else y
             return {"x": spawn_x, "y": spawn_y, "char": char, "color": color, "dx": dx, "dy": dy}
         elif weather == "Strong Winds":
@@ -998,7 +1008,7 @@ class Game:
             color = "\033[97m"
             dx = random.choice([2, 3])
             dy = random.choice([-1, 0, 1])
-            spawn_x = 0 if x is None else x
+            spawn_x = min_x if x is None else x
             spawn_y = random.randint(0, max(0, h - 1)) if y is None else y
             return {"x": spawn_x, "y": spawn_y, "char": char, "color": color, "dx": dx, "dy": dy}
         return None
@@ -1010,13 +1020,12 @@ class Game:
             return
         if weather not in ANIMATED_PARTICLE_WEATHERS:
             return
-        w = getattr(self.floor, "width", 56) if hasattr(self, "floor") and self.floor else 56
-        h = getattr(self.floor, "height", 32) if hasattr(self, "floor") and self.floor else 32
+        min_x, max_x, h = self._get_weather_bounds()
         count = self.get_weather_particle_density(weather)
         for _ in range(count):
             p = self.create_weather_particle(
                 weather,
-                x=random.randint(0, max(0, w - 1)),
+                x=random.randint(min_x, max_x),
                 y=random.randint(0, max(0, h - 1))
             )
             if p:
@@ -1041,15 +1050,14 @@ class Game:
             self.init_weather_particles(weather)
             return
 
-        w = getattr(self.floor, "width", 56) if hasattr(self, "floor") and self.floor else 56
-        h = getattr(self.floor, "height", 32) if hasattr(self, "floor") and self.floor else 32
+        min_x, max_x, h = self._get_weather_bounds()
 
         #Advance existing particles
         remaining = []
         for p in self.weather_particles:
             p["x"] += p["dx"]
             p["y"] += p["dy"]
-            if 0 <= p["x"] < w and 0 <= p["y"] < h:
+            if min_x <= p["x"] <= max_x and 0 <= p["y"] < h:
                 remaining.append(p)
         self.weather_particles = remaining
 
@@ -14430,14 +14438,33 @@ class Game:
             pad_left = 0
             pad_right = 0
 
+        weather_particle_map = (
+            {(p["x"], p["y"]): p for p in getattr(self, "weather_particles", [])}
+            if getattr(self, "weather_animations", "On") != "Off"
+            else {}
+        )
+
+        def render_padding_strip(start_x: int, count: int, row_y: int) -> str:
+            if not weather_particle_map or count <= 0:
+                return " " * count
+            chars = []
+            for px in range(start_x, start_x + count):
+                p = weather_particle_map.get((px, row_y))
+                if p is not None:
+                    chars.append(f"{p['color']}{p['char']}\033[0m")
+                else:
+                    chars.append(" ")
+            return "".join(chars)
+
         map_interior_rows = []
-        for row in output_rows:
-            padded_row = " " * pad_left + row + " " * pad_right
+        for y, row in enumerate(output_rows):
+            padded_row = render_padding_strip(-pad_left, pad_left, y) + row + render_padding_strip(W, pad_right, y)
             map_interior_rows.append(f"│{padded_row}│")
 
         #Guarantee exactly 32 interior rows
         while len(map_interior_rows) < 32:
-            map_interior_rows.append("│" + " " * 56 + "│")
+            y = len(map_interior_rows)
+            map_interior_rows.append(f"│{render_padding_strip(-pad_left, 56, y)}│")
         map_interior_rows = map_interior_rows[:32]
 
         #Build left side screen panel
