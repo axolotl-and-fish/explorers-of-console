@@ -21,8 +21,8 @@
 								 ██                   ██                  
 							   
 						✩ Explorers of the Console ✩                          
-							     ver. 0.2.1
-							  November 7, 2026
+							     ver. 0.2.2
+							  November 12, 2026
 								  
 						2026 C437RP13 / Axolotl and Fish
 						   

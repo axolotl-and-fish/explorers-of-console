@@ -21,7 +21,7 @@ from pokemon import Pokemon  #type: ignore
 from natures import NATURES
 from message_log import MessageLog  #type: ignore
 from combat import calculate_damage
-from targeting import get_valid_targets, get_pokemon_position, get_room_tiles_at, get_confusion_targets, get_actual_target, is_ally_in_way_of_attack, is_ally_in_way_from_pos, has_clear_path, get_effective_move_range
+from targeting import get_valid_targets, get_pokemon_position, get_room_tiles_at, get_confusion_targets, get_actual_target, is_ally_in_way_of_attack, has_clear_path, get_effective_move_range
 import items
 from end_screen import EndScreenController
 
@@ -308,7 +308,7 @@ class Game:
         self.floor_timer_collapsed = False
         self.map_shake_offset = (0, 0)
         self.collapse_blanked_tiles: set[tuple[int, int]] = set()
-        self.build_string = "Beta 0.2.2-dev"
+        self.build_string = "Beta 0.2.2"
         self.message = self.build_string
         self.stairs_position = (0, 0)
         self.spawn_stairs()

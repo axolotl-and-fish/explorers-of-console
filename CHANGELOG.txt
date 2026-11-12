@@ -1,5 +1,27 @@
 		Pokémon Misery Dungeon: Explorers of the Console CHANGELOG
 ===============================================================================
+						    0.2.2 - November 12, 2026
+===============================================================================
+-----------------------------------ADDITIONS-----------------------------------
+- Pokémon now play a short "poof" animation when defeated.
+------------------------------------CHANGES------------------------------------
+- Evolving a team member now consumes a turn.
+- Cursor targeting will now default to the last Pokémon targeted where
+  applicable.
+- Status effects will no longer proc again on Pokémon that already have them.
+- Weather animations are no longer confined to the current floor width.
+-------------------------------------FIXES-------------------------------------
+- Changed the turn processing order so that damage flashes now appear *before*
+  a defeated Pokémon's entity is deleted (this is so that the new poof
+  animation looks correct)
+- Fixed screen not refreshing until the end of the next turn when the move
+  replacement screen is closed
+- Fixed defeating a Pokémon by Counter or Mirror Coat damage not awarding EXP.
+- Fixed a bug caused by the new Pokémon AI in 0.2.1 that caused ally
+  pathfinding to crap itself when encountering a corner in a corridor.
+- Fixed the stairs tile using the wrong glyph (whoops)
+- Fixed crash when using weather orbs.
+===============================================================================
 						    0.2.1 - November 7, 2026
 ===============================================================================
 Save files from 0.2.0 will not be compatible. Yeah, I know, this is the second
