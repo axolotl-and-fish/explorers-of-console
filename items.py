@@ -8,6 +8,7 @@ This code handles items, item effects and item spawning within the dungeon.
 
 import os
 import json
+import random
 import contextlib
 from data_utils import get_data_file_path
 
@@ -483,7 +484,6 @@ def apply_item_effect(item: dict, target, game, is_thrown: bool = False):
     elif name == "Grimy Food":
         if hasattr(target, "current_belly") and getattr(target, "current_belly", 0) <= getattr(target, "max_belly", 100):
             target.current_belly = min(target.max_belly, target.current_belly + 0.30 * target.max_belly)
-        import random
         if random.random() < 0.75:
             effects = [
                 "poison", "toxic", "burn", "paralysis", "confusion",
@@ -687,7 +687,6 @@ def apply_item_effect(item: dict, target, game, is_thrown: bool = False):
                     if (rx, ry) != getattr(game, "stairs_position", None):
                         valid_tiles.append((rx, ry))
         if valid_tiles:
-            import random
             wx, wy = random.choice(valid_tiles)
             game.set_poke_pos(target, wx, wy)
             game.log_message(f"{target.name} warped!")
@@ -1173,7 +1172,6 @@ def apply_item_effect(item: dict, target, game, is_thrown: bool = False):
         game.log_message("The locations of all items appeared on the map!")
 
     elif name == "Snatch Orb":
-        import random
         target.apply_status("Snatch", game, duration=random.randint(10, 15))
 
     elif name == "Stairs Orb":
@@ -1181,7 +1179,6 @@ def apply_item_effect(item: dict, target, game, is_thrown: bool = False):
         game.log_message("The location of the stairs appeared on the map!")
 
     elif name == "Transform Orb":
-        import random
         possible_species: list[dict] = []
         if hasattr(game.floor, "spawn_table") and game.floor.spawn_table:
             for s_entry in game.floor.spawn_table:
@@ -1314,7 +1311,6 @@ def apply_item_effect(item: dict, target, game, is_thrown: bool = False):
                     if max(abs(ex - px), abs(ey - py)) <= v_radius:
                         should_warp = True
                 if should_warp and valid_tiles:
-                    import random
                     wx, wy = random.choice(valid_tiles)
                     valid_tiles.remove((wx, wy))
                     game.set_poke_pos(enemy, wx, wy)
