@@ -315,6 +315,7 @@ class Game:
         self.wonder_tile_position = (0, 0) #One wonder tile per floor for now, hardcoded currently.
         self.spawn_wonder_tile()
         self.is_running = True
+        self._in_run_loop: bool = False
         self.explored_tiles: set[tuple[int, int]] = set() #For the memory system, which draws tiles seen previously in gray
         self.radar_active: bool = False #Radar Orb
         self.scanner_active: bool = False #Scanner Orb
@@ -13245,6 +13246,7 @@ class Game:
         self.player_pokemon = None
         self.party = []
         self.is_running = True
+        self._in_run_loop: bool = False
         import random
         self.title_screen_state = {
             "selected_index": 0,
@@ -13587,6 +13589,7 @@ class Game:
         self._message_log_current_turn = 1
         self._turn_messages_count = 0
         self.is_running = True
+        self._in_run_loop: bool = False
 
         self.player_pokemon = Pokemon(species_name, level=2, nickname=nickname, nature=nature, ivs=ivs, is_leader=True)
         self.player_pokemon.is_leader = True
@@ -15120,8 +15123,64 @@ class Game:
         return f"{color_code}{gauge_str}\033[0m"
 
     def prompt_forget_and_learn_move(self, pokemon: Pokemon, move_info: dict, tm_item: dict | None = None):
-        """Adds a move replacement prompt to the queue"""
+        """Adds a move replacement prompt to the queue and processes it immediately if the game loop is active."""
         self.move_replacement_queue.append((pokemon, move_info, tm_item))
+        if getattr(self, "_in_run_loop", False):
+            self.process_move_replacement_queue()
+
+    def process_move_replacement_queue(self):
+        """Processes pending move replacement prompts."""
+        if getattr(self, "_processing_move_replacement", False):
+            return
+        self._processing_move_replacement = True
+        try:
+            while getattr(self, "move_replacement_queue", None):
+                self.render()
+                try:
+                    action = game_input.get_key(timeout=None)
+                except (StopIteration, RuntimeError):
+                    self.is_running = False
+                    break
+                if action is None:
+                    continue
+                entry = self.move_replacement_queue[0]
+                pokemon, new_move = entry[0], entry[1]
+                tm_item = entry[2] if len(entry) > 2 else None
+                slot_index = None
+                if action in (game_input.USE_MOVE_1, "z", "Z", "1"):
+                    slot_index = 0
+                elif action in (game_input.USE_MOVE_2, "x", "X", "2"):
+                    slot_index = 1
+                elif action in (game_input.USE_MOVE_3, "c", "C", "3"):
+                    slot_index = 2
+                elif action in (game_input.USE_MOVE_4, "v", "V", "4"):
+                    slot_index = 3
+
+                if slot_index is not None:
+                    old_move = pokemon.moves[slot_index]
+                    is_leader = (pokemon == self.player_pokemon or getattr(pokemon, "is_leader", False))
+                    if not is_leader and new_move.get("dangerous", False):
+                        new_move["enabled"] = False
+                    else:
+                        new_move["enabled"] = True
+                    pokemon.moves[slot_index] = new_move
+                    self.move_replacement_queue.pop(0)
+                    self.log_message(f"{pokemon.name} forgot {old_move['name']} and learned {new_move['name']}!")
+                elif action in (game_input.QUIT, "\x1b", "q", "Q"):
+                    self.move_replacement_queue.pop(0)
+                    if tm_item is not None and hasattr(self, "inventory"):
+                        self.inventory.append(tm_item)
+                        if getattr(self, "inventory_sort_mode", "Unsorted") != "Unsorted":
+                            self.sort_inventory()
+                    self.log_message(f"{pokemon.name} did not learn {new_move['name']}.")
+
+            #Refresh screen once all move replacements in the queue have been handled
+            if self.message_log.has_pending():
+                self.process_messages()
+            else:
+                self.render()
+        finally:
+            self._processing_move_replacement = False
 
     def render_move_replacement_screen(self, pokemon: Pokemon, new_move: dict) -> list[str]:
         """Renders the window that appears when a Pokémon learns a move while not having any free move slots."""
@@ -15987,6 +16046,7 @@ class Game:
         except Exception:
             pass
 
+        self._in_run_loop = True
         try:
             self._run_loop()
         except (KeyboardInterrupt, SystemExit):
@@ -16001,6 +16061,7 @@ class Game:
                 self._emergency_save_path = None
             raise
         finally:
+            self._in_run_loop = False
             #Restore cursor on quit
             self._restore_cursor()
 
@@ -16030,10 +16091,10 @@ class Game:
                                 target_sp = eligible[0]["to"]
                                 req_item = eligible[0].get("item", eligible[0].get("evolution_item"))
                                 self.start_player_action()
-                                target.evolve(target_sp, game=self, consumed_item_name=req_item)
                                 self.summary_context_menu_state = None
                                 self.active_status_pokemon = None
                                 self.summary_scroll_offset = 0
+                                target.evolve(target_sp, game=self, consumed_item_name=req_item)
                                 self.on_turn_completed()
                                 if self.message_log.has_pending():
                                     self.process_messages()
@@ -16095,10 +16156,10 @@ class Game:
                                 req_item = e.get("item", e.get("evolution_item"))
                                 break
                         self.start_player_action()
-                        target.evolve(chosen_sp, game=self, consumed_item_name=req_item)
                         self.summary_context_menu_state = None
                         self.active_status_pokemon = None
                         self.summary_scroll_offset = 0
+                        target.evolve(chosen_sp, game=self, consumed_item_name=req_item)
                         self.on_turn_completed()
                         if self.message_log.has_pending():
                             self.process_messages()
@@ -16442,41 +16503,7 @@ class Game:
                 continue
 
             if getattr(self, "move_replacement_queue", None):
-                action = game_input.get_key(timeout=None)
-                if action is None:
-                    continue
-                entry = self.move_replacement_queue[0]
-                pokemon, new_move = entry[0], entry[1]
-                tm_item = entry[2] if len(entry) > 2 else None
-                slot_index = None
-                if action in (game_input.USE_MOVE_1, "z", "Z", "1"):
-                    slot_index = 0
-                elif action in (game_input.USE_MOVE_2, "x", "X", "2"):
-                    slot_index = 1
-                elif action in (game_input.USE_MOVE_3, "c", "C", "3"):
-                    slot_index = 2
-                elif action in (game_input.USE_MOVE_4, "v", "V", "4"):
-                    slot_index = 3
-                
-                if slot_index is not None:
-                    old_move = pokemon.moves[slot_index]
-                    is_leader = (pokemon == self.player_pokemon or getattr(pokemon, "is_leader", False))
-                    if not is_leader and new_move.get("dangerous", False):
-                        new_move["enabled"] = False
-                    else:
-                        new_move["enabled"] = True
-                    pokemon.moves[slot_index] = new_move
-                    self.move_replacement_queue.pop(0)
-                    self.log_message(f"{pokemon.name} forgot {old_move['name']} and learned {new_move['name']}!")
-                    self.render()
-                elif action in (game_input.QUIT, "\x1b", "q", "Q"):
-                    self.move_replacement_queue.pop(0)
-                    if tm_item is not None and hasattr(self, "inventory"):
-                        self.inventory.append(tm_item)
-                        if getattr(self, "inventory_sort_mode", "Unsorted") != "Unsorted":
-                            self.sort_inventory()
-                    self.log_message(f"{pokemon.name} did not learn {new_move['name']}.")
-                    self.render()
+                self.process_move_replacement_queue()
                 continue
 
             if getattr(self, "mimic_selection_state", None) is not None:
