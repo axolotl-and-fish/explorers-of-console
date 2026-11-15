@@ -8,6 +8,7 @@
     "accuracy": 100,
     "range": "Adjacent enemy",
     "pp_cost": 2,
+	"contact": true,
     "effects": []
   },
   {
@@ -40,6 +41,7 @@
     "range": "Enemy up to 2 tiles away",
     "pp_cost": 4,
     "effects": [],
+	"contact": true,
     "animation": "vine_whip"
   },
   {
@@ -88,6 +90,7 @@
     "accuracy": 85,
     "range": "Adjacent enemy",
     "pp_cost": 7,
+	"contact": true,
     "effects": []
   },
   {
@@ -164,6 +167,7 @@
     "accuracy": 85,
     "range": "Adjacent enemy",
     "pp_cost": 4,
+	"contact": true,
     "effects": [
       {
         "effect_type": "recoil",
@@ -286,6 +290,7 @@
     "accuracy": 100,
     "range": "Adjacent enemy",
     "pp_cost": 6,
+	"contact": true,
     "effects": [
       {
         "effect_type": "status_apply",
@@ -342,6 +347,7 @@
     "range": "Adjacent enemy",
     "pp_cost": 5,
     "effects": [],
+	"contact": true,
     "animation": "slash"
   },
   {
@@ -410,6 +416,7 @@
     "range": "Adjacent enemy",
     "pp_cost": 6,
     "sound_based": true,
+	"contact": true,
     "effects": [
       {
         "effect_type": "status_apply",
@@ -435,6 +442,7 @@
     "pp_cost": 5,
     "high_crit_ratio": true,
     "effects": [],
+    "contact": true,
     "animation": "slash"
   },
   {
@@ -498,6 +506,7 @@
     "accuracy": 100,
     "range": "Adjacent enemy",
     "pp_cost": 6,
+	"contact": true,
     "effects": [
       {
         "effect_type": "recoil",
@@ -520,6 +529,7 @@
     "accuracy": 85,
     "range": "Adjacent enemy",
     "pp_cost": 4,
+	"contact": true,
     "effects": [
       {
         "effect_type": "fire_spin",
@@ -603,6 +613,7 @@
     "accuracy": 100,
     "range": "Adjacent enemy",
     "pp_cost": 6,
+	"contact": true,
     "sound_based": true,
     "effects": [
       {
@@ -642,6 +653,7 @@
     "range": "Adjacent enemy",
     "pp_cost": 6,
     "effects": [],
+	"contact": true,
     "animation": "slash"
   },
   {
@@ -731,6 +743,7 @@
     "accuracy": 100,
     "range": "Adjacent enemy",
     "pp_cost": 6,
+	"contact": true,
     "effects": [
       {
         "effect_type": "recoil",
@@ -748,6 +761,7 @@
     "accuracy": 100,
     "range": "Adjacent enemy",
     "pp_cost": 3,
+	"contact": true,
     "effects": [
       {
         "effect_type": "rapid_spin_clear",
@@ -819,6 +833,7 @@
     "accuracy": 100,
     "range": "Adjacent enemy",
     "pp_cost": 5,
+	"contact": true,
     "sound_based": true,
     "effects": []
   },
@@ -964,6 +979,7 @@
     "range": "Adjacent enemy",
     "cuts_corners": true,
     "pp_cost": 2,
+	"contact": true,
     "effects": [
       {
         "effect_type": "status_apply",
@@ -982,6 +998,7 @@
     "accuracy": 85,
     "range": "Adjacent enemy",
     "pp_cost": 3,
+	"contact": true,
     "effects": [
       {
         "effect_type": "multi_hit",
@@ -1019,6 +1036,7 @@
     "accuracy": 100,
     "range": "Adjacent enemy",
     "pp_cost": 5,
+	"contact": true,
     "effects": [
       {
         "effect_type": "status_apply",
@@ -1098,6 +1116,7 @@
     "cuts_corners": true,
     "pp_cost": 3,
     "effects": [],
+	"contact": true,
     "animation": "quick_attack"
   },
   {
@@ -1126,6 +1145,7 @@
     "power": null,
     "accuracy": 100,
     "range": "Adjacent enemy",
+	"contact": true,
     "pp_cost": 2,
     "effects": [
       {
@@ -1145,6 +1165,7 @@
     "accuracy": 100,
     "range": "Adjacent enemy",
     "pp_cost": 2,
+	"contact": true,
     "effects": []
   },
   {
@@ -1174,6 +1195,7 @@
     "accuracy": null,
     "range": "Adjacent enemy",
     "pp_cost": 4,
+	"contact": true,
     "effects": []
   },
   {
@@ -1185,6 +1207,7 @@
     "accuracy": 100,
     "range": "Adjacent enemy",
     "pp_cost": 4,
+	"contact": true,
     "effects": [
       {
         "effect_type": "status_apply",
@@ -1222,6 +1245,7 @@
     "range": "Adjacent enemy",
     "pp_cost": 6,
     "sound_based": true,
+	"contact": true,
     "effects": [
       {
         "effect_type": "stat_change",
@@ -1241,6 +1265,7 @@
     "accuracy": 100,
     "range": "Enemy up to 2 tiles away",
     "pp_cost": 5,
+	"contact": true,
     "effects": [],
     "animation": "sucker_punch"
   },
@@ -1253,6 +1278,7 @@
     "accuracy": 100,
     "range": "Adjacent enemy",
     "pp_cost": 5,
+	"contact": true,
     "effects": [
       {
         "effect_type": "recoil",
@@ -1270,6 +1296,7 @@
     "accuracy": 100,
     "range": "Adjacent enemy",
     "pp_cost": 5,
+	"contact": true,
     "sound_based": true,
     "effects": []
   },
@@ -1282,6 +1309,7 @@
     "accuracy": 100,
     "range": "Adjacent enemy",
     "pp_cost": 2,
+	"contact": true,
     "sound_based": true,
     "effects": []
   },
@@ -1313,6 +1341,7 @@
     "accuracy": 100,
     "range": "Adjacent enemy",
     "pp_cost": 5,
+	"contact": true,
     "sound_based": true,
     "effects": []
   },
@@ -1324,6 +1353,7 @@
     "power": 80,
     "accuracy": 95,
     "high_crit_ratio": true,
+	"contact": true,
     "range": "Adjacent enemy",
     "pp_cost": 6,
     "effects": []
@@ -1337,6 +1367,7 @@
     "accuracy": 95,
     "range": "Adjacent enemy",
     "pp_cost": 6,
+	"contact": true,
     "effects": [
       {
         "effect_type": "status_apply",
@@ -1360,6 +1391,7 @@
     "accuracy": 95,
     "range": "Adjacent enemy",
     "pp_cost": 6,
+	"contact": true,
     "effects": [
       {
         "effect_type": "status_apply",
@@ -1421,6 +1453,7 @@
     "range": "Adjacent enemy",
     "cuts_corners": true,
     "pp_cost": 4,
+	"contact": true,
     "effects": [
       {
         "effect_type": "stat_change",
@@ -1557,6 +1590,7 @@
     "accuracy": null,
     "range": "Adjacent enemy",
     "pp_cost": 1,
+	"contact": true,
     "effects": [
       {
         "effect_type": "stat_change",
@@ -1575,6 +1609,8 @@
     "accuracy": 100,
     "range": "Adjacent enemy",
     "pp_cost": 6,
+	"contact": true,
+	"punching": true,
     "effects": [
       {
         "effect_type": "status_apply",
@@ -1593,6 +1629,7 @@
     "accuracy": 100,
     "range": "Adjacent enemy",
     "pp_cost": 4,
+	"contact": true,
     "effects": [
       {
         "effect_type": "status_apply",
@@ -1646,6 +1683,7 @@
     "accuracy": 75,
     "range": "Adjacent enemy",
     "pp_cost": 2,
+	"contact": true,
     "sound_based": true,
     "effects": [
       {
@@ -1664,6 +1702,7 @@
     "accuracy": 100,
     "range": "Adjacent enemy",
     "pp_cost": 3,
+	"contact": true,
     "effects": [
       {
         "effect_type": "status_apply",
@@ -1735,6 +1774,7 @@
     "accuracy": 100,
     "range": "Adjacent enemy",
     "pp_cost": 4,
+	"contact": true,
     "effects": [
       {
         "effect_type": "status_apply",
@@ -1752,6 +1792,7 @@
     "accuracy": 75,
     "range": "Adjacent enemy",
     "pp_cost": 6,
+	"contact": true,
     "effects": [
       {
         "effect_type": "stat_change",
@@ -1806,6 +1847,7 @@
     "accuracy": 95,
     "range": "Adjacent enemy",
     "pp_cost": 6,
+	"contact": true,
     "effects": [
       {
         "effect_type": "stat_change",
@@ -1874,6 +1916,7 @@
     "accuracy": 80,
     "range": "Adjacent enemy",
     "pp_cost": 3,
+	"contact": true,
     "effects": [
       {
         "effect_type": "multi_hit",
@@ -1923,6 +1966,7 @@
     "accuracy": 100,
     "range": "Adjacent enemy",
     "pp_cost": 6,
+	"contact": true,
     "effects": [
       {
         "effect_type": "stat_change",
@@ -1949,6 +1993,7 @@
     "accuracy": 100,
     "range": "Adjacent enemy",
     "pp_cost": 3,
+	"contact": true,
     "effects": [
       {
         "effect_type": "multi_hit",
@@ -1967,6 +2012,7 @@
     "accuracy": null,
     "range": "All allies in room",
     "pp_cost": 5,
+	"contact": true,
     "effects": [
       {
         "effect_type": "stat_change",
@@ -2051,6 +2097,7 @@
     "accuracy": 85,
     "range": "Adjacent enemy",
     "pp_cost": 8,
+	"contact": true,
     "effects": []
   },
   {
@@ -2080,6 +2127,7 @@
     "accuracy": 100,
     "range": "Adjacent enemy",
     "pp_cost": 3,
+	"contact": true,
     "effects": []
   },
   {
@@ -2171,6 +2219,7 @@
     "accuracy": 85,
     "range": "Straight line",
     "pp_cost": 7,
+	"contact": true,
     "effects": [
       {
         "effect_type": "stat_change",
@@ -2327,6 +2376,7 @@
     "accuracy": 90,
     "range": "Adjacent enemy",
     "pp_cost": 6,
+	"contact": true,
     "effects": [
       {
         "effect_type": "stat_change",
@@ -2345,6 +2395,7 @@
     "accuracy": 90,
     "range": "Adjacent enemy",
     "pp_cost": 4,
+	"contact": true,
     "effects": []
   },
   {
@@ -2369,6 +2420,7 @@
     "accuracy": 100,
     "range": "Adjacent enemy",
     "pp_cost": 6,
+	"contact": true,
     "effects": [
       {
         "effect_type": "status_apply",
@@ -2400,6 +2452,7 @@
     "accuracy": 100,
     "range": "Adjacent enemy",
     "pp_cost": 3,
+	"contact": true,
     "effects": [
       {
         "effect_type": "status_apply",
@@ -2417,6 +2470,7 @@
     "accuracy": 95,
     "range": "Adjacent enemy",
     "pp_cost": 6,
+	"contact": true,
     "effects": [
       {
         "effect_type": "status_apply",
@@ -2442,6 +2496,7 @@
     "cuts_corners": true,
     "high_crit_ratio": true,
     "pp_cost": 4,
+	"contact": true,
     "effects": []
   },
   {
@@ -2454,6 +2509,7 @@
     "range": "Adjacent enemy",
     "pp_cost": 5,
     "high_crit_ratio": true,
+	"contact": true,
     "effects": [
       {
         "effect_type": "status_apply",
@@ -2472,6 +2528,7 @@
     "range": "Adjacent enemy",
     "pp_cost": 5,
     "high_crit_ratio": true,
+	"contact": true,
     "effects": []
   },
   {
@@ -2483,6 +2540,7 @@
     "accuracy": 90,
     "range": "Adjacent enemy",
     "pp_cost": 6,
+	"contact": true,
     "effects": [
       {
         "effect_type": "status_apply",
@@ -2519,6 +2577,7 @@
     "range": "Adjacent enemy",
     "pp_cost": 5,
     "high_crit_ratio": true,
+	"contact": true,
     "effects": [],
     "animation": "slash"
   },
@@ -2563,6 +2622,7 @@
     "range": "Enemy up to 2 tiles away",
     "cuts_corners": true,
     "pp_cost": 3,
+	"contact": true,
     "effects": [],
     "animation": "aqua_jet"
   },
@@ -2617,6 +2677,7 @@
     "accuracy": 80,
     "range": "Adjacent enemy",
     "pp_cost": 8,
+	"contact": true,
     "high_crit_ratio": true,
     "effects": []
   },
@@ -2629,6 +2690,7 @@
     "accuracy": 80,
     "range": "Adjacent enemy",
     "pp_cost": 8,
+	"contact": true,
     "high_crit_ratio": true,
     "effects": []
   },
@@ -2641,6 +2703,7 @@
     "accuracy": 100,
     "range": "Adjacent enemy",
     "pp_cost": 6,
+	"contact": true,
     "effects": [
       {
         "effect_type": "stat_change",
@@ -2667,6 +2730,7 @@
     "accuracy": 100,
     "range": "Adjacent enemy",
     "pp_cost": 8,
+	"contact": true,
     "effects": []
   },
   {
@@ -2678,6 +2742,7 @@
     "accuracy": 100,
     "range": "Adjacent enemy",
     "pp_cost": 6,
+	"contact": true,
     "effects": [
       {
         "effect_type": "multi_hit",
@@ -2704,6 +2769,7 @@
     "cuts_corners": true,
     "pp_cost": 7,
     "effects": [],
+	"contact": true,
     "animation": "extreme_speed"
   },
   {
@@ -2735,6 +2801,7 @@
     "accuracy": 100,
     "range": "Adjacent enemy",
     "pp_cost": 4,
+	"contact": true,
     "effects": [
       {
         "effect_type": "status_apply",
@@ -2752,6 +2819,7 @@
     "accuracy": 100,
     "range": "Adjacent enemy",
     "pp_cost": 4,
+	"contact": true,
     "effects": []
   },
   {
@@ -2763,6 +2831,7 @@
     "accuracy": 50,
     "range": "Adjacent enemy",
     "pp_cost": 6,
+	"contact": true,
     "effects": [
       {
         "effect_type": "status_apply",
@@ -2893,6 +2962,7 @@
     "accuracy": 90,
     "range": "Adjacent enemy",
     "pp_cost": 6,
+	"contact": true,
     "effects": []
   },
   {
@@ -2940,6 +3010,7 @@
     "accuracy": 100,
     "range": "Adjacent enemy",
     "pp_cost": 3,
+	"contact": true,
     "effects": []
   },
   {
@@ -2951,6 +3022,7 @@
     "accuracy": 100,
     "range": "Adjacent enemy",
     "pp_cost": 3,
+	"contact": true,
     "effects": []
   },
   {
@@ -2962,6 +3034,7 @@
     "accuracy": 100,
     "range": "Adjacent enemy",
     "pp_cost": 3,
+	"contact": true,
     "effects": []
   },
   {
@@ -2973,6 +3046,7 @@
     "accuracy": 100,
     "range": "Adjacent enemy",
     "pp_cost": 3,
+	"contact": true,
     "effects": []
   },
   {
@@ -2986,6 +3060,7 @@
     "pp_cost": 3,
     "sound_based": true,
     "effects": [],
+	"contact": true,
     "animation": "bite"
   },
   {
@@ -2997,6 +3072,7 @@
     "accuracy": 90,
     "range": "Adjacent enemy",
     "pp_cost": 3,
+	"contact": true,
     "effects": [
       {
         "effect_type": "wrap"
@@ -3068,6 +3144,7 @@
     "accuracy": 100,
     "range": "Adjacent enemy",
     "pp_cost": 3,
+	"contact": true,
     "cuts_corners": true,
     "effects": []
   },
@@ -3081,6 +3158,7 @@
     "range": "Enemy up to 3 tiles away",
     "pp_cost": 3,
     "effects": [],
+	"contact": true,
     "animation": "feint"
   },
   {
@@ -3112,6 +3190,7 @@
     "accuracy": 90,
     "range": "Adjacent enemy",
     "pp_cost": 5,
+	"contact": true,
     "effects": []
   },
   {
@@ -3123,6 +3202,7 @@
     "accuracy": 85,
     "range": "Adjacent enemy",
     "pp_cost": 3,
+	"contact": true,
     "effects": [
       {
         "effect_type": "sand_tomb"
@@ -3137,7 +3217,8 @@
     "power": 80,
     "accuracy": 100,
     "range": "Adjacent enemy",
-    "pp_cost": 2,
+    "pp_cost": 4,
+	"contact": true,
     "effects": []
   },
   {
@@ -3149,6 +3230,7 @@
     "accuracy": 100,
     "range": "Adjacent enemy",
     "pp_cost": 3,
+	"contact": true,
     "effects": []
   },
   {
@@ -3302,6 +3384,7 @@
     "accuracy": 80,
     "range": "Adjacent enemy",
     "pp_cost": 1,
+	"contact": true,
     "effects": [
       {
         "effect_type": "stat_change",
@@ -3322,6 +3405,7 @@
     "cuts_corners": true,
     "range": "Adjacent enemy",
     "pp_cost": 6,
+	"contact": true,
     "effects": [],
     "animation": "slash"
   },
@@ -3376,6 +3460,7 @@
     "accuracy": 100,
     "range": "Adjacent enemy",
     "pp_cost": 5,
+	"contact": true,
     "effects": []
   },
   {
@@ -3387,6 +3472,7 @@
     "accuracy": 100,
     "range": "Adjacent enemy",
     "pp_cost": 5,
+	"contact": true,
     "effects": [
       {
         "effect_type": "stat_change",
@@ -3405,6 +3491,7 @@
     "accuracy": 100,
     "range": "Adjacent enemy",
     "pp_cost": 5,
+	"contact": true,
     "effects": []
   },
   {
@@ -3416,6 +3503,7 @@
     "accuracy": 100,
     "range": "Adjacent enemy",
     "pp_cost": 5,
+	"contact": true,
     "effects": []
   },
   {
@@ -3427,6 +3515,7 @@
     "accuracy": 100,
     "range": "Adjacent enemy",
     "pp_cost": 4,
+	"contact": true,
     "effects": [
       {
         "effect_type": "multi_hit",
@@ -3470,6 +3559,7 @@
     "high_crit_ratio": true,
     "range": "Adjacent enemy",
     "pp_cost": 8,
+	"contact": true,
     "effects": []
   },
   {
@@ -3502,6 +3592,7 @@
     "range": "Adjacent enemy",
     "pp_cost": 6,
     "high_crit_ratio": true,
+	"contact": true,
     "effects": []
   },
   {
@@ -3513,6 +3604,7 @@
     "accuracy": 75,
     "range": "Adjacent enemy",
     "pp_cost": 3,
+	"contact": true,
     "effects": []
   },
   {
@@ -3554,6 +3646,7 @@
     "range": "All enemies and allies in room",
     "pp_cost": 9,
     "effects": [],
+	"contact": true,
     "animation": "surf"
   },
   {
@@ -3601,6 +3694,7 @@
     "accuracy": 100,
     "range": "Adjacent enemy",
     "pp_cost": 4,
+	"contact": true,
     "effects": []
   },
   {
@@ -3644,6 +3738,7 @@
     "accuracy": null,
     "range": "Adjacent enemy",
     "pp_cost": 6,
+	"contact": true,
     "effects": []
   },
   {
@@ -3655,6 +3750,7 @@
     "accuracy": 100,
     "range": "Adjacent enemy",
     "pp_cost": 4,
+	"contact": true,
     "effects": [
       {
         "effect_type": "stat_change",
@@ -3674,6 +3770,7 @@
     "accuracy": 100,
     "range": "Adjacent enemy",
     "pp_cost": 6,
+	"contact": true,
     "effects": [
       {
         "effect_type": "status_apply",
@@ -3691,6 +3788,7 @@
     "accuracy": null,
     "range": "Adjacent enemy",
     "pp_cost": 1,
+	"contact": true,
     "effects": [
       {
         "effect_type": "recoil",
@@ -3826,6 +3924,7 @@
     "accuracy": 100,
     "range": "Adjacent enemy",
     "pp_cost": 7,
+	"contact": true,
     "effects": [
       {
         "effect_type": "drain"
@@ -3927,6 +4026,7 @@
     "accuracy": 100,
     "range": "Adjacent enemy",
     "pp_cost": 5,
+	"contact": true,
     "effects": [
       {
         "effect_type": "status_apply",
@@ -4019,6 +4119,7 @@
     "range": "All adjacent enemies",
     "cuts_corners": true,
     "pp_cost": 4,
+	"contact": true,
     "effects": [],
     "animation": "slash_adjacent"
   },
@@ -4031,6 +4132,7 @@
     "accuracy": 100,
     "range": "Adjacent enemy",
     "pp_cost": 1,
+	"contact": true,
     "effects": []
   },
   {
@@ -4042,6 +4144,7 @@
     "accuracy": 100,
     "range": "Adjacent enemy",
     "pp_cost": 6,
+	"contact": true,
     "cuts_corners": true,
     "effects": [
       {
@@ -4060,6 +4163,7 @@
     "accuracy": 100,
     "range": "Adjacent enemy",
     "pp_cost": 4,
+	"contact": true,
     "effects": [
       {
         "effect_type": "multi_hit",
@@ -4146,6 +4250,7 @@
     "accuracy": null,
     "range": "Adjacent enemy",
     "pp_cost": 7,
+	"contact": true,
     "effects": []
   },
   {
@@ -4176,6 +4281,7 @@
     "accuracy": null,
     "range": "Adjacent enemy",
     "pp_cost": 1,
+	"contact": true,
     "effects": [
       {
         "effect_type": "status_apply",
@@ -4240,6 +4346,7 @@
     "accuracy": 100,
     "range": "Adjacent enemy",
     "pp_cost": 5,
+	"contact": true,
     "effects": []
   },
   {
@@ -4371,6 +4478,7 @@
     "accuracy": 95,
     "range": "Adjacent enemy",
     "pp_cost": 6,
+	"contact": true,
     "effects": [
       {
         "effect_type": "stat_change",
@@ -4390,6 +4498,7 @@
     "range": "Adjacent enemy",
     "pp_cost": 3,
     "sound_based": true,
+	"contact": true,
     "effects": [
       {
         "effect_type": "status_apply",
@@ -4438,6 +4547,8 @@
     "range": "Adjacent enemy",
     "pp_cost": 4,
     "effects": [],
+	"contact": true,
+	"punching": true,
     "animation": "punch"
   },
   {
@@ -4469,6 +4580,8 @@
     "accuracy": 90,
     "range": "Adjacent enemy",
     "pp_cost": 5,
+	"contact": true,
+	"punching": true,
     "effects": [
       {
         "effect_type": "status_apply",
@@ -4488,6 +4601,7 @@
     "accuracy": 95,
     "range": "Adjacent enemy",
     "pp_cost": 3,
+	"contact": true,
     "effects": [
       {
         "effect_type": "stat_change",
@@ -4508,6 +4622,8 @@
     "accuracy": 95,
     "high_crit_ratio": true,
     "range": "Adjacent enemy",
+	"contact": true,
+	"punching": true,
     "pp_cost": 8,
     "effects": []
   },
@@ -4577,6 +4693,8 @@
     "accuracy": 100,
     "range": "Adjacent enemy",
     "pp_cost": 6,
+	"contact": true,
+	"punching": true,
     "effects": [
       {
         "effect_type": "recoil",
@@ -4595,6 +4713,7 @@
     "range": "Adjacent enemy",
     "cuts_corners": true,
     "pp_cost": 5,
+	"contact": true,
     "effects": [
       {
         "effect_type": "multi_hit",
@@ -4633,6 +4752,7 @@
     "accuracy": 100,
     "range": "Adjacent enemy",
     "pp_cost": 5,
+	"contact": true,
     "effects": []
   },
   {
@@ -4646,6 +4766,8 @@
     "cuts_corners": true,
     "pp_cost": 4,
     "effects": [],
+	"contact": true,
+	"punching": true,
     "animation": "bullet_punch"
   },
   {
@@ -4658,6 +4780,7 @@
     "range": "Adjacent enemy",
     "high_crit_ratio": true,
     "pp_cost": 7,
+	"contact": true,
     "effects": [
       {
         "effect_type": "status_apply",
@@ -4675,6 +4798,7 @@
     "accuracy": 75,
     "range": "Adjacent enemy",
     "pp_cost": 8,
+	"contact": true,
     "effects": []
   },
   {
@@ -4686,6 +4810,8 @@
     "accuracy": 100,
     "range": "Adjacent enemy",
     "pp_cost": 6,
+	"contact": true,
+	"punching": true,
     "effects": [
       {
         "effect_type": "drain"
@@ -4704,6 +4830,8 @@
     "cuts_corners": true,
     "pp_cost": 4,
     "effects": [],
+	"contact": true,
+	"punching": true,
     "animation": "mach_punch"
   },
   {
@@ -4717,6 +4845,7 @@
     "cuts_corners": true,
     "pp_cost": 4,
     "effects": [],
+	"punching": true,
     "animation": "vacuum_wave"
   },
   {
@@ -4728,6 +4857,8 @@
     "accuracy": 100,
     "range": "Adjacent enemy",
     "pp_cost": 6,
+	"contact": true,
+	"punching": true,
     "effects": [
       {
         "effect_type": "status_apply",
@@ -4746,6 +4877,8 @@
     "accuracy": 100,
     "range": "Adjacent enemy",
     "pp_cost": 6,
+	"contact": true,
+	"punching": true,
     "effects": [
       {
         "effect_type": "status_apply",
@@ -4764,6 +4897,8 @@
     "accuracy": 85,
     "range": "Adjacent enemy",
     "pp_cost": 5,
+	"contact": true,
+	"punching": true,
     "effects": [],
     "animation": "punch"
   },
@@ -4878,6 +5013,7 @@
     "accuracy": 100,
     "range": "Adjacent enemy",
     "pp_cost": 2,
+	"contact": true,
     "effects": [
       {
         "effect_type": "stat_change",
@@ -4913,6 +5049,7 @@
     "accuracy": 100,
     "range": "Adjacent enemy",
     "pp_cost": 4,
+	"contact": true,
     "effects": []
   },
   {
@@ -4924,6 +5061,7 @@
     "accuracy": 100,
     "range": "Adjacent enemy or ally",
     "pp_cost": 5,
+	"contact": true,
     "effects": []
   },
   {
@@ -4935,6 +5073,7 @@
     "accuracy": 100,
     "range": "User",
     "pp_cost": 8,
+	"contact": true,
     "effects": []
   },
   {
@@ -4946,6 +5085,7 @@
     "accuracy": 100,
     "range": "Adjacent enemy",
     "pp_cost": 10,
+	"contact": true,
     "effects": []
   },
   {
@@ -4957,6 +5097,7 @@
     "accuracy": 90,
     "range": "Adjacent enemy",
     "pp_cost": 5,
+	"contact": true,
     "effects": []
   },
   {
@@ -4969,6 +5110,7 @@
     "range": "User",
     "pp_cost": 0,
     "dangerous": true,
+	"contact": true,
     "effects": []
   },
   {
@@ -5026,6 +5168,7 @@
     "accuracy": 100,
     "range": "Adjacent enemy",
     "pp_cost": 5,
+	"contact": true,
     "effects": []
   },
   {
@@ -5068,6 +5211,7 @@
     "accuracy": null,
     "range": "User",
     "pp_cost": 5,
+	"contact": true,
     "effects": [
       {
         "effect_type": "status_apply",
@@ -5102,6 +5246,7 @@
     "accuracy": 100,
     "range": "Adjacent enemy",
     "pp_cost": 5,
+	"contact": true,
     "effects": []
   },
   {
@@ -5149,6 +5294,7 @@
     "accuracy": 100,
     "range": "Adjacent enemy",
     "pp_cost": 6,
+	"contact": true,
     "effects": [
       {
         "effect_type": "status_apply",
@@ -5296,6 +5442,7 @@
     "accuracy": 100,
     "range": "Adjacent enemy",
     "pp_cost": 3,
+	"contact": true,
     "effects": []
   },
   {
@@ -5307,6 +5454,7 @@
     "accuracy": 80,
     "range": "Adjacent enemy",
     "pp_cost": 4,
+	"contact": true,
     "effects": [
       {
         "effect_type": "recoil",
@@ -5366,6 +5514,7 @@
     "accuracy": 100,
     "range": "Adjacent enemy",
     "pp_cost": 7,
+	"contact": true,
     "effects": [
       {
         "effect_type": "stat_change",
@@ -5419,6 +5568,7 @@
     "accuracy": 95,
     "range": "Adjacent enemy",
     "pp_cost": 6,
+	"contact": true,
     "effects": []
   },
   {
@@ -5450,6 +5600,7 @@
     "accuracy": 100,
     "range": "Adjacent enemy",
     "pp_cost": 7,
+	"contact": true,
     "effects": []
   },
   {
@@ -5461,6 +5612,7 @@
     "accuracy": 90,
     "range": "Adjacent enemy",
     "pp_cost": 5,
+	"contact": true,
     "effects": []
   },
   {
@@ -5472,6 +5624,7 @@
     "accuracy": 75,
     "range": "Adjacent enemy",
     "pp_cost": 8,
+	"contact": true,
     "effects": [
       {
         "effect_type": "status_apply",
@@ -5570,6 +5723,7 @@
     "accuracy": null,
     "range": "Adjacent enemy",
     "pp_cost": 7,
+	"contact": true,
     "effects": []
   },
   {
@@ -5581,6 +5735,7 @@
     "accuracy": null,
     "range": "User",
     "pp_cost": 5,
+	"contact": true,
     "effects": []
   },
   {
@@ -5592,6 +5747,7 @@
     "accuracy": 100,
     "range": "Adjacent enemy",
     "pp_cost": 5,
+	"contact": true,
     "effects": []
   },
   {
@@ -5627,6 +5783,7 @@
     "accuracy": 85,
     "range": "Adjacent enemy",
     "pp_cost": 3,
+	"contact": true,
     "effects": [
       {
         "effect_type": "whirlpool"
@@ -5669,6 +5826,7 @@
     "pp_cost": 5,
     "cuts_corners": true,
     "effects": [],
+	"contact": true,
     "animation": "night_shade"
   },
   {
@@ -5699,6 +5857,7 @@
     "range": "Adjacent enemy",
     "pp_cost": 6,
     "cuts_corners": true,
+	"contact": true,
     "effects": [
       {
         "effect_type": "drain"
@@ -5714,6 +5873,8 @@
     "accuracy": 100,
     "range": "Adjacent enemy",
     "pp_cost": 8,
+	"contact": true,
+	"punching": true,
     "cuts_corners": true,
     "effects": []
   },
@@ -5726,6 +5887,7 @@
     "accuracy": 100,
     "range": "Adjacent enemy",
     "pp_cost": 4,
+	"contact": true,
     "effects": []
   },
   {
@@ -5737,6 +5899,7 @@
     "accuracy": null,
     "range": "Adjacent enemy",
     "pp_cost": 6,
+	"contact": true,
     "effects": []
   },
   {
@@ -5782,6 +5945,7 @@
     "accuracy": 90,
     "range": "Adjacent enemy",
     "pp_cost": 8,
+	"contact": true,
     "effects": []
   },
   {
@@ -5793,6 +5957,7 @@
     "accuracy": 90,
     "range": "Adjacent enemy",
     "pp_cost": 9,
+	"contact": true,
     "effects": [
       {
         "effect_type": "status",
@@ -5837,6 +6002,7 @@
     "range": "Room",
     "pp_cost": 3,
     "effects": [],
+	"contact": true,
     "animation": "buff_aura"
   },
   {
@@ -5848,6 +6014,7 @@
     "accuracy": 90,
     "range": "Adjacent enemy",
     "pp_cost": 8,
+	"contact": true,
     "effects": []
   },
   {
@@ -5916,6 +6083,7 @@
     "accuracy": 100,
     "range": "Adjacent enemy",
     "pp_cost": 6,
+	"contact": true,
     "always_crit": true,
     "effects": []
   },
@@ -5928,6 +6096,7 @@
     "accuracy": 100,
     "range": "Adjacent enemy",
     "pp_cost": 10,
+	"contact": true,
     "cuts_corners": true,
     "effects": []
   },
@@ -5971,6 +6140,7 @@
     "accuracy": 100,
     "range": "Adjacent enemy",
     "pp_cost": 7,
+	"contact": true,
     "effects": [
       {
         "effect_type": "status_condition",
@@ -5990,6 +6160,7 @@
     "pp_cost": 12,
     "high_crit_ratio": true,
     "charge_turns": 1,
+	"contact": true,
     "effects": [
       {
         "effect_type": "status_condition",
@@ -6031,6 +6202,7 @@
     "range": "User",
     "pp_cost": 30,
     "dangerous": true,
+	"contact": true,
     "effects": []
   },
   {
@@ -6043,6 +6215,7 @@
     "range": "User",
     "pp_cost": 25,
     "dangerous": true,
+	"contact": true,
     "effects": []
   },
   {
@@ -6107,6 +6280,7 @@
     "accuracy": 100,
     "range": "Adjacent enemy",
     "pp_cost": 6,
+	"contact": true,
     "effects": [
       {
         "effect_type": "status_apply",
@@ -6148,6 +6322,7 @@
     "accuracy": 100,
     "range": "Adjacent enemy",
     "pp_cost": 3,
+	"contact": true,
     "effects": [
       {
         "effect_type": "status_apply",
@@ -6165,6 +6340,7 @@
     "accuracy": 100,
     "range": "All adjacent enemies and allies",
     "pp_cost": 4,
+	"contact": true,
     "effects": [],
     "animation": "brutal_swing"
   },
@@ -6216,6 +6392,8 @@
     "accuracy": 100,
     "range": "Adjacent enemy",
     "pp_cost": 6,
+	"contact": true,
+	"punching": true,
     "effects": []
   },
   {
@@ -6227,6 +6405,7 @@
     "accuracy": 100,
     "range": "Adjacent enemy",
     "pp_cost": 6,
+	"contact": true,
     "effects": [
       {
         "effect_type": "stat_change",
@@ -6300,6 +6479,7 @@
     "accuracy": 100,
     "range": "Adjacent enemy",
     "pp_cost": 7,
+	"contact": true,
     "effects": [
       {
         "effect_type": "stat_change",
@@ -6350,6 +6530,7 @@
     "accuracy": 100,
     "range": "Adjacent enemy",
     "pp_cost": 4,
+	"contact": true,
     "effects": [
       {
         "effect_type": "status_apply",
@@ -6381,6 +6562,7 @@
     "range": "Adjacent enemy",
     "pp_cost": 1,
     "dangerous": true,
+	"contact": true,
     "effects": []
   },
   {
@@ -6393,6 +6575,7 @@
     "range": "Adjacent enemy",
     "pp_cost": 9,
     "charge_turns": 1,
+	"contact": true,
     "effects": []
   },
   {
@@ -6436,6 +6619,7 @@
     "range": "Adjacent enemy",
     "pp_cost": 5,
     "charge_turns": 1,
+	"contact": true,
     "effects": []
   },
   {
@@ -6522,6 +6706,7 @@
     "accuracy": null,
     "range": "Adjacent tile",
     "pp_cost": 5,
+	"contact": true,
     "effects": []
   },
   {
@@ -6576,6 +6761,7 @@
     "range": "All adjacent enemies",
     "pp_cost": 3,
     "effects": [],
+	"contact": true,
     "animation": "spin_slash"
   },
   {
@@ -6588,6 +6774,7 @@
     "range": "Adjacent enemy",
     "pp_cost": 3,
     "effects": [],
+	"contact": true,
     "animation": "wide_slash"
   },
   {
