@@ -173,28 +173,39 @@ def get_parent_map(pokemon_db: list[dict]) -> dict[str, tuple[str, int]]:
     """Builds a mapping from child_species_name to (parent_species_name, min_evolution_level)
     based on evolution requirements in pokemon_db"""
     parent_map = {}
+    has_tyrogue = False
     for sp in pokemon_db:
         parent_name = sp.get("name")
         if not parent_name:
             continue
+        if parent_name == "Tyrogue":
+            has_tyrogue = True
         for evo in sp.get("evolutions", []):
             child_name = evo.get("to")
             if not child_name or child_name == parent_name:
                 continue
             min_lvl = evo.get("min_level")
+            min_iq = evo.get("min_iq")
             item = evo.get("item") or evo.get("evolution_item")
 
+            req_candidates = []
             if item:
                 if str(item).strip().lower() == "link cable":
-                    req_lvl = max(min_lvl, 35) if min_lvl is not None else 35
+                    req_candidates.append(35)
                 else:
-                    req_lvl = max(min_lvl, 30) if min_lvl is not None else 30
-            elif min_lvl is not None:
-                req_lvl = min_lvl
-            else:
-                req_lvl = 1
+                    req_candidates.append(30)
+            if min_lvl is not None:
+                req_candidates.append(int(min_lvl))
+            if min_iq is not None:
+                req_candidates.append(int(min_iq) // 2)
+            req_lvl = max(req_candidates) if req_candidates else 1
 
             parent_map[child_name] = (parent_name, req_lvl)
+
+    if has_tyrogue:
+        for hitmon in ("Hitmonlee", "Hitmonchan", "Hitmontop"):
+            parent_map.setdefault(hitmon, ("Tyrogue", 20))
+
     return parent_map
 
 

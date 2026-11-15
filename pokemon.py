@@ -688,6 +688,17 @@ class Pokemon:
 
     def get_eligible_evolutions(self, game=None) -> list[dict]:
         """Returns a list of evolution dictionaries from species_data['evolutions'] whose criteria are met"""
+        if self.species_name == "Tyrogue":
+            if self.level < 20:
+                return []
+            atk = int(self.stats.get("Attack", 0))
+            defn = int(self.stats.get("Defense", 0))
+            if atk > defn:
+                return [{"to": "Hitmonlee", "min_level": 20}]
+            if defn > atk:
+                return [{"to": "Hitmonchan", "min_level": 20}]
+            return [{"to": "Hitmontop", "min_level": 20}]
+
         eligible = []
         for evo in self.species_data.get("evolutions", []):
             target_species = evo.get("to")
@@ -697,6 +708,11 @@ class Pokemon:
             #Check level requirement if specified
             min_lvl = evo.get("min_level", evo.get("level"))
             if min_lvl is not None and self.level < min_lvl:
+                continue
+
+            #Check IQ requirement if specified
+            min_iq = evo.get("min_iq")
+            if min_iq is not None and int(getattr(self, "iq", 0)) < int(min_iq):
                 continue
 
             #Check item requirement if specified
@@ -921,6 +937,7 @@ class Pokemon:
         self.iq = new_iq
         self.recalculate_stats()
         self._log_stat_increases(old_stats, game)
+        self.check_evolution_notifications(game=game)
         return gained
 
     def get_iq_survival_chance(self) -> float:

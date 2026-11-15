@@ -16074,17 +16074,31 @@ class Game:
         interior.append(f" Next move: {next_move_str}")
         
         evolutions = pokemon.species_data.get("evolutions", [])
-        if evolutions:
+        if pokemon.species_name == "Tyrogue" and not evolutions:
+            tyrogue_lines = [
+                "Evolves into Hitmonlee at Level 20 if Attack > Defense",
+                "Evolves into Hitmonchan at Level 20 if Defense > Attack",
+                "Evolves into Hitmontop at Level 20 if Attack = Defense",
+            ]
+            for idx, part in enumerate(tyrogue_lines):
+                prefix = " Evolution: " if idx == 0 else "            "
+                interior.append(f"{prefix}{part}")
+        elif evolutions:
             for idx, evo in enumerate(evolutions):
                 target = evo.get("to", "Unknown")
                 min_lvl = evo.get("min_level", evo.get("level"))
+                min_iq = evo.get("min_iq")
                 req_item = evo.get("item", evo.get("evolution_item"))
                 if min_lvl is not None and req_item is not None:
                     part = f"Evolves into {target} at Level {min_lvl} using {req_item}"
+                elif min_lvl is not None and min_iq is not None:
+                    part = f"Evolves into {target} at Level {min_lvl} with {min_iq}% IQ"
                 elif min_lvl is not None:
                     part = f"Evolves into {target} at Level {min_lvl}"
                 elif req_item is not None:
                     part = f"Evolves into {target} using {req_item}"
+                elif min_iq is not None:
+                    part = f"Evolves into {target} at {min_iq}% IQ"
                 else:
                     part = f"Evolves into {target}"
                 prefix = " Evolution: " if idx == 0 else "            "
