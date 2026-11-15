@@ -11,6 +11,17 @@ from natures import NATURES, NATURE_NAMES
 _species_cache: dict[str, dict] = {}
 _moves_cache: dict[str, dict] = {}
 
+VALID_GENDERS = ("Male", "Female", "Genderless")
+GENDER_SYMBOLS = {
+    "Male": "♂",
+    "Female": "♀",
+    "Genderless": "",
+}
+GENDER_COLORS = {
+    "Male": "\033[94m",
+    "Female": "\033[95m",
+}
+
 
 def _get_species_data(species_identifier: str) -> dict:
     """Loads and caches pokemon.json, searching by species name or ID"""
@@ -57,7 +68,7 @@ def _get_move_data(move_name: str) -> dict:
 class Pokemon:
     """Represents an instance of a Pokémon with all of its stats."""
 
-    def __init__(self, species_identifier: str | dict, level: int = 1, nickname: str | None = None, nature: str | None = None, ivs: dict[str, int] | None = None, is_leader: bool = False):
+    def __init__(self, species_identifier: str | dict, level: int = 1, nickname: str | None = None, nature: str | None = None, ivs: dict[str, int] | None = None, gender: str | None = None, is_leader: bool = False):
         if isinstance(species_identifier, dict):
             self.species_data = species_identifier
         else:
@@ -75,6 +86,19 @@ class Pokemon:
             self.nature = nature
         else:
             self.nature = random.choice(NATURE_NAMES)
+
+        #Assign gender based on species gender_ratio (unless explicitly specified)
+        self.gender: str
+        if gender is not None:
+            if gender not in VALID_GENDERS:
+                raise ValueError(f"Unknown gender: {gender}")
+            self.gender = gender
+        else:
+            gender_ratio = self.species_data.get("gender_ratio")
+            if gender_ratio is None:
+                self.gender = "Genderless"
+            else:
+                self.gender = "Male" if random.random() < float(gender_ratio) else "Female"
         self.x: int = 0
         self.y: int = 0
         self.napping: bool = False #Pokémon that spawn when the floor generates are in an inactive "napping" state
@@ -234,6 +258,17 @@ class Pokemon:
     @max_hp.setter
     def max_hp(self, val: float) -> None:
         self._max_hp = float(val)
+
+    def get_gender_symbol(self, colored: bool = True) -> str:
+        """Returns the a Pokémon's gender symbol"""
+        gender = getattr(self, "gender", "Genderless")
+        symbol = GENDER_SYMBOLS.get(gender, "")
+        if not symbol:
+            return ""
+        if not colored:
+            return symbol
+        color = GENDER_COLORS.get(gender, "")
+        return f"{color}{symbol}\033[0m" if color else symbol
 
     def learn_level_up_moves(self, game=None, old_level=None):
         """Pokémon spawn knowing the last 4 moves they know via level-up, so this populates known moves based on current level from level_up_moves database"""
@@ -1278,7 +1313,7 @@ class Pokemon:
                 return False
             if self.status_effects.get("Sleep", 0) > 0 or self.status_effects.get("Resting", 0) > 0:
                 if not from_damaging_move and game:
-                    game.log_message(f"{self.name} is already sleeping.")
+                    game.log_message(f"{self.name} is already asleep.")
                 return False
             self.status_effects["Sleep"] = duration if duration is not None else random.randint(3, 6)
             if game:

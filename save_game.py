@@ -77,6 +77,7 @@ def serialize_pokemon(poke: Pokemon) -> dict:
         "warned_10": getattr(poke, "warned_10", False),
         "warned_0": getattr(poke, "warned_0", False),
         "nature": getattr(poke, "nature", "Hardy"),
+        "gender": getattr(poke, "gender", "Genderless"),
         "ivs": dict(getattr(poke, "ivs", {})),
         "evs": dict(getattr(poke, "evs", {})),
         "stats": dict(getattr(poke, "stats", {})),
@@ -140,7 +141,7 @@ def deserialize_pokemon(data: dict) -> Pokemon | None:
     level = data.get("level", 1)
     nickname = data.get("nickname")
 
-    poke = Pokemon(species, level=level, nickname=nickname, nature=data.get("nature"))
+    poke = Pokemon(species, level=level, nickname=nickname, nature=data.get("nature"), gender=data.get("gender"))
     poke.id = data.get("id", str(uuid.uuid4()))
     if "experience" in data:
         poke.experience = data["experience"]

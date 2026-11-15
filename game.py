@@ -308,7 +308,7 @@ class Game:
         self.floor_timer_collapsed = False
         self.map_shake_offset = (0, 0)
         self.collapse_blanked_tiles: set[tuple[int, int]] = set()
-        self.build_string = "Beta 0.2.2"
+        self.build_string = "Beta 0.3.0-dev"
         self.message = self.build_string
         self.stairs_position = (0, 0)
         self.spawn_stairs()
@@ -1292,6 +1292,20 @@ class Game:
 
         return "".join(parts)
 
+    def get_pokemon_gender_symbol(self, pokemon) -> str:
+        """Returns the formatted gender symbol for a Pokémon, respecting compatibility mode."""
+        if pokemon is None:
+            return ""
+        use_color = not getattr(self, "compatibility_mode", False)
+        if hasattr(pokemon, "get_gender_symbol"):
+            return pokemon.get_gender_symbol(colored=use_color)
+        gender = getattr(pokemon, "gender", "Genderless")
+        if gender == "Male":
+            return "\033[94m♂\033[0m" if use_color else "♂"
+        if gender == "Female":
+            return "\033[95m♀\033[0m" if use_color else "♀"
+        return ""
+
     def get_look_around_description(self) -> list[str]:
         """Returns the description of the tile under the look around cursor (max 56x5 lines)"""
         cx, cy = self.look_around_cursor
@@ -1311,15 +1325,17 @@ class Game:
 
         if found_pokemon:
             is_ally = found_pokemon in self.party
+            gender_sym = self.get_pokemon_gender_symbol(found_pokemon)
+            poke_name_display = f"{found_pokemon.name}{gender_sym}"
 
             #1st line: Name, HP (allies only), Level (allies only) or HP % (foes only)
             if is_ally:
-                line1 = f"{found_pokemon.name} Lv {found_pokemon.level} HP {int(found_pokemon.current_hp)}/{found_pokemon.stats['HP']}"
+                line1 = f"{poke_name_display} Lv {found_pokemon.level} HP {int(found_pokemon.current_hp)}/{found_pokemon.stats['HP']}"
             else:
                 import math
                 pct = int(math.ceil((found_pokemon.current_hp / found_pokemon.stats["HP"]) * 100.0))
                 pct = min(100, pct)
-                line1 = f"{found_pokemon.name} HP {pct}%"
+                line1 = f"{poke_name_display} HP {pct}%"
 
             #2nd line: Known moves (for allies) or seen moves (for foes)
             if is_ally:
@@ -10438,13 +10454,14 @@ class Game:
         empty_line = "│" + " " * (width - 2) + "│"
 
         def fmt_line(content: str) -> str:
-            padded = content.ljust(width - 4)
+            padded = self.pad_ansi_string(content, width - 4)
             return f"│ {padded} │"
 
         hotkeys = ["[A]", "[S]", "[D]", "[F]", "[G]", "[H]"]
+        recruit_gender = self.get_pokemon_gender_symbol(recruit)
         rows = [
             top_border,
-            fmt_line(f"Congrats! You recruited a {recruit.species_name} (Lv{recruit.level})"),
+            fmt_line(f"Congrats! You recruited a {recruit.species_name}{recruit_gender} (Lv{recruit.level})"),
             fmt_line("The team is full! Choose a Pokémon to replace"),
             fmt_line("or press [Esc] to cancel:"),
         ]
@@ -10454,7 +10471,8 @@ class Game:
             prefix = " ► " if sel_idx == idx else "   "
             leader_tag = " (Leader)" if (mon == self.player_pokemon or getattr(mon, "is_leader", False)) else ""
             types_str = "/".join(mon.types) if hasattr(mon, "types") else ""
-            mon_info = f"{hk} {mon.name} (Lv{mon.level} {mon.species_name} {types_str}){leader_tag}"
+            mon_gender = self.get_pokemon_gender_symbol(mon)
+            mon_info = f"{hk} {mon.name}{mon_gender} (Lv{mon.level} {mon.species_name} {types_str}){leader_tag}"
             rows.append(fmt_line(f"{prefix}{mon_info}"))
 
         rows.append(empty_line)
@@ -10465,34 +10483,6 @@ class Game:
 
     def handle_nickname_input(self, char_in: str):
         """Handles key input for nicknaming a newly recruited Pokémon."""
-        state = getattr(self, "nickname_prompt_state", None)
-        if state is None:
-            return
-
-        poke = state["pokemon"]
-        curr_text = state["text"]
-
-        if char_in == "ENTER":
-            name_to_set = curr_text.strip()[:12]
-            if name_to_set:
-                poke.nickname = name_to_set
-            else:
-                poke.nickname = None
-            self.nickname_prompt_state = None
-            self.render()
-        elif char_in == "ESC":
-            poke.nickname = None
-            self.nickname_prompt_state = None
-            self.render()
-        elif char_in == "BACKSPACE":
-            if curr_text:
-                state["text"] = curr_text[:-1]
-                self.render()
-        elif char_in and len(curr_text) < 12 and (char_in.isalnum() or char_in in " -_"):
-            state["text"] = curr_text + char_in
-            self.render()
-
-    def render_nickname_prompt_screen(self) -> list[str]:
         """Renders the nicknaming overlay screen for a newly recruited Pokémon."""
         state = getattr(self, "nickname_prompt_state", None)
         if state is None:
@@ -10507,12 +10497,13 @@ class Game:
         empty_line = "│" + " " * (width - 2) + "│"
 
         def fmt_line(content: str) -> str:
-            padded = content.ljust(width - 4)
+            padded = self.pad_ansi_string(content, width - 4)
             return f"│ {padded} │"
 
+        poke_gender = self.get_pokemon_gender_symbol(poke)
         rows = [
             top_border,
-            fmt_line(f"Congrats! You recruited a {poke.species_name} (Lv{poke.level})"),
+            fmt_line(f"Congrats! You recruited a {poke.species_name}{poke_gender} (Lv{poke.level})"),
             empty_line,
             fmt_line("Give them a nickname?"),
             fmt_line("(Max 12 characters or leave empty to skip)"),
@@ -13388,6 +13379,9 @@ class Game:
         if state.get("sub_mode") == "stat_roller":
             self.handle_stat_roller_input(action)
             return
+        if state.get("sub_mode") == "gender_select":
+            self.handle_starter_gender_input(action)
+            return
 
         starters = [
             "Bulbasaur", "Charmander", "Squirtle", "Pikachu", "Vulpix", "Vulpix-A",
@@ -13471,10 +13465,10 @@ class Game:
             self.render()
             return
 
-        #Confirm and proceed to nickname prompt
+        #Confirm and proceed to gender selection
         if action in (game_input.CONFIRM, "\r", "\n", "ENTER", "Return"):
-            state["sub_mode"] = "naming"
-            state["text"] = state.get("chosen_species", "Bulbasaur")
+            state["sub_mode"] = "gender_select"
+            state.setdefault("gender_index", 0)
             self.render()
             return
 
@@ -13482,6 +13476,37 @@ class Game:
         if action in (game_input.QUIT, "\x1b", "ESC", "Esc", "esc"):
             state["sub_mode"] = "select"
             state["locked"] = set()
+            self.render()
+            return
+
+    def handle_starter_gender_input(self, action: str):
+        """Handles input for choosing the starter Pokémon's gender."""
+        state = getattr(self, "starter_select_state", None)
+        if state is None:
+            return
+
+        gender_options = ["Male", "Female", "Genderless"]
+        sel = state.get("gender_index", 0)
+
+        if action in (game_input.MOVE_UP, "w", "W", "up", "UP", "k", "K"):
+            state["gender_index"] = (sel - 1) % len(gender_options)
+            self.render()
+            return
+
+        if action in (game_input.MOVE_DOWN, "s", "S", "down", "DOWN", "j", "J"):
+            state["gender_index"] = (sel + 1) % len(gender_options)
+            self.render()
+            return
+
+        if action in (game_input.CONFIRM, "\r", "\n", "ENTER", "Return", "z", "Z"):
+            state["gender"] = gender_options[sel % len(gender_options)]
+            state["sub_mode"] = "naming"
+            state["text"] = state.get("chosen_species", "Bulbasaur")
+            self.render()
+            return
+
+        if action in (game_input.QUIT, "\x1b", "ESC", "Esc", "esc"):
+            state["sub_mode"] = "stat_roller"
             self.render()
             return
 
@@ -13498,9 +13523,9 @@ class Game:
             nick = curr_text.strip()[:12]
             if not nick or nick == chosen_species:
                 nick = None
-            self.start_new_game(chosen_species, nick, ivs=state.get("ivs"), nature=state.get("nature"))
+            self.start_new_game(chosen_species, nick, ivs=state.get("ivs"), nature=state.get("nature"), gender=state.get("gender"))
         elif char_in == "ESC":
-            self.start_new_game(chosen_species, None, ivs=state.get("ivs"), nature=state.get("nature"))
+            self.start_new_game(chosen_species, None, ivs=state.get("ivs"), nature=state.get("nature"), gender=state.get("gender"))
         elif char_in == "BACKSPACE":
             if curr_text:
                 state["text"] = curr_text[:-1]
@@ -13536,7 +13561,7 @@ class Game:
                 }
                 self.render()
 
-    def start_new_game(self, species_name: str, nickname: str | None = None, ivs: dict[str, int] | None = None, nature: str | None = None):
+    def start_new_game(self, species_name: str, nickname: str | None = None, ivs: dict[str, int] | None = None, nature: str | None = None, gender: str | None = None):
         """Initializes and starts a new game run with the chosen starter Pokémon."""
         self.title_screen_state = None
         self.starter_select_state = None
@@ -13599,7 +13624,7 @@ class Game:
         self.is_running = True
         self._in_run_loop: bool = False
 
-        self.player_pokemon = Pokemon(species_name, level=2, nickname=nickname, nature=nature, ivs=ivs, is_leader=True)
+        self.player_pokemon = Pokemon(species_name, level=2, nickname=nickname, nature=nature, ivs=ivs, gender=gender, is_leader=True)
         self.player_pokemon.is_leader = True
         for m in self.player_pokemon.moves:
             m["enabled"] = True
@@ -13771,6 +13796,64 @@ class Game:
 
         return self.sanitize_rendered_rows(rows[:48])
 
+    def render_starter_gender_screen(self) -> list[str]:
+        """Renders the full-screen (76x48) starter gender selection screen."""
+        state = getattr(self, "starter_select_state", None)
+        if state is None:
+            return []
+
+        chosen_species = state.get("chosen_species", "Bulbasaur")
+        sel_idx = state.get("gender_index", 0)
+        calc_mon = Pokemon(chosen_species, level=2)
+        formatted_types = " / ".join(f"{TYPE_COLORS.get(t, '\033[37m')}{t}\033[0m" for t in calc_mon.types)
+
+        width = 76
+        inner_w = width - 2
+        top_border = "┌" + "─" * inner_w + "┐"
+        bot_border = "└" + "─" * inner_w + "┘"
+        divider = "├" + "─" * inner_w + "┤"
+        empty_line = "│" + " " * inner_w + "│"
+
+        def wrap_center(content: str) -> str:
+            return "│" + center_ansi(content, inner_w) + "│"
+
+        rows = [
+            top_border,
+            wrap_center("\033[1;97mChoose Your Gender\033[0m"),
+            divider,
+            empty_line,
+            wrap_center(f"\033[1;93m{chosen_species}\033[0m (Level 2) [{formatted_types}]"),
+            empty_line,
+            divider,
+            empty_line,
+            wrap_center("What's your gender?"),
+            empty_line,
+            empty_line,
+        ]
+
+        gender_entries = [
+            ("Male", "Male \033[94m♂\033[0m"),
+            ("Female", "Female \033[95m♀\033[0m"),
+            ("Genderless", "Genderless"),
+        ]
+
+        for idx, (_key, label) in enumerate(gender_entries):
+            padded_label = self.pad_ansi_string(label, 12)
+            if idx == sel_idx:
+                row_content = f"\033[1;93m ► {padded_label}\033[0m"
+            else:
+                row_content = f"   {padded_label}"
+            rows.append(wrap_center(row_content))
+            rows.append(empty_line)
+
+        while len(rows) < 45:
+            rows.append(empty_line)
+        rows.append(wrap_center("\033[90m[↑/↓] Choose   [Return] Confirm   [Esc] Back\033[0m"))
+        rows.append(empty_line)
+        rows.append(bot_border)
+
+        return self.sanitize_rendered_rows(rows[:48])
+
     def render_starter_select_screen(self) -> list[str]:
         """Renders the full-screen (76x48) starter Pokémon selection and naming screen."""
         state = getattr(self, "starter_select_state", None)
@@ -13780,6 +13863,8 @@ class Game:
         sub_mode = state.get("sub_mode", "select")
         if sub_mode == "stat_roller":
             return self.render_stat_roller_screen()
+        if sub_mode == "gender_select":
+            return self.render_starter_gender_screen()
 
         sel_idx = state.get("selected_index", 0)
         text = state.get("text", "")
@@ -15109,10 +15194,13 @@ class Game:
                 elif spd_stage == 3:
                     status_items.append(("4x Speed", "positive"))
 
+                gender_sym = self.get_pokemon_gender_symbol(pokemon)
+                gender_char = gender_sym if gender_sym else " " #Should never happen?
                 #Format colors based on category: positive (green), negative (red), neutral (white)
                 #Display only 1 status effect at a time on the 6th line, cycling once per second if multiple
+                #The 16th character of the 6th row is reserved for the Pokémon's gender symbol.
                 if not status_items:
-                    status_text = " " * 16
+                    status_text = (" " * 15) + gender_char
                 else:
                     import time
                     cycle_idx = int(time.time()) % len(status_items)
@@ -15125,10 +15213,10 @@ class Game:
                     else:
                         color_code = "\033[97m"  #White
 
-                    visible_name = name[:16]
+                    visible_name = name[:15]
                     visible_len = len(visible_name)
-                    padding_spaces = 16 - visible_len
-                    status_text = f"{color_code}{visible_name}\033[0m" + (" " * padding_spaces)
+                    padding_spaces = 15 - visible_len
+                    status_text = f"{color_code}{visible_name}\033[0m" + (" " * padding_spaces) + gender_char
 
                 rows.append(f"{b_color}│{b_reset}{status_text}{b_color}│{b_reset}")
 
@@ -15635,7 +15723,9 @@ class Game:
         types_str = f" [{formatted_types}]" if types else ""
         can_evolve = hasattr(pokemon, "can_evolve") and pokemon.can_evolve(game=self)
         name_display = f"\033[93m{pokemon.name}\033[0m" if can_evolve else pokemon.name
-        left_text = f" {name_display} (Level {pokemon.level}){types_str}"
+        gender_sym = self.get_pokemon_gender_symbol(pokemon)
+        gender_str = f" ({gender_sym})" if gender_sym else ""
+        left_text = f" {name_display}{gender_str} (Level {pokemon.level}){types_str}"
 
         poke_id = pokemon.species_data.get("id") if getattr(pokemon, "species_data", None) else None
         if poke_id is not None:
