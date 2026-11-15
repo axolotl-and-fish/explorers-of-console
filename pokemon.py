@@ -68,7 +68,7 @@ def _get_move_data(move_name: str) -> dict:
 class Pokemon:
     """Represents an instance of a Pokémon with all of its stats."""
 
-    def __init__(self, species_identifier: str | dict, level: int = 1, nickname: str | None = None, nature: str | None = None, ivs: dict[str, int] | None = None, gender: str | None = None, is_leader: bool = False):
+    def __init__(self, species_identifier: str | dict, level: int = 1, nickname: str | None = None, nature: str | None = None, ivs: dict[str, int] | None = None, gender: str | None = None, is_leader: bool = False, iq: int = 0):
         if isinstance(species_identifier, dict):
             self.species_data = species_identifier
         else:
@@ -120,6 +120,7 @@ class Pokemon:
 
         #Spawn with no EVs
         self.evs = {stat: 0 for stat in VALID_STATS}
+        self.iq: int = max(0, min(100, int(iq)))
 
         self.moves: list[dict] = []
         self.learn_level_up_moves()
@@ -808,6 +809,9 @@ class Pokemon:
             if self.status_effects.get("EXP Up"):
                 amount = math.floor(amount * 1.5)
 
+            if int(getattr(self, "iq", 0)) >= 40:
+                amount = math.floor(amount * 1.2) #20% EXP bonus at 40+ IQ
+
         if game and amount > 0 and hasattr(game, "party") and self in game.party:
             from game import get_pokemon_position
             px, py = get_pokemon_position(game, self)
@@ -870,6 +874,9 @@ class Pokemon:
                         stat_val = math.floor(round(stat_val * 1.1, 9))
                     elif stat == dec:
                         stat_val = math.floor(round(stat_val * 0.9, 9))
+                iq = max(0, min(100, int(getattr(self, "iq", 0))))
+                if iq > 0:
+                    stat_val = math.floor(round(stat_val * (1.0 + 0.001 * iq), 9))
                 self.stats[stat] = stat_val
 
         new_max_hp = float(self.stats["HP"])
@@ -891,14 +898,83 @@ class Pokemon:
                     raise ValueError("EV yield value cannot be negative.")
                 self.evs[stat] += val
         self.recalculate_stats()
+        self._log_stat_increases(old_stats, game)
 
-        #Prints a stat increase message if a party member gains enough EVs to raise a stat
+    def _log_stat_increases(self, old_stats: dict[str, int], game):
+        """Logs stat point increases for team members after EV or IQ gains"""
         if game and hasattr(game, "party") and self in game.party:
             for stat in VALID_STATS:
                 diff = self.stats[stat] - old_stats[stat]
                 if diff > 0:
                     formatted = stat.replace("_", " ")
                     game.log_message(f"{self.name}'s {formatted} increased by {diff}!")
+
+    def gain_iq(self, amount: int, game=None) -> int:
+        """Handles IQ gains, recalculates stats, and logs stat gains"""
+        old_iq = max(0, min(100, int(getattr(self, "iq", 0))))
+        new_iq = max(0, min(100, old_iq + int(amount)))
+        gained = new_iq - old_iq
+        if gained == 0:
+            self.iq = new_iq
+            return 0
+        old_stats = dict(self.stats)
+        self.iq = new_iq
+        self.recalculate_stats()
+        self._log_stat_increases(old_stats, game)
+        return gained
+
+    def get_iq_survival_chance(self) -> float:
+        """Returns probability of surviving a lethal non-status hit at 1 HP from IQ"""
+        iq = int(getattr(self, "iq", 0))
+        if iq >= 100:
+            return 0.25
+        if iq >= 80:
+            return 0.20
+        if iq >= 60:
+            return 0.15
+        if iq >= 40:
+            return 0.10
+        return 0.0
+
+    def get_iq_evasion_chance(self) -> float:
+        """Returns probability of automatically evading an accuracy-checked move at 80+ IQ"""
+        if int(getattr(self, "iq", 0)) >= 80:
+            return 0.10
+        return 0.0
+
+    _IQ_NEGATIVE_STATUSES = (
+        "Sleep", "Paralysis", "Poison", "Toxic", "Burn", "Frozen",
+        "Flinch", "Petrified", "Confusion", "Leech Seed", "Slow",
+        "Encore", "Stuck", "Terrified", "Blind", "Puppet", "Hallucinating",
+        "Taunted", "Drowsy", "Cowering", "Silenced", "Perishing",
+        "Curse", "Sluggish", "Paused",
+    )
+
+    def get_active_negative_statuses(self) -> list[str]:
+        """Returns a list of currently active negative status effects"""
+        active = []
+        for status in self._IQ_NEGATIVE_STATUSES:
+            if status == "Slow":
+                if getattr(self, "movement_speed_stage", 0) < 0:
+                    active.append(status)
+            elif status == "Petrified":
+                val = self.status_effects.get("Petrified", 0)
+                if val > 0 or val == -1:
+                    active.append(status)
+            else:
+                val = self.status_effects.get(status, 0)
+                if val and val != 0:
+                    active.append(status)
+        return active
+
+    def cure_random_negative_status(self, game) -> str | None:
+        """Cures one random active negative status effect if present"""
+        active = self.get_active_negative_statuses()
+        if not active:
+            return None
+        chosen = random.choice(active)
+        self.cure_status(chosen, game, early=True)
+        return chosen
 
     def defeat_pokemon(self, opponent: "Pokemon", game=None, is_finishing_blow: bool = True):
         """Gains EVs and EXP according to the defeated Pokémon's yields."""
@@ -1941,7 +2017,10 @@ class Pokemon:
         elif status == "Drowsy":
             if self.status_effects.get("Drowsy", 0) > 0:
                 self.status_effects["Drowsy"] = 0
-                if not self.status_effects.get("Sleepless"):
+                if early:
+                    if game:
+                        game.log_message(f"{self.name} is no longer drowsy.")
+                elif not self.status_effects.get("Sleepless"):
                     self.apply_status("Sleep", game)
         elif status == "Resting":
             if self.status_effects.get("Resting", 0) > 0:
@@ -2239,4 +2318,14 @@ class Pokemon:
                 self.status_effects["Trick Room"] = 0
                 if game:
                     game.log_message(f"{self.name} is no longer affected by Trick Room.")
+        elif status == "Curse":
+            if self.status_effects.get("Curse"):
+                self.status_effects["Curse"] = 0
+                if game:
+                    game.log_message(f"{self.name}'s curse was lifted.")
+        elif status == "Sluggish":
+            if self.status_effects.get("Sluggish"):
+                self.status_effects["Sluggish"] = 0
+                if game:
+                    game.log_message(f"{self.name} is no longer sluggish.")
 

@@ -320,6 +320,8 @@ def calculate_damage(attacker: Pokemon, defender: Pokemon, move: dict, game=None
         crit_multiplier = 1.5
     else:
         crit_chance = 0.125 * (atk_speed / def_speed)
+        if int(getattr(attacker, "iq", 0)) >= 100:
+            crit_chance *= 2
         if move.get("high_crit_ratio") or move.get("name") == "Razor Leaf":
             crit_chance *= 2
         if attacker.status_effects.get("Focus Energy", 0) > 0:

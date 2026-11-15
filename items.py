@@ -285,6 +285,66 @@ RARITY_ORDER = {
 }
 
 
+def is_gummi(item: dict) -> bool:
+    """Returns True if the item is a Gummi."""
+    if not isinstance(item, dict):
+        return False
+    name = item.get("name", "")
+    return (
+        bool(item.get("gummi", False))
+        or name.endswith("Gummi")
+        or item.get("category") == "Gummi"
+        or item.get("item_type") == "Gummi"
+    )
+
+
+def get_gummi_iq_and_belly(gummi_item: dict, target) -> tuple[int, float]:
+    """Calculates amount of IQ and Belly gained when consuming a Gummi
+
+    Matches type: +5 IQ
+    Strong against type: +4 IQ
+    Neutral against type: +3 IQ
+    Weak against type: +2 IQ
+    Ineffective against type: +1 IQ
+    Rainbow Gummi: +10 IQ and +50% Belly regardless of types.
+    """
+    name = gummi_item.get("name", "") if isinstance(gummi_item, dict) else str(gummi_item)
+    gummi_type = gummi_item.get("type") if isinstance(gummi_item, dict) else None
+    if not gummi_type and name in ITEMS_DB:
+        gummi_type = ITEMS_DB[name].get("type")
+    if name == "Rainbow Gummi" or gummi_type == "Rainbow":
+        return 10, 0.50
+
+    if not gummi_type:
+        gummi_type = "Normal"
+
+    target_types = list(getattr(target, "types", []) or [])
+    if not target_types and hasattr(target, "species_data"):
+        target_types = list(target.species_data.get("types", []) or [])
+
+    from type_chart import MATCHUP_RATINGS
+    matchups = MATCHUP_RATINGS.get(gummi_type, {})
+
+    total_iq = 0
+    for target_type in target_types:
+        if target_type == gummi_type:
+            total_iq += 5
+        elif target_type in matchups:
+            rating = matchups[target_type]
+            if rating is None:
+                total_iq += 1
+            elif rating > 0:
+                total_iq += 4
+            elif rating < 0:
+                total_iq += 2
+            else:
+                total_iq += 3
+        else:
+            total_iq += 3
+
+    return total_iq, round(0.05 * total_iq, 4)
+
+
 def get_item_category_order(item: dict) -> int:
     """Returns sorting rank for item categories."""
     name = item.get("name", "")
@@ -298,13 +358,15 @@ def get_item_category_order(item: dict) -> int:
         return 3
     if name.endswith("Apricorn") or item.get("apricorn", False) or item.get("category") == "Apricorn" or item.get("item_type") == "Apricorn":
         return 4
-    if name in VITAMIN_NAMES or "Candy" in name or item.get("vitamin", False) or item.get("category") == "Vitamin" or item.get("item_type") == "Vitamin":
+    if is_gummi(item):
         return 5
-    if name in THROWN_ITEM_NAMES or item.get("thrown", False) or item.get("thrown_item", False) or item.get("is_thrown", False) or (item.get("stackable", False) and not item.get("edible", False)) or item.get("category") == "Thrown" or item.get("item_type") == "Thrown":
+    if name in VITAMIN_NAMES or "Candy" in name or item.get("vitamin", False) or item.get("category") == "Vitamin" or item.get("item_type") == "Vitamin":
         return 6
-    if is_tm(item) or item.get("category") == "TM" or item.get("item_type") == "TM":
+    if name in THROWN_ITEM_NAMES or item.get("thrown", False) or item.get("thrown_item", False) or item.get("is_thrown", False) or (item.get("stackable", False) and not item.get("edible", False)) or item.get("category") == "Thrown" or item.get("item_type") == "Thrown":
         return 7
-    return 8
+    if is_tm(item) or item.get("category") == "TM" or item.get("item_type") == "TM":
+        return 8
+    return 9
 
 
 def get_item_rarity_rank(item: dict) -> int:
@@ -390,12 +452,42 @@ def apply_item_effect(item: dict, target, game, is_thrown: bool = False):
         game.log_message(f"{target.name} is too full to eat any more.")
         return
 
-    #Edible items eaten by a team Pokemon restore 5% of max Belly (except food-type and apricorn items)
+    #Edible items eaten by a team Pokemon restore 5% of max Belly (except food-type, apricorn, and Gummi items)
     if not is_thrown and edible and target in game.party:
-        if hasattr(target, "current_belly") and getattr(target, "current_belly", 0) <= getattr(target, "max_belly", 100) and name not in ("Apple", "Big Apple", "Huge Apple", "Banana", "Chestnut", "Grimy Food", "HP Up", "Protein", "Iron", "Calcium", "Zinc", "Carbos", "PP Up", "PP Max", "Hunger Seed", "Reviver Seed", "Tiny Reviver Seed", "Possess Orb") and not item.get("apricorn", False):
+        if hasattr(target, "current_belly") and getattr(target, "current_belly", 0) <= getattr(target, "max_belly", 100) and name not in ("Apple", "Big Apple", "Huge Apple", "Banana", "Chestnut", "Grimy Food", "HP Up", "Protein", "Iron", "Calcium", "Zinc", "Carbos", "PP Up", "PP Max", "Hunger Seed", "Reviver Seed", "Tiny Reviver Seed", "Possess Orb") and not item.get("apricorn", False) and not is_gummi(item):
             restore_amount = 0.05 * target.max_belly
             target.current_belly = min(target.max_belly, target.current_belly + restore_amount)
             game.log_message(f"{target.name}'s belly was filled slightly!")
+
+    if is_gummi(item):
+        iq_gain, belly_fraction = get_gummi_iq_and_belly(item, target)
+        if not is_thrown and target in game.party and hasattr(target, "current_belly") and getattr(target, "current_belly", 0) <= getattr(target, "max_belly", 100):
+            restore_amount = belly_fraction * target.max_belly
+            target.current_belly = min(target.max_belly, target.current_belly + restore_amount)
+            if belly_fraction >= 0.25:
+                game.log_message(f"{target.name}'s belly was filled!")
+            else:
+                game.log_message(f"{target.name}'s belly was filled slightly!")
+        if hasattr(target, "gain_iq"):
+            actual_gained = target.gain_iq(iq_gain, game=game)
+            if actual_gained > 0:
+                gummi_messages = {
+                    1: f"{target.name} doesn't seem to like this Gummi at all... IQ went up a little.",
+                    2: f"{target.name} doesn't seem to like this Gummi very much. IQ went up slightly.",
+                    3: f"{target.name} doesn't seem to mind this Gummi. IQ went up somewhat!",
+                    4: f"{target.name} seems to like this Gummi! IQ went up!",
+                    5: f"{target.name} seems to like this Gummi a lot! IQ went up a lot!",
+                    6: f"{target.name} seems to love this Gummi! IQ went up significantly!",
+                    7: "This Gummi seems to be a favorite! IQ went up tremendously!",
+                    8: "This Gummi seems to be a big favorite! IQ went up enormously!",
+                    9: f"Whoaaaaa! {target.name} thinks this Gummi is out of this world! IQ went up massively!!!",
+                    10: f"Incredible! {target.name} has never tasted anything like this! IQ went up massively!!!",
+                }
+                msg = gummi_messages.get(min(10, actual_gained), gummi_messages[10])
+                game.log_message(msg)
+            else:
+                game.log_message(f"{target.name}'s IQ is already maxed out!")
+        return
 
     if item.get("apricorn", False):
         if not is_thrown and hasattr(target, "current_belly") and getattr(target, "current_belly", 0) <= getattr(target, "max_belly", 100):

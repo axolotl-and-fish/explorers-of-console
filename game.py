@@ -1293,7 +1293,7 @@ class Game:
         return "".join(parts)
 
     def get_pokemon_gender_symbol(self, pokemon) -> str:
-        """Returns the formatted gender symbol for a Pokémon, respecting compatibility mode."""
+        """Returns the formatted gender symbol for a Pokémon"""
         if pokemon is None:
             return ""
         use_color = not getattr(self, "compatibility_mode", False)
@@ -1704,7 +1704,7 @@ class Game:
                             if random.random() < spawn_chance:
                                 species_pool = self.floor_spawn_list if self.floor_spawn_list else self.all_species_names
                                 species = random.choice(species_pool)
-                                enemy = Pokemon(species, level=self.floor_number)
+                                enemy = Pokemon(species, level=self.floor_number, iq=random.randint(0, 9))
                                 enemy.x = rx
                                 enemy.y = ry
                                 enemy.napping = True
@@ -1726,7 +1726,7 @@ class Game:
         rx, ry = random.choice(candidates)
         species_pool = self.floor_spawn_list if self.floor_spawn_list else self.all_species_names
         species = random.choice(species_pool)
-        enemy = Pokemon(species, level=self.floor_number)
+        enemy = Pokemon(species, level=self.floor_number, iq=random.randint(0, 9))
         enemy.x = rx
         enemy.y = ry
         enemy.napping = False #Only fixed spawns will be napping, as in PMD. Calling it "napping" is kind of a misnomer, really their AI is just disabled until woken up
@@ -3900,6 +3900,13 @@ class Game:
                     else:
                         p.status_effects[status] = new_val
 
+        #At 60%+ IQ: 10% chance per turn to cure a random active negative status effect
+        for p in list(self.party + self.spawned_pokemon):
+            if int(getattr(p, "current_hp", 0)) > 0 and int(getattr(p, "iq", 0)) >= 60:
+                if hasattr(p, "get_active_negative_statuses") and p.get_active_negative_statuses():
+                    if random.random() < 0.10:
+                        p.cure_random_negative_status(self)
+
         if self.weather == "Heavy Rain":
             for p in list(self.party + self.spawned_pokemon):
                 if p.status_effects.get("Burn"):
@@ -4917,7 +4924,9 @@ class Game:
 
             #Damage Pokémon
             target.last_damage_source = f"{attacker.name}'s {cause_name}" if attacker else cause_name
-            target.current_hp = float(int(target.current_hp) - damage)
+            h_before = int(target.current_hp)
+            if not self._try_iq_survival(target, h_before, damage):
+                target.current_hp = float(h_before - damage)
             self.log_message(f"{target.name} was caught in the explosion!")
 
             tx, ty = get_pokemon_position(self, target)
@@ -5533,7 +5542,9 @@ class Game:
                     if collided_with_wall:
                         self.log_message(f"{defender.name} collided with a wall!")
                         dmg, crit, mult = calculate_damage(attacker, defender, collision_move, self)
-                        defender.current_hp -= dmg
+                        h_before = int(defender.current_hp)
+                        if not self._try_iq_survival(defender, h_before, dmg):
+                            defender.current_hp = float(h_before - dmg)
                         
                         self.flash_damages[(lx, ly)] = (dmg, mult)
                         self.trigger_damage_flash()
@@ -5548,8 +5559,12 @@ class Game:
                         dmg_def, crit_def, mult_def = calculate_damage(attacker, defender, collision_move, self)
                         dmg_col, crit_col, mult_col = calculate_damage(attacker, collided_pokemon, collision_move, self)
 
-                        defender.current_hp -= dmg_def
-                        collided_pokemon.current_hp -= dmg_col
+                        h_def = int(defender.current_hp)
+                        if not self._try_iq_survival(defender, h_def, dmg_def):
+                            defender.current_hp = float(h_def - dmg_def)
+                        h_col = int(collided_pokemon.current_hp)
+                        if not self._try_iq_survival(collided_pokemon, h_col, dmg_col):
+                            collided_pokemon.current_hp = float(h_col - dmg_col)
 
                         self.flash_damages[(lx, ly)] = (dmg_def, mult_def)
                         cx, cy = get_pokemon_position(self, collided_pokemon)
@@ -5619,9 +5634,11 @@ class Game:
                 modified_acc *= 0.8
             
             import random
-            if random.randint(1, 100) <= modified_acc:
+            if (random.randint(1, 100) <= modified_acc) and not self._did_defender_evade_by_iq(attacker, defender):
                 damage, is_critical, type_mult = calculate_damage(attacker, defender, move, self)
-                defender.current_hp = float(int(defender.current_hp) - damage)
+                h_before = int(defender.current_hp)
+                if not self._try_iq_survival(defender, h_before, damage):
+                    defender.current_hp = float(h_before - damage)
                 self.log_message(f"{defender.name} was hurt by Fire Spin!")
                 
                 tx, ty = get_pokemon_position(self, defender)
@@ -5675,7 +5692,9 @@ class Game:
             #Wrap subsequent hits always hit (no accuracy check)
             move = binding["move"]
             damage, is_critical, type_mult = calculate_damage(attacker, defender, move, self)
-            defender.current_hp = float(int(defender.current_hp) - damage)
+            h_before = int(defender.current_hp)
+            if not self._try_iq_survival(defender, h_before, damage):
+                defender.current_hp = float(h_before - damage)
             self.log_message(f"{defender.name} was hurt by Wrap!")
             
             tx, ty = get_pokemon_position(self, defender)
@@ -5741,9 +5760,11 @@ class Game:
                 modified_acc *= 0.8
             
             import random
-            if random.randint(1, 100) <= modified_acc:
+            if (random.randint(1, 100) <= modified_acc) and not self._did_defender_evade_by_iq(attacker, defender):
                 damage, is_critical, type_mult = calculate_damage(attacker, defender, move, self)
-                defender.current_hp = float(int(defender.current_hp) - damage)
+                h_before = int(defender.current_hp)
+                if not self._try_iq_survival(defender, h_before, damage):
+                    defender.current_hp = float(h_before - damage)
                 self.log_message(f"{defender.name} was hurt by Sand Tomb!")
                 
                 tx, ty = get_pokemon_position(self, defender)
@@ -5806,9 +5827,11 @@ class Game:
             if getattr(self, "weather", None) == "Fog":
                 modified_acc *= 0.8
             
-            if random.randint(1, 100) <= modified_acc:
+            if (random.randint(1, 100) <= modified_acc) and not self._did_defender_evade_by_iq(attacker, defender):
                 damage, is_critical, type_mult = calculate_damage(attacker, defender, move, self)
-                defender.current_hp = float(int(defender.current_hp) - damage)
+                h_before = int(defender.current_hp)
+                if not self._try_iq_survival(defender, h_before, damage):
+                    defender.current_hp = float(h_before - damage)
                 self.log_message(f"{defender.name} was hurt by Whirlpool!")
                 
                 tx, ty = get_pokemon_position(self, defender)
@@ -6803,7 +6826,7 @@ class Game:
                 ev_stage = max(-6, min(6, ev_stage))
                 ev_mult = (3.0 + ev_stage) / 3.0 if ev_stage >= 0 else 3.0 / (3.0 + abs(ev_stage))
                 modified_acc = acc * acc_mult / ev_mult
-                if random.randint(1, 100) <= modified_acc:
+                if (random.randint(1, 100) <= modified_acc) and not self._did_defender_evade_by_iq(attacker, enemy):
                     if enemy.status_effects.get("Perishing", 0) > 0:
                         self.log_message(f"{enemy.name} is already perishing!")
                     else:
@@ -7149,14 +7172,16 @@ class Game:
                 modified_acc *= 1.5
             if getattr(self, "weather", None) == "Fog":
                 modified_acc *= 0.8
-            if random.randint(1, 100) > modified_acc:
+            if (random.randint(1, 100) > modified_acc) or self._did_defender_evade_by_iq(attacker, defender):
                 self.log_message(f"{defender.name} avoided the attack!")
                 tx, ty = get_pokemon_position(self, defender)
                 self.flash_damages[(tx, ty)] = ("/", "MISS")
                 self.trigger_damage_flash()
             else:
                 damage, is_critical, type_mult = calculate_damage(attacker, defender, spit_up_move, self)
-                defender.current_hp = float(int(defender.current_hp) - damage)
+                h_before = int(defender.current_hp)
+                if not self._try_iq_survival(defender, h_before, damage):
+                    defender.current_hp = float(h_before - damage)
                 if defender.napping:
                     defender.napping = False
                     defender.just_woke_up = True
@@ -7265,7 +7290,7 @@ class Game:
                 ratio = u_speed_eff / max(1.0, float(t_speed_eff))
                 acc = min(60.0, 20.0 * ratio)
                 
-                if random.random() * 100.0 > acc:
+                if (random.random() * 100.0 > acc) or self._did_defender_evade_by_iq(attacker, defender):
                     self.log_message(f"{defender.name} avoided the attack!")
                     tx, ty = get_pokemon_position(self, defender)
                     self.flash_damages[(tx, ty)] = ("/", "MISS")
@@ -7275,8 +7300,10 @@ class Game:
                     return
 
             #Defeats defender instantly
-            damage = int(defender.current_hp)
-            defender.current_hp = 0.0
+            h_before = int(defender.current_hp)
+            damage = h_before
+            if not self._try_iq_survival(defender, h_before, damage):
+                defender.current_hp = 0.0
             
             #Standard cures on hit
             if defender.napping:
@@ -7296,8 +7323,9 @@ class Game:
             self.trigger_damage_flash()
 
             self.log_message("It's a one-hit KO!")
-            attacker.defeat_pokemon(defender, game=self)
-            self.remove_defeated_pokemon(defender, (tx, ty))
+            if int(defender.current_hp) <= 0:
+                attacker.defeat_pokemon(defender, game=self)
+                self.remove_defeated_pokemon(defender, (tx, ty))
 
             if attacker.status_effects.get("Laser Focus"):
                 attacker.cure_status("Laser Focus", self)
@@ -7333,7 +7361,7 @@ class Game:
                 modified_acc *= 1.5
             if getattr(self, "weather", None) == "Fog":
                 modified_acc *= 0.8
-            if random.randint(1, 100) > modified_acc:
+            if (random.randint(1, 100) > modified_acc) or self._did_defender_evade_by_iq(attacker, defender):
                 self.log_message(f"{defender.name} avoided the attack!")
                 tx, ty = get_pokemon_position(self, defender)
                 self.flash_damages[(tx, ty)] = ("/", "MISS")
@@ -7417,7 +7445,7 @@ class Game:
                 modified_acc *= 1.5
             if getattr(self, "weather", None) == "Fog":
                 modified_acc *= 0.8
-            if random.randint(1, 100) > modified_acc:
+            if (random.randint(1, 100) > modified_acc) or self._did_defender_evade_by_iq(attacker, defender):
                 self.log_message(f"{defender.name} avoided the attack!")
                 tx, ty = get_pokemon_position(self, defender)
                 self.flash_damages[(tx, ty)] = ("/", "MISS")
@@ -7505,7 +7533,7 @@ class Game:
                 if int(defender.current_hp) <= 0:
                     break
 
-                if random.randint(1, 100) > modified_acc:
+                if (random.randint(1, 100) > modified_acc) or self._did_defender_evade_by_iq(attacker, defender):
                     self.log_message(f"{defender.name} avoided the attack!")
                     tx, ty = get_pokemon_position(self, defender)
                     self.flash_damages[(tx, ty)] = ("/", "MISS")
@@ -7517,7 +7545,9 @@ class Game:
                 temp_move["power"] = curr_power
 
                 damage, is_critical, type_mult = calculate_damage(attacker, defender, temp_move, self)
-                defender.current_hp = float(int(defender.current_hp) - damage)
+                h_before = int(defender.current_hp)
+                if not self._try_iq_survival(defender, h_before, damage):
+                    defender.current_hp = float(h_before - damage)
 
                 if defender.napping:
                     defender.napping = False
@@ -7596,7 +7626,7 @@ class Game:
                 if int(defender.current_hp) <= 0:
                     break
 
-                if random.randint(1, 100) > modified_acc:
+                if (random.randint(1, 100) > modified_acc) or self._did_defender_evade_by_iq(attacker, defender):
                     self.log_message(f"{defender.name} avoided the attack!")
                     tx, ty = get_pokemon_position(self, defender)
                     self.flash_damages[(tx, ty)] = ("/", "MISS")
@@ -7608,7 +7638,9 @@ class Game:
                 temp_move["power"] = curr_power
 
                 damage, is_critical, type_mult = calculate_damage(attacker, defender, temp_move, self)
-                defender.current_hp = float(int(defender.current_hp) - damage)
+                h_before = int(defender.current_hp)
+                if not self._try_iq_survival(defender, h_before, damage):
+                    defender.current_hp = float(h_before - damage)
 
                 if defender.napping:
                     defender.napping = False
@@ -7660,6 +7692,18 @@ class Game:
                 self.log_message(f"{attacker.name} cannot use status moves while Taunted!")
                 return
             if attacker != defender:
+                status_acc = move.get("accuracy")
+                atk_types = getattr(attacker, "temp_types", None) or attacker.types
+                if move.get("name") == "Toxic" and "Poison" in atk_types:
+                    status_acc = None
+                if status_acc is not None and not attacker.status_effects.get("Lock-On"):
+                    if self._did_defender_evade_by_iq(attacker, defender):
+                        attacker.last_move_failed_turn = self.turn_number
+                        self.log_message(f"{defender.name} avoided the attack!")
+                        tx, ty = get_pokemon_position(self, defender)
+                        self.flash_damages[(tx, ty)] = ("/", "MISS")
+                        self.trigger_damage_flash()
+                        return
                 defender.last_hit_by_move = dict(move)
             if attacker != defender and getattr(defender, "napping", False):
                 defender.napping = False
@@ -7730,7 +7774,7 @@ class Game:
             if getattr(self, "weather", None) == "Fog":
                 modified_acc *= 0.8
 
-            if random.randint(1, 100) > modified_acc:
+            if (random.randint(1, 100) > modified_acc) or self._did_defender_evade_by_iq(attacker, defender):
                 attacker.last_move_failed_turn = self.turn_number
                 if defender_visible:
                     self.log_message(f"{defender.name} avoided the attack!")
@@ -7802,6 +7846,8 @@ class Game:
                     if defender.status_effects.get("Endure", 0) > 0 and damage >= defender.current_hp:
                         defender.current_hp = 1.0
                         self.log_message(f"{defender.name} endured the hit!")
+                    elif self._try_iq_survival(defender, h_before, damage):
+                        pass
                     else:
                         defender.last_damage_source = f"{attacker.name}'s {move.get('name', 'move')}"
                         defender.current_hp = float(int(defender.current_hp) - damage)
@@ -7915,7 +7961,9 @@ class Game:
                 if move.get("category") == "Physical" and damage > 0 and defender.status_effects.get("Counter", 0) > 0 and attacker != defender and int(attacker.current_hp) > 0:
                     refl = max(1, damage // 2)
                     attacker.last_damage_source = f"{defender.name}'s Counter"
-                    attacker.current_hp = float(int(attacker.current_hp) - refl)
+                    h_atk = int(attacker.current_hp)
+                    if not self._try_iq_survival(attacker, h_atk, refl):
+                        attacker.current_hp = float(h_atk - refl)
                     if self.is_team_pokemon(defender) and not self.is_team_pokemon(attacker):
                         attacker.has_been_attacked_by_team = True
                         attacker.has_had_move_used_on_it = True
@@ -7938,7 +7986,9 @@ class Game:
                 if move.get("category") == "Special" and damage > 0 and defender.status_effects.get("Mirror Coat", 0) > 0 and attacker != defender and int(attacker.current_hp) > 0:
                     refl = max(1, damage // 2)
                     attacker.last_damage_source = f"{defender.name}'s Mirror Coat"
-                    attacker.current_hp = float(int(attacker.current_hp) - refl)
+                    h_atk = int(attacker.current_hp)
+                    if not self._try_iq_survival(attacker, h_atk, refl):
+                        attacker.current_hp = float(h_atk - refl)
                     if self.is_team_pokemon(defender) and not self.is_team_pokemon(attacker):
                         attacker.has_been_attacked_by_team = True
                         attacker.has_had_move_used_on_it = True
@@ -7971,7 +8021,9 @@ class Game:
                                 adj_enemies.append(enemy)
                     for enemy in adj_enemies:
                         enemy.last_damage_source = f"{defender.name}'s Metal Burst"
-                        enemy.current_hp = float(int(enemy.current_hp) - refl)
+                        h_en = int(enemy.current_hp)
+                        if not self._try_iq_survival(enemy, h_en, refl):
+                            enemy.current_hp = float(h_en - refl)
                         if self.is_team_pokemon(defender) and not self.is_team_pokemon(enemy):
                             enemy.has_been_attacked_by_team = True
                             enemy.has_had_move_used_on_it = True
@@ -9406,6 +9458,32 @@ class Game:
             else:
                 self.render()
 
+    def _did_defender_evade_by_iq(self, attacker: Pokemon | None, defender: Pokemon | None, bypasses_accuracy: bool = False) -> bool:
+        """Checks if automatic move evasion IQ effect procs (80%+ IQ)"""
+        if bypasses_accuracy or attacker is None or defender is None or attacker == defender:
+            return False
+        if self.is_team_pokemon(attacker) == self.is_team_pokemon(defender):
+            return False
+        chance = defender.get_iq_evasion_chance() if hasattr(defender, "get_iq_evasion_chance") else 0.0
+        return chance > 0.0 and random.random() < chance
+
+    def _try_iq_survival(self, target: Pokemon | None, hp_before: int, damage: int, from_status: bool = False) -> bool:
+        """Checks if lethal move survival effect procs (40%+ IQ)"""
+        if from_status or target is None or not self.is_team_pokemon(target):
+            return False
+        chance = target.get_iq_survival_chance() if hasattr(target, "get_iq_survival_chance") else 0.0
+        if chance <= 0.0:
+            return False
+        max_hp = int(target.stats.get("HP", 1))
+        projected_hp = int(hp_before) - int(damage)
+        if projected_hp > 0 or projected_hp < -max_hp:
+            return False
+        if random.random() < chance:
+            target.current_hp = 1.0
+            self.log_message(f"{target.name} survived the hit!")
+            return True
+        return False
+
     def apply_direct_damage(self, target, damage: int, attacker=None, damage_source: str | None = None, is_critical: bool = False, type_mult: float = 1.0):
         """Applies direct damage to a Pokémon, triggering damage flashes, logs, and checking defeat"""
         if damage_source:
@@ -9428,8 +9506,10 @@ class Game:
             self.suppress_target_logs = True
 
         try:
+            h_before = int(target.current_hp)
             actual_dmg = int(min(target.current_hp, damage))
-            target.current_hp = float(int(target.current_hp) - actual_dmg)
+            if not self._try_iq_survival(target, h_before, damage, from_status=False):
+                target.current_hp = float(h_before - actual_dmg)
 
             self.flash_damages[(tx, ty)] = (damage, type_mult, is_critical)
             self.trigger_damage_flash()
@@ -11086,7 +11166,7 @@ class Game:
             for x in range(self.floor.width):
                 if self.floor.grid[y][x] == FLOOR_CHAR and (x, y) not in occupied:
                     species = random.choice(species_pool)
-                    enemy = Pokemon(species, level=lvl)
+                    enemy = Pokemon(species, level=lvl, iq=random.randint(0, 9))
                     enemy.x = x
                     enemy.y = y
                     enemy.napping = False
@@ -11711,7 +11791,9 @@ class Game:
         nature = custom_params.get("nature") if custom_params else None
         ivs = custom_params.get("ivs") if custom_params else None
 
-        enemy = Pokemon(species, level=lvl, nature=nature, ivs=ivs)
+        iq = custom_params.get("iq", random.randint(0, 9)) if custom_params else random.randint(0, 9)
+
+        enemy = Pokemon(species, level=lvl, nature=nature, ivs=ivs, iq=iq)
 
         if custom_params:
             if custom_params.get("evs") is not None:
@@ -13480,7 +13562,7 @@ class Game:
             return
 
     def handle_starter_gender_input(self, action: str):
-        """Handles input for choosing the starter Pokémon's gender."""
+        """Handles input for choosing the starter Pokémon's gender"""
         state = getattr(self, "starter_select_state", None)
         if state is None:
             return
@@ -15770,11 +15852,21 @@ class Game:
         pp_val_str = f"{curr_pp:>5,}/{max_pp:>5,}"
         exp_val_str = f"{pokemon.experience:>9,} (Next:{rem_exp:>6,})"
         belly_val_str = f"{int(pct)}%"
+        iq_val = max(0, min(100, int(getattr(pokemon, "iq", 0))))
+        iq_val_str = f"{iq_val:>3}%"
+        iq_filled = max(1, int((iq_val / 100.0) * 47)) if iq_val > 0 else 0
+        iq_filled = min(47, iq_filled)
+        iq_gauge_raw = ("☼" * iq_filled) + (" " * (47 - iq_filled))
+        if getattr(self, "compatibility_mode", False):
+            iq_gauge_str = iq_gauge_raw
+        else:
+            iq_gauge_str = f"\033[93m{iq_gauge_raw}\033[0m"
 
         interior.append(f" HP{hp_val_str:<17}       {hp_gauge_str}")
         interior.append(f" PP{pp_val_str:<17}       {pp_gauge_str}")
         interior.append(f" EXP{exp_val_str:<17}{exp_gauge_str}")
         interior.append(f" Belly   {belly_val_str:<16}  {belly_gauge_str}")
+        interior.append(f" IQ      {iq_val_str:<16}  {iq_gauge_str}")
         interior.append("─" * 74)
 
         #3. Description Block
