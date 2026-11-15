@@ -13494,8 +13494,9 @@ class Game:
             return
 
         starters = [
-            "Bulbasaur", "Charmander", "Squirtle", "Pikachu", "Vulpix", "Vulpix-A",
-            "Growlithe", "Growlithe-H", "Meowth", "Meowth-A", "Meowth-G", "Psyduck", "Machop", "Cubone", "Eevee"
+            "Bulbasaur", "Charmander", "Squirtle", "Pichu", "Vulpix", "Vulpix-A",
+            "Growlithe", "Growlithe-H", "Meowth", "Meowth-A", "Meowth-G", "Psyduck", "Machop", "Cubone", "Eevee",
+            "Chikorita", "Cyndaquil", "Totodile", "Marill", "Togepi", "Mareep", "Wooper", "Wooper-P", "Teddiursa", "Phanpy", "Elekid", "Magby"
         ]
         sel = state.get("selected_index", 0)
 
@@ -14001,7 +14002,7 @@ class Game:
             ("Bulbasaur", "Grass/Poison"),
             ("Charmander", "Fire"),
             ("Squirtle", "Water"),
-            ("Pikachu", "Electric"),
+            ("Pichu", "Electric"),
             ("Vulpix", "Fire"),
             ("Vulpix-A", "Ice"),
             ("Growlithe", "Fire"),
@@ -14013,6 +14014,18 @@ class Game:
             ("Machop", "Fighting"),
             ("Cubone", "Ground"),
             ("Eevee", "Normal"),
+            ("Chikorita", "Grass"),
+            ("Cyndaquil", "Fire"),
+            ("Totodile", "Water"),
+            ("Marill", "Water/Fairy"),
+            ("Togepi", "Fairy"),
+            ("Mareep", "Electric"),
+            ("Wooper", "Water/Ground"),
+            ("Wooper-P", "Poison/Ground"),
+            ("Teddiursa", "Normal"),
+            ("Phanpy", "Ground"),
+            ("Elekid", "Electric"),
+            ("Magby", "Fire")
         ]
 
         rows = [
