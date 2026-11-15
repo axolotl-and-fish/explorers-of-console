@@ -10563,6 +10563,34 @@ class Game:
 
     def handle_nickname_input(self, char_in: str):
         """Handles key input for nicknaming a newly recruited Pokémon."""
+        state = getattr(self, "nickname_prompt_state", None)
+        if state is None:
+            return
+
+        poke = state["pokemon"]
+        curr_text = state.get("text", "")
+
+        if char_in == "ENTER":
+            nick = curr_text.strip()[:12]
+            if not nick or nick == poke.species_name:
+                poke.nickname = None
+            else:
+                poke.nickname = nick
+            self.nickname_prompt_state = None
+            self.render()
+        elif char_in == "ESC":
+            poke.nickname = None
+            self.nickname_prompt_state = None
+            self.render()
+        elif char_in in ("BACKSPACE", "\x08", "\x7f"):
+            if curr_text:
+                state["text"] = curr_text[:-1]
+                self.render()
+        elif char_in and len(curr_text) < 12 and (char_in.isalnum() or char_in in " -_"):
+            state["text"] = curr_text + char_in
+            self.render()
+
+    def render_nickname_prompt_screen(self) -> list[str]:
         """Renders the nicknaming overlay screen for a newly recruited Pokémon."""
         state = getattr(self, "nickname_prompt_state", None)
         if state is None:
