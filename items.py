@@ -103,6 +103,9 @@ def can_item_spawn_on_floor(item: dict | str, floor_number: int) -> bool:
     else:
         return False
 
+    if item_data.get("no_floor_spawn", False):
+        return False
+
     min_floor = item_data.get("min_floor")
     if min_floor is not None and floor_number < int(min_floor):
         return False
@@ -394,7 +397,15 @@ def sort_inventory_items(inventory: list[dict], sort_mode: str) -> list[dict]:
     return inventory
 
 
-def apply_item_effect(item: dict, target, game, is_thrown: bool = False):
+def is_berry(item: dict) -> bool:
+    """Returns True if item is a Berry."""
+    if not isinstance(item, dict):
+        return False
+    name = item.get("name", "")
+    return bool(item.get("berry", False) or "Berry" in name)
+
+
+def apply_item_effect(item: dict, target, game, is_thrown: bool = False, from_cud_chew: bool = False):
     """Applies the use or throw effect of an item to a target Pokémon"""
     if hasattr(game, "party") and target not in game.party:
         target.has_been_attacked_by_team = True
@@ -452,9 +463,25 @@ def apply_item_effect(item: dict, target, game, is_thrown: bool = False):
         game.log_message(f"{target.name} is too full to eat any more.")
         return
 
+    from abilities import has_ability, get_effective_weather
+    if not is_thrown and edible and has_ability(target, "Gluttony", game=game):
+        max_hp = float(target.stats.get("HP", 1))
+        heal_amt = int(max(1.0, 0.25 * max_hp))
+        old_hp = float(target.current_hp)
+        target.current_hp = min(max_hp, old_hp + heal_amt)
+        actual_heal = int(target.current_hp - old_hp)
+        if actual_heal > 0 and game:
+            from targeting import get_pokemon_position
+            pos = get_pokemon_position(game, target)
+            if pos and hasattr(game, "flash_damages"):
+                game.flash_damages[pos] = (f"{actual_heal}", "HEAL")
+                game.trigger_damage_flash()
+        if hasattr(target, "current_belly") and getattr(target, "current_belly", 0) <= getattr(target, "max_belly", 100):
+            target.current_belly = min(target.max_belly, target.current_belly + 0.10 * target.max_belly)
+
     #Edible items eaten by a team Pokemon restore 5% of max Belly (except food-type, apricorn, and Gummi items)
     if not is_thrown and edible and target in game.party:
-        if hasattr(target, "current_belly") and getattr(target, "current_belly", 0) <= getattr(target, "max_belly", 100) and name not in ("Apple", "Big Apple", "Huge Apple", "Banana", "Chestnut", "Grimy Food", "HP Up", "Protein", "Iron", "Calcium", "Zinc", "Carbos", "PP Up", "PP Max", "Hunger Seed", "Reviver Seed", "Tiny Reviver Seed", "Possess Orb") and not item.get("apricorn", False) and not is_gummi(item):
+        if hasattr(target, "current_belly") and getattr(target, "current_belly", 0) <= getattr(target, "max_belly", 100) and name not in ("Apple", "Big Apple", "Huge Apple", "Banana", "Chestnut", "Grimy Food", "Nectar", "HP Up", "Protein", "Iron", "Calcium", "Zinc", "Carbos", "PP Up", "PP Max", "Hunger Seed", "Reviver Seed", "Tiny Reviver Seed", "Possess Orb") and not item.get("apricorn", False) and not is_gummi(item):
             restore_amount = 0.05 * target.max_belly
             target.current_belly = min(target.max_belly, target.current_belly + restore_amount)
             game.log_message(f"{target.name}'s belly was filled slightly!")
@@ -576,7 +603,8 @@ def apply_item_effect(item: dict, target, game, is_thrown: bool = False):
     elif name == "Grimy Food":
         if hasattr(target, "current_belly") and getattr(target, "current_belly", 0) <= getattr(target, "max_belly", 100):
             target.current_belly = min(target.max_belly, target.current_belly + 0.30 * target.max_belly)
-        if random.random() < 0.75:
+        neg_chance = 0.20 if has_ability(target, "Gluttony", game=game) else 0.75
+        if random.random() < neg_chance:
             effects = [
                 "poison", "toxic", "burn", "paralysis", "confusion",
                 "slow", "lower_all_stats", "lower_atk_spatk_speed",
@@ -735,8 +763,21 @@ def apply_item_effect(item: dict, target, game, is_thrown: bool = False):
     elif name == "Blinker Seed":
         target.apply_status("Blind", game, duration=10)
 
+    elif name == "Nectar":
+        if not is_thrown and hasattr(target, "current_belly") and getattr(target, "current_belly", 0) <= getattr(target, "max_belly", 100):
+            target.current_belly = min(target.max_belly, target.current_belly + 0.50 * target.max_belly)
+            game.log_message(f"{target.name}'s belly was filled!")
+        if hasattr(target, "gain_iq"):
+            actual_gained = target.gain_iq(10, game=game)
+            if actual_gained > 0:
+                game.log_message(f"Whoa! This Nectar tastes amazing! {target.name}'s IQ increased massively!!!")
+            else:
+                game.log_message(f"{target.name}'s IQ is already maxed out!")
+
     elif name == "Crosseye Seed":
         target.apply_status("Hallucinating", game, duration=10)
+        if has_ability(target, "Steadfast", game=game):
+            target.change_movement_speed(target.movement_speed_stage + 1, game)
 
     elif name == "Doom Seed":
         if target.level > 1:
@@ -771,19 +812,22 @@ def apply_item_effect(item: dict, target, game, is_thrown: bool = False):
         game.log_message("But nothing happened.")
 
     elif name == "Warp Seed":
-        from dungeon import FLOOR_CHAR
-        valid_tiles = []
-        for ry in range(game.floor.height):
-            for rx in range(game.floor.width):
-                if game.floor.grid[ry][rx] == FLOOR_CHAR:
-                    if (rx, ry) != getattr(game, "stairs_position", None):
-                        valid_tiles.append((rx, ry))
-        if valid_tiles:
-            wx, wy = random.choice(valid_tiles)
-            game.set_poke_pos(target, wx, wy)
-            game.log_message(f"{target.name} warped!")
+        if is_thrown and has_ability(target, "Suction Cups", game=game):
+            game.log_message(f"{target.name}'s Suction Cups anchored it in place!")
         else:
-            game.log_message("But nothing happened.")
+            from dungeon import FLOOR_CHAR
+            valid_tiles = []
+            for ry in range(game.floor.height):
+                for rx in range(game.floor.width):
+                    if game.floor.grid[ry][rx] == FLOOR_CHAR:
+                        if (rx, ry) != getattr(game, "stairs_position", None):
+                            valid_tiles.append((rx, ry))
+            if valid_tiles:
+                wx, wy = random.choice(valid_tiles)
+                game.set_poke_pos(target, wx, wy)
+                game.log_message(f"{target.name} warped!")
+            else:
+                game.log_message("But nothing happened.")
 
     elif name == "Rare Candy":
         if target.level < 99:
@@ -1402,6 +1446,9 @@ def apply_item_effect(item: dict, target, game, is_thrown: bool = False):
                 else:
                     if max(abs(ex - px), abs(ey - py)) <= v_radius:
                         should_warp = True
+                if should_warp and has_ability(enemy, "Suction Cups", game=game):
+                    game.log_message(f"{enemy.name}'s Suction Cups anchored it in place!")
+                    continue
                 if should_warp and valid_tiles:
                     wx, wy = random.choice(valid_tiles)
                     valid_tiles.remove((wx, wy))
@@ -1415,3 +1462,29 @@ def apply_item_effect(item: dict, target, game, is_thrown: bool = False):
 
     else:
         game.log_message("But nothing happened.")
+
+    #Post-eating Berry abilities (Cud Chew & Harvest)
+    if not is_thrown and is_berry(item):
+        if not from_cud_chew and has_ability(target, "Cud Chew", game=game):
+            if not hasattr(target, "cud_chew_queue") or target.cud_chew_queue is None:
+                target.cud_chew_queue = []
+            berry_copy = dict(item)
+            berry_copy["count"] = 1
+            target.cud_chew_queue.append({"item": berry_copy, "turns_left": 2})
+
+        if not from_cud_chew and has_ability(target, "Harvest", game=game):
+            eff_w = get_effective_weather(target, game)
+            if eff_w in ("Sunny", "Harsh Sunlight"):
+                h_chance = 0.50
+            elif eff_w and eff_w != "Clear":
+                h_chance = 0.10
+            else:
+                h_chance = 0.25
+            if random.random() < h_chance:
+                berry_copy = dict(ITEMS_DB.get(name, item))
+                berry_copy["count"] = 1
+                if target in getattr(game, "party", []) and hasattr(game, "add_item_to_inventory"):
+                    if game.add_item_to_inventory(berry_copy):
+                        game.log_message(f"{target.name}'s Harvest restored {name} to the Bag!")
+                    else:
+                        game.log_message(f"{target.name}'s Harvest activated, but the Bag was full!")

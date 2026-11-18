@@ -10,15 +10,24 @@ import math
 import random
 from pokemon import Pokemon
 from type_chart import get_effectiveness_multiplier
+from abilities import (
+    has_ability,
+    get_effective_weather,
+    get_effective_weight,
+    get_effective_movement_speed_stage,
+    has_sheer_force_boosted_effect,
+    is_reckless_move,
+    resolve_move_with_abilities,
+)
 
 
-def is_pokemon_grounded(pokemon: Pokemon, game=None) -> bool:
+def is_pokemon_grounded(pokemon: Pokemon, game=None, attacker=None) -> bool:
     """Returns True if the Pokémon is grounded (affected by terrain, etc)."""
     if (game and getattr(game, "gravity", False)) or pokemon.status_effects.get("Landed", 0) > 0:
         return True
     if pokemon.status_effects.get("Magnet Rise", 0) > 0 or pokemon.status_effects.get("Telekinesis", 0) > 0:
         return False
-    if pokemon.species_data.get("ability") == "Levitate" or getattr(pokemon, "is_floating", False):
+    if has_ability(pokemon, "Levitate", game=game, attacker=attacker) or getattr(pokemon, "is_floating", False):
         return False
     p_types = getattr(pokemon, "temp_types", None) or getattr(pokemon, "types", pokemon.species_data.get("types", []))
     if "Flying" in p_types:
@@ -40,13 +49,17 @@ def calculate_damage(attacker: Pokemon, defender: Pokemon, move: dict, game=None
     Returns:
         tuple[int, bool, float]: (final_damage, is_critical, type_multiplier)
     """
-    if game and hasattr(game, "weather"):
-        if game.weather == "Shadowy Aura":
-            move = dict(move)
-            move["type"] = "typeless"
-        elif game.weather == "Harsh Sunlight" and move.get("type") == "Water":
+    eff_weather = get_effective_weather(attacker, game) if game else None
+    if eff_weather != "Clear" and has_ability(defender, "Cloud Nine", game=game, attacker=attacker):
+        eff_weather = "Clear"
+    if eff_weather == "Shadowy Aura":
+        move = dict(move)
+        move["type"] = "typeless"
+    else:
+        move = resolve_move_with_abilities(attacker, move, game=game)
+        if eff_weather == "Harsh Sunlight" and move.get("type") == "Water":
             return 0, False, 0.0
-        elif game.weather == "Heavy Rain" and move.get("type") == "Fire":
+        elif eff_weather == "Heavy Rain" and move.get("type") == "Fire":
             return 0, False, 0.0
 
     #Moves where damage = user's level
@@ -173,7 +186,7 @@ def calculate_damage(attacker: Pokemon, defender: Pokemon, move: dict, game=None
 
     #Low Kick power scale based on target weight (no fancy formulae here, just simple if/else checks)
     if move.get("name") == "Low Kick":
-        weight = float(defender.species_data.get("weight", 10.0))
+        weight = get_effective_weight(defender, game)
         if weight < 10.0:
             power = 20
         elif weight < 25.0:
@@ -189,13 +202,14 @@ def calculate_damage(attacker: Pokemon, defender: Pokemon, move: dict, game=None
 
     #Electro Ball power calculation. Faster attacker = higher power
     if move.get("name") == "Electro Ball":
+        ignore_def_stages = has_ability(attacker, "Unaware", game=game)
         u_speed = attacker.get_modified_stat("Speed", game)
-        t_speed = defender.get_modified_stat("Speed", game)
+        t_speed = defender.get_modified_stat("Speed", game, attacker=attacker, ignore_stages=ignore_def_stages)
         
-        u_stage = attacker.movement_speed_stage
+        u_stage = get_effective_movement_speed_stage(attacker, game)
         u_mult = 0.5 if u_stage == -1 else float(1 + u_stage)
         
-        t_stage = defender.movement_speed_stage
+        t_stage = get_effective_movement_speed_stage(defender, game)
         t_mult = 0.5 if t_stage == -1 else float(1 + t_stage)
         
         u_speed_eff = u_speed * u_mult
@@ -207,13 +221,14 @@ def calculate_damage(attacker: Pokemon, defender: Pokemon, move: dict, game=None
 
     #Gyro Ball power calculation. Slower attacker = higher power (opposite of Electro Ball)
     if move.get("name") == "Gyro Ball":
+        ignore_def_stages = has_ability(attacker, "Unaware", game=game)
         u_speed = attacker.get_modified_stat("Speed", game)
-        t_speed = defender.get_modified_stat("Speed", game)
+        t_speed = defender.get_modified_stat("Speed", game, attacker=attacker, ignore_stages=ignore_def_stages)
         
-        u_stage = attacker.movement_speed_stage
+        u_stage = get_effective_movement_speed_stage(attacker, game)
         u_mult = 0.5 if u_stage == -1 else float(1 + u_stage)
         
-        t_stage = defender.movement_speed_stage
+        t_stage = get_effective_movement_speed_stage(defender, game)
         t_mult = 0.5 if t_stage == -1 else float(1 + t_stage)
         
         u_speed_eff = u_speed * u_mult
@@ -225,80 +240,132 @@ def calculate_damage(attacker: Pokemon, defender: Pokemon, move: dict, game=None
 
     #Heavy Slam power calculation. Heavier attacker = higher power
     if move.get("name") == "Heavy Slam":
-        u_weight = max(0.1, float(attacker.species_data.get("weight", 10.0)))
-        t_weight = max(0.1, float(defender.species_data.get("weight", 10.0)))
+        u_weight = get_effective_weight(attacker, game)
+        t_weight = get_effective_weight(defender, game)
         ratio = u_weight / t_weight
         power = int(80 * math.sqrt(ratio))
         power = max(2, min(250, power))
 
+    #Knock Off: 1.5x power if defender holds an item
+    if move.get("name") == "Knock Off" and getattr(defender, "held_item", None) is not None:
+        power = float(power) * 1.5
+
+    #Technician: moves with < 80 Power get +50% Power up to 80
+    if float(power) < 80.0 and has_ability(attacker, "Technician", game=game):
+        power = min(80.0, float(power) * 1.5)
+
+    #Sheer Force: +30% power on eligible damaging moves
+    if has_ability(attacker, "Sheer Force", game=game) and has_sheer_force_boosted_effect(move):
+        power = float(power) * 1.3
+
+    #Tough Claws: +30% power for contact moves
+    if move.get("contact") and has_ability(attacker, "Tough Claws", game=game):
+        power = float(power) * 1.3
+
+    #Iron Fist: +20% power for punching moves
+    if move.get("punching") and has_ability(attacker, "Iron Fist", game=game):
+        power = float(power) * 1.2
+
+    #Reckless: +20% power for recoil/crash moves (not Struggle)
+    if is_reckless_move(move) and has_ability(attacker, "Reckless", game=game):
+        power = float(power) * 1.2
+
+    #Analytic: +50% power when user has negative movement speed stage
+    if has_ability(attacker, "Analytic", game=game) and get_effective_movement_speed_stage(attacker, game) < 0:
+        power = float(power) * 1.5
+
+    #Sand Force: +30% power for Rock/Ground/Steel moves in Sandstorm
+    if eff_weather == "Sandstorm" and move.get("type") in ("Rock", "Ground", "Steel") and has_ability(attacker, "Sand Force", game=game):
+        power = float(power) * 1.3
+
+    #Pinch type boosters (Overgrow, Blaze, Torrent, Swarm) at <= 20% max HP
+    pinch_map = {
+        "Overgrow": "Grass",
+        "Blaze": "Fire",
+        "Torrent": "Water",
+        "Swarm": "Bug",
+    }
+    max_atk_hp = max(1.0, float(attacker.stats.get("HP", 1.0)))
+    if float(attacker.current_hp) <= 0.20 * max_atk_hp:
+        m_t = move.get("type")
+        for ab_name, ab_type in pinch_map.items():
+            if m_t == ab_type and has_ability(attacker, ab_name, game=game):
+                power = float(power) * 1.5
+
+    #Flash Fire: +50% Fire power when charged
+    if getattr(attacker, "flash_fire_boosted", False) and move.get("type") == "Fire" and has_ability(attacker, "Flash Fire", game=game):
+        power = float(power) * 1.5
+
     #Same-Type Attack Bonus (STAB)
     attacker_types = getattr(attacker, "types", attacker.species_data.get("types", []))
-    if not (game and getattr(game, "weather", None) == "Shadowy Aura"):
+    stab_mult = 2.0 if has_ability(attacker, "Adaptability", game=game) else 1.5
+    if eff_weather != "Shadowy Aura":
         #Unique/multi-type moves
         if move.get("name") == "Muddy Water":
             if any(t in attacker_types for t in ["Water", "Ground"]):
-                power = power * 1.5
+                power = power * stab_mult
         elif move.get("name") == "Tri Attack":
             if any(t in attacker_types for t in ["Fire", "Ice", "Electric"]):
-                power = power * 1.5
+                power = power * stab_mult
         elif move.get("type") in attacker_types:
-            power = power * 1.5
+            power = power * stab_mult
 
     #Boosts & penalties from weather
-    if game and hasattr(game, "weather"):
+    if eff_weather:
         m_type = move.get("type")
-        if game.weather == "Sunny":
+        if eff_weather == "Sunny":
             if m_type == "Fire":
                 power = power * 1.5
             elif m_type == "Water":
                 power = power * 0.5
-        elif game.weather == "Rain":
+        elif eff_weather == "Rain":
             if m_type == "Water":
                 power = power * 1.5
             elif m_type == "Fire":
                 power = power * 0.5
-        elif game.weather == "Cloudy":
+        elif eff_weather == "Cloudy":
             if m_type == "Normal":
                 power = power * 1.33
-        elif game.weather in ("Snow", "Blizzard"):
+        elif eff_weather in ("Snow", "Blizzard"):
             if m_type == "Ice":
                 power = power * 1.5
-        elif game.weather == "Thunderstorm":
+        elif eff_weather == "Thunderstorm":
             if m_type in ("Water", "Electric"):
                 power = power * 1.5
             elif m_type == "Fire":
                 power = power * 0.5
-        elif game.weather == "Harsh Sunlight":
+        elif eff_weather == "Harsh Sunlight":
             if m_type == "Fire":
                 power = power * 2.0
             elif m_type == "Water":
                 return 0, False, 0.0
-        elif game.weather == "Heavy Rain":
+        elif eff_weather == "Heavy Rain":
             if m_type == "Water":
                 power = power * 2.0
             elif m_type == "Fire":
                 return 0, False, 0.0
-        elif game.weather == "Grassy Terrain":
+        elif eff_weather == "Grassy Terrain":
             if m_type == "Ground":
                 power = power * 0.5
             elif m_type == "Grass":
-                if "Flying" not in attacker.species_data.get("types", []):
+                if is_pokemon_grounded(attacker, game):
                     power = power * 1.3
-        elif game.weather == "Electric Terrain":
+        elif eff_weather == "Electric Terrain":
             if m_type == "Electric":
-                if "Flying" not in attacker.species_data.get("types", []):
+                if is_pokemon_grounded(attacker, game):
                     power = power * 1.3
 
     #Determine which stats to use
+    ignore_def_stages = has_ability(attacker, "Unaware", game=game)
     if category == "Physical":
         atk = attacker.get_modified_stat("Attack", game)
-        def_stat = defender.get_modified_stat("Defense", game)
+        def_stat = defender.get_modified_stat("Defense", game, attacker=attacker, ignore_stages=ignore_def_stages)
     elif category == "Special":
         atk = attacker.get_modified_stat("Special_Attack", game)
         if move.get("name") == "Psyshock" or move.get("name") == "Psystrike":
-            def_stat = defender.get_modified_stat("Defense", game)
+            def_stat = defender.get_modified_stat("Defense", game, attacker=attacker, ignore_stages=ignore_def_stages)
         else:
-            def_stat = defender.get_modified_stat("Special_Defense", game)
+            def_stat = defender.get_modified_stat("Special_Defense", game, attacker=attacker, ignore_stages=ignore_def_stages)
 
     #Failsafe to prevent DIV/0 or negative damage values
     atk = max(1, atk)
@@ -310,39 +377,65 @@ def calculate_damage(attacker: Pokemon, defender: Pokemon, move: dict, game=None
 
     #Calculate critical hit chance: 12.5% * (attacker speed / defender speed)
     atk_speed = max(1, attacker.get_modified_stat("Speed", game))
-    def_speed = max(1, defender.get_modified_stat("Speed", game))
-    
-    if move.get("_evaluating_category"):
+    def_speed = max(1, defender.get_modified_stat("Speed", game, attacker=attacker, ignore_stages=ignore_def_stages))
+    has_battle_armor = has_ability(defender, "Battle Armor", game=game, attacker=attacker)
+    crit_power = 2.0 if has_ability(attacker, "Sniper", game=game) else 1.5
+
+    if move.get("_evaluating_category") or has_battle_armor:
         is_critical = False
         crit_multiplier = 1.0
-    elif (move.get("always_crit") or move.get("guaranteed_crit") or attacker.status_effects.get("Laser Focus") or defender.status_effects.get("Curse")) and defender.species_data.get("ability") not in ("Battle Armor", "Shell Armor"):
+    elif move.get("always_crit") or move.get("guaranteed_crit") or attacker.status_effects.get("Laser Focus") or defender.status_effects.get("Curse"):
         is_critical = True
-        crit_multiplier = 1.5
+        crit_multiplier = crit_power
     else:
         crit_chance = 0.125 * (atk_speed / def_speed)
         if int(getattr(attacker, "iq", 0)) >= 100:
+            crit_chance *= 2
+        if has_ability(attacker, "Super Luck", game=game):
             crit_chance *= 2
         if move.get("high_crit_ratio") or move.get("name") == "Razor Leaf":
             crit_chance *= 2
         if attacker.status_effects.get("Focus Energy", 0) > 0:
             crit_chance *= 4
         is_critical = random.random() < crit_chance
-        crit_multiplier = 1.5 if is_critical else 1.0
+        crit_multiplier = crit_power if is_critical else 1.0
 
     #Calculate type effectiveness multiplier
-    target_types = getattr(defender, "types", defender.species_data.get("types", ["typeless"]))
-    is_grounded = is_pokemon_grounded(defender, game)
+    target_types = list(getattr(defender, "types", defender.species_data.get("types", ["typeless"])))
+    is_grounded = is_pokemon_grounded(defender, game, attacker=attacker)
     if is_grounded:
         target_types = [t for t in target_types if t != "Flying"]
         if not target_types:
             target_types = ["typeless"]
-    if game and getattr(game, "weather", None) == "Shadowy Aura":
+    if has_ability(attacker, "Scrappy", game=game) and move.get("type") in ("Normal", "Fighting"):
+        target_types = [t for t in target_types if t != "Ghost"]
+        if not target_types:
+            target_types = ["typeless"]
+    if eff_weather == "Shadowy Aura":
         move_type_key = "typeless"
     else:
         move_type_key = str(move.get("name")) if move.get("name") in ("Muddy Water", "Freeze-Dry") else str(move.get("type", "typeless"))
     type_multiplier = get_effectiveness_multiplier(move_type_key, target_types)
-    if move.get("type") == "Ground" and defender.status_effects.get("Magnet Rise", 0) > 0 and not is_grounded:
+    if move.get("type") == "Ground" and not is_grounded and (defender.status_effects.get("Magnet Rise", 0) > 0 or has_ability(defender, "Levitate", game=game, attacker=attacker)):
         type_multiplier = 0.0
+
+    if type_multiplier > 0.0:
+        if move.get("type") in ("Fire", "Ice") and has_ability(defender, "Thick Fat", game=game, attacker=attacker):
+            type_multiplier = max(0.25, round(type_multiplier - 0.25, 4))
+        if move.get("type") == "Fire" and has_ability(defender, "Dry Skin", game=game, attacker=attacker):
+            type_multiplier = min(1.75, round(type_multiplier + 0.25, 4))
+
+    if 0.0 < type_multiplier < 1.0 and has_ability(attacker, "Tinted Lens", game=game):
+        if type_multiplier <= 0.25:
+            type_multiplier = 0.5
+        elif type_multiplier <= 0.50:
+            type_multiplier = 0.9
+        else:
+            type_multiplier = 0.95
+
+    if type_multiplier > 1.0 and has_ability(defender, "Filter", game=game, attacker=attacker):
+        tiers = round((type_multiplier - 1.0) / 0.25)
+        type_multiplier = round(1.0 + 0.10 * tiers, 4)
 
     #Apply all multipliers
     total_damage = base_damage * crit_multiplier * type_multiplier
@@ -351,12 +444,14 @@ def calculate_damage(attacker: Pokemon, defender: Pokemon, move: dict, game=None
     if is_multi_target:
         total_damage = total_damage * 0.75
 
+    bypass_screens = has_ability(attacker, "Infiltrator", game=game)
+
     #Light Screen halves Special damage
-    if category == "Special" and defender.status_effects.get("Light Screen", 0) > 0 and move.get("name") != "Brick Break":
+    if not bypass_screens and category == "Special" and defender.status_effects.get("Light Screen", 0) > 0 and move.get("name") != "Brick Break":
         total_damage = total_damage * 0.5
 
     #Reflect halves Physical damage
-    if category == "Physical" and defender.status_effects.get("Reflect", 0) > 0 and move.get("name") != "Brick Break":
+    if not bypass_screens and category == "Physical" and defender.status_effects.get("Reflect", 0) > 0 and move.get("name") != "Brick Break":
         total_damage = total_damage * 0.5
 
     #Skull Bash: user takes half damage from Physical moves while charging
@@ -377,12 +472,25 @@ def calculate_damage(attacker: Pokemon, defender: Pokemon, move: dict, game=None
         total_damage = total_damage * 2.0
 
     #Aurora Veil reduces damage taken by 1/3
-    if defender.status_effects.get("Aurora Veil", 0) > 0 and move.get("name") not in ("Brick Break", "Raging Bull"):
+    if not bypass_screens and defender.status_effects.get("Aurora Veil", 0) > 0 and move.get("name") not in ("Brick Break", "Raging Bull"):
         total_damage = total_damage * (2.0 / 3.0)
 
+    #Multiscale halves damage taken when at full HP
+    if float(defender.current_hp) >= float(defender.stats.get("HP", 1)) and has_ability(defender, "Multiscale", game=game, attacker=attacker):
+        total_damage = total_damage * 0.5
+
+    #Rivalry modifies damage based on gender
+    atk_gender = getattr(attacker, "gender", None)
+    def_gender = getattr(defender, "gender", None)
+    if atk_gender in ("Male", "Female") and def_gender in ("Male", "Female") and has_ability(attacker, "Rivalry", game=game):
+        if atk_gender == def_gender:
+            total_damage = total_damage * 0.75
+        else:
+            total_damage = total_damage * 1.25
+
     #Misty Terrain halves Dragon-type move damage against grounded Pokémon
-    if game and getattr(game, "weather", None) == "Misty Terrain" and move.get("type") == "Dragon":
-        if is_pokemon_grounded(defender, game):
+    if eff_weather == "Misty Terrain" and move.get("type") == "Dragon":
+        if is_pokemon_grounded(defender, game, attacker=attacker):
             total_damage = total_damage * 0.5
 
     #Type resistance berries (Occa, Passho, Wacan, etc.) halve damage from matching move type or All types

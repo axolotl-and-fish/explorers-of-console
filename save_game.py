@@ -106,6 +106,13 @@ def serialize_pokemon(poke: Pokemon) -> dict:
         "is_leader": getattr(poke, "is_leader", False),
         "held_item": dict(poke.held_item) if poke.held_item is not None else None,
         "ability": getattr(poke, "ability", None),
+        "ability_slots": list(getattr(poke, "ability_slots", [])),
+        "replaced_abilities": dict(getattr(poke, "replaced_abilities", {})),
+        "flash_fire_boosted": getattr(poke, "flash_fire_boosted", False),
+        "cud_chew_queue": [dict(entry) for entry in getattr(poke, "cud_chew_queue", [])],
+        "run_away_triggered_this_floor": getattr(poke, "run_away_triggered_this_floor", False),
+        "curious_medicine_used_this_floor": getattr(poke, "curious_medicine_used_this_floor", False),
+        "berserk_triggered_this_floor": getattr(poke, "berserk_triggered_this_floor", False),
         "tactic": getattr(poke, "tactic", None),
         "last_damage_source": getattr(poke, "last_damage_source", None),
         "has_been_attacked_by_team": getattr(poke, "has_been_attacked_by_team", False),
@@ -229,6 +236,17 @@ def deserialize_pokemon(data: dict) -> Pokemon | None:
     poke.is_leader = data.get("is_leader", False)
     poke.held_item = dict(data["held_item"]) if data.get("held_item") else None
     poke.ability = data.get("ability")
+    if "ability_slots" in data and isinstance(data["ability_slots"], list):
+        poke.ability_slots = list(data["ability_slots"])
+    if isinstance(data.get("replaced_abilities"), dict):
+        poke.replaced_abilities = {int(k): v for k, v in data["replaced_abilities"].items()}
+    else:
+        poke.replaced_abilities = {}
+    poke.flash_fire_boosted = bool(data.get("flash_fire_boosted", False))
+    poke.cud_chew_queue = [dict(entry) for entry in data.get("cud_chew_queue", []) if isinstance(entry, dict)]
+    poke.run_away_triggered_this_floor = bool(data.get("run_away_triggered_this_floor", False))
+    poke.curious_medicine_used_this_floor = bool(data.get("curious_medicine_used_this_floor", False))
+    poke.berserk_triggered_this_floor = bool(data.get("berserk_triggered_this_floor", False))
     poke.tactic = data.get("tactic")
     poke.last_damage_source = data.get("last_damage_source")
     poke.has_been_attacked_by_team = data.get("has_been_attacked_by_team", False)

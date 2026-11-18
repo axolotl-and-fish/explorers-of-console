@@ -23,6 +23,8 @@ from message_log import MessageLog  #type: ignore
 from combat import calculate_damage
 from targeting import get_valid_targets, get_pokemon_position, get_room_tiles_at, get_confusion_targets, get_actual_target, is_ally_in_way_of_attack, has_clear_path, get_effective_move_range
 import items
+import abilities
+from combat import is_pokemon_grounded
 from end_screen import EndScreenController
 
 PLAYER_CHAR = "@" #Appearance of the currently-controlled character (the team leader)
@@ -677,6 +679,12 @@ class Game:
             return any(entry.get("pokemon") is pokemon or (poke_id and entry.get("pokemon_id") == poke_id) for entry in self.all_team_members)
         return False
 
+    def are_allies(self, pokemon_a, pokemon_b) -> bool:
+        """Returns True if both Pokemon belong to the same side (team or wild)."""
+        if pokemon_a is None or pokemon_b is None:
+            return False
+        return self.is_team_pokemon(pokemon_a) == self.is_team_pokemon(pokemon_b)
+
     def get_elapsed_play_time(self) -> float:
         """Returns total active play time in seconds across all game sessions for that save file"""
         import time
@@ -926,23 +934,27 @@ class Game:
             self.animate_terrain_spread(weather, source)
 
         if weather == "Misty Terrain":
-            from combat import is_pokemon_grounded
             all_pokes = list(getattr(self, "party", [])) + list(getattr(self, "spawned_pokemon", []))
             for p in all_pokes:
-                if is_pokemon_grounded(p, self):
+                if abilities.get_effective_weather(p, self) == "Misty Terrain" and is_pokemon_grounded(p, self):
                     for st in ("Sleep", "Resting", "Paralysis", "Poison", "Toxic", "Burn", "Frozen"):
                         if p.status_effects.get(st):
                             p.cure_status(st, self)
         elif weather == "Harsh Sunlight":
             all_pokes = list(getattr(self, "party", [])) + list(getattr(self, "spawned_pokemon", []))
             for p in all_pokes:
-                if p.status_effects.get("Frozen", 0) > 0:
+                if abilities.get_effective_weather(p, self) == "Harsh Sunlight" and p.status_effects.get("Frozen", 0) > 0:
                     p.cure_status("Frozen", self)
         elif weather == "Heavy Rain":
             all_pokes = list(getattr(self, "party", [])) + list(getattr(self, "spawned_pokemon", []))
             for p in all_pokes:
-                if p.status_effects.get("Burn"):
+                if abilities.get_effective_weather(p, self) == "Heavy Rain" and p.status_effects.get("Burn"):
                     p.cure_status("Burn", self)
+
+        if weather in ("Rain", "Heavy Rain", "Thunderstorm"):
+            all_pokes = list(getattr(self, "party", [])) + list(getattr(self, "spawned_pokemon", []))
+            for p in all_pokes:
+                abilities.apply_hydration_check(p, self)
 
     def get_weather_particle_density(self, weather: str) -> int:
         """Returns the target particle count for animated weather"""
@@ -1243,13 +1255,7 @@ class Game:
             if pokemon.status_effects.get(f"{res_t} Resist"):
                 items.append((f"{res_t} Res", "positive"))
 
-        spd_stage = pokemon.movement_speed_stage
-        p_types = getattr(pokemon, "types", pokemon.species_data.get("types", []))
-        if getattr(self, "weather", None) == "Blizzard" and "Ice" in p_types:
-            spd_stage += 1
-        elif getattr(self, "weather", None) == "Strong Winds" and "Flying" in p_types:
-            spd_stage += 1
-        spd_stage = min(3, max(-1, spd_stage))
+        spd_stage = abilities.get_effective_movement_speed_stage(pokemon, self)
         if spd_stage == -1:
             items.append(("Slow", "negative"))
         elif spd_stage == 1:
@@ -1328,17 +1334,19 @@ class Game:
             gender_sym = self.get_pokemon_gender_symbol(found_pokemon)
             poke_name_display = f"{found_pokemon.name}{gender_sym}"
 
-            #1st line: Name, HP (allies only), Level (allies only) or HP % (foes only)
+            #1st line: Name, HP, Level (allies only) or HP % (foes only, unless a teammate has Analytic)
             if is_ally:
                 line1 = f"{poke_name_display} Lv {found_pokemon.level} HP {int(found_pokemon.current_hp)}/{found_pokemon.stats['HP']}"
+            elif abilities.get_team_ability_count("Analytic", self) > 0:
+                line1 = f"{poke_name_display} HP {int(found_pokemon.current_hp)}/{found_pokemon.stats['HP']}"
             else:
                 import math
                 pct = int(math.ceil((found_pokemon.current_hp / found_pokemon.stats["HP"]) * 100.0))
                 pct = min(100, pct)
                 line1 = f"{poke_name_display} HP {pct}%"
 
-            #2nd line: Known moves (for allies) or seen moves (for foes)
-            if is_ally:
+            #2nd line: Known moves (for allies or Forewarn) or seen moves (for foes)
+            if is_ally or abilities.get_team_ability_count("Forewarn", self) > 0:
                 line2 = ", ".join(m["name"] for m in found_pokemon.moves)
             else:
                 line2 = ", ".join(m["name"] if m["name"] in found_pokemon.seen_moves else "???" for m in found_pokemon.moves) #Foes' moves are hidden until they have been seen using them.
@@ -1733,7 +1741,119 @@ class Game:
         enemy.moves = enemy.moves[-4:] #Last 4 moves they would know by level up
         self.spawned_pokemon.append(enemy)
         self.register_encountered_species(species)
+        self.apply_single_pokemon_floor_entry(enemy)
         return True
+
+    def reset_member_floor_ability_states(self, member: Pokemon):
+        """Resets ability flags that trigger once per floor when entering a new floor"""
+        if hasattr(member, "replaced_abilities") and isinstance(member.replaced_abilities, dict):
+            member.replaced_abilities.clear()
+        member.run_away_triggered_this_floor = False
+        member.curious_medicine_used_this_floor = False
+        member.berserk_triggered_this_floor = False
+        member.flash_fire_boosted = False
+        member.download_triggered_this_turn = None
+        if hasattr(member, "cud_chew_queue") and isinstance(member.cud_chew_queue, list):
+            member.cud_chew_queue.clear()
+
+    def apply_single_pokemon_floor_entry(self, poke: Pokemon):
+        """Triggers floor-start abilities when entering a floor"""
+        if poke is None or int(getattr(poke, "current_hp", 0)) <= 0:
+            return
+        weather_abilities = (
+            ("Drought", "Sunny", (15, 20)),
+            ("Drizzle", "Rain", (15, 20)),
+            ("Snow Warning", "Snow", (15, 20)),
+            ("Sand Stream", "Sandstorm", (15, 20)),
+            ("Misty Surge", "Misty Terrain", (10, 20)),
+        )
+        for ab_name, w_name, dur_range in weather_abilities:
+            if abilities.has_ability(poke, ab_name, game=self):
+                dur = random.randint(dur_range[0], dur_range[1])
+                self.set_weather(w_name, duration=dur, source=poke if w_name == "Misty Terrain" else None)
+
+        if abilities.has_ability(poke, "Compound Eyes", game=self):
+            poke.apply_stat_modifier("Accuracy", 2, self)
+
+        if abilities.has_ability(poke, "Imposter", game=self) and getattr(poke, "transform_original_state", None) is None:
+            pool = self.floor_spawn_list if getattr(self, "floor_spawn_list", None) else getattr(self, "all_species_names", [])
+            if pool:
+                from pokemon import _get_move_data, POKEMON_DB
+                target_species = random.choice(pool)
+                if target_species in POKEMON_DB:
+                    poke.transform_original_state = {
+                        "species": poke.species_name,
+                        "species_data": dict(poke.species_data),
+                        "name": poke.name,
+                        "nickname": poke.nickname,
+                        "temp_types": list(poke.temp_types) if poke.temp_types is not None else None,
+                        "types": list(poke.types),
+                        "moves": [dict(m) for m in poke.moves],
+                        "stats": dict(poke.stats),
+                        "stat_modifiers": dict(poke.stat_modifiers),
+                    }
+                    new_sp = POKEMON_DB[target_species]
+                    old_hp = float(poke.current_hp)
+                    old_max_hp = int(poke.stats["HP"])
+                    poke.species_data = dict(new_sp)
+                    poke.temp_types = list(new_sp.get("types", []))
+                    lvl_moves = [m_name for lvl, m_name in new_sp.get("level_up_moves", []) if lvl <= poke.level]
+                    if not lvl_moves:
+                        lvl_moves = ["Tackle"]
+                    new_moves = []
+                    for m_name in lvl_moves[-4:]:
+                        m_copy = dict(_get_move_data(m_name))
+                        m_copy["enabled"] = True
+                        new_moves.append(m_copy)
+                    poke.moves = new_moves
+                    poke.recalculate_stats()
+                    poke.stats["HP"] = old_max_hp
+                    poke.current_hp = min(float(old_max_hp), old_hp)
+                    self.log_message(f"{poke.name}'s Imposter transformed it into {target_species}!")
+
+    def apply_floor_entry_abilities(self, is_new_floor_transition: bool = True):
+        """Activates floor-entry abilities for enemies and party upon entering a floor."""
+        for enemy in list(getattr(self, "spawned_pokemon", [])):
+            if not getattr(enemy, "napping", False):
+                self.apply_single_pokemon_floor_entry(enemy)
+
+        party_list = list(getattr(self, "party", []))
+        #Process allies first so the team leader's weather setter takes precedence last
+        ordered_party = [m for m in party_list if m is not getattr(self, "player_pokemon", None)]
+        if getattr(self, "player_pokemon", None) in party_list:
+            ordered_party.append(self.player_pokemon)
+
+        for member in ordered_party:
+            if int(getattr(member, "current_hp", 0)) <= 0:
+                continue
+            self.apply_single_pokemon_floor_entry(member)
+
+            if is_new_floor_transition:
+                if abilities.has_ability(member, "Regenerator", game=self):
+                    max_hp = int(member.stats["HP"])
+                    old_hp = float(member.current_hp)
+                    heal_amt = max(1, int(round(0.25 * max_hp)))
+                    member.current_hp = min(float(max_hp), old_hp + heal_amt)
+                    if member.current_hp > old_hp:
+                        self.log_message(f"{member.name}'s Regenerator restored its HP!")
+
+                if abilities.has_ability(member, "Pickup", game=self) and random.random() < 0.10:
+                    candidates = [k for k in items.get_spawnable_item_keys(self.floor_number) if k not in ("Poké", "Poke")]
+                    if candidates:
+                        chosen_name = random.choice(candidates)
+                        if chosen_name in items.ITEMS_DB:
+                            new_item = dict(items.ITEMS_DB[chosen_name])
+                            if new_item.get("stackable", False):
+                                new_item["count"] = 1
+                            if self.add_item_to_inventory(new_item):
+                                self.log_message(f"{member.name}'s Pickup found {chosen_name}!")
+
+                if abilities.has_ability(member, "Honey Gather", game=self) and random.random() < 0.10:
+                    if "Nectar" in items.ITEMS_DB:
+                        nectar_item = dict(items.ITEMS_DB["Nectar"])
+                        nectar_item["count"] = 1
+                        if self.add_item_to_inventory(nectar_item):
+                            self.log_message(f"{member.name}'s Honey Gather found Nectar!")
 
     def update_enemy_spawning(self):
         """Handles random Pokémon spawns."""
@@ -1819,6 +1939,9 @@ class Game:
         if enemy.status_effects.get("Sand Tomb", 0) > 0:
             return False
         if enemy.status_effects.get("Stuck", 0) > 0 or enemy.status_effects.get("Ingrain", 0) > 0:
+            return False
+        trapped, _ = abilities.is_trapped_by_ability(enemy, self)
+        if trapped:
             return False
         if not (0 <= x < self.floor.width and 0 <= y < self.floor.height):
             return False
@@ -3298,7 +3421,7 @@ class Game:
                         else:
                             #Target is visible but out of range, so pathfind towards it
                             enemy_types = getattr(enemy, "types", enemy.species_data.get("types", []))
-                            if getattr(self, "weather", None) == "Strong Winds" and "Flying" not in enemy_types:
+                            if abilities.get_effective_weather(enemy, self) == "Strong Winds" and "Flying" not in enemy_types:
                                 if random.random() < 0.33:
                                     continue
                             tx, ty = get_pokemon_position(self, target)
@@ -3361,13 +3484,7 @@ class Game:
                 return 0
 
         #3. Speed stage calculations
-        stage = pokemon.movement_speed_stage
-        p_types = getattr(pokemon, "types", pokemon.species_data.get("types", []))
-        if getattr(self, "weather", None) == "Blizzard" and "Ice" in p_types:
-            stage += 1
-        elif getattr(self, "weather", None) == "Strong Winds" and "Flying" in p_types:
-            stage += 1
-        stage = min(3, max(-1, stage))
+        stage = abilities.get_effective_movement_speed_stage(pokemon, self)
         if stage == 3: #4x speed
             return 4
         elif stage == 2: #3x speed
@@ -3611,7 +3728,10 @@ class Game:
                     cost = 2
                 else:
                     cost = 1
-            
+
+            if abilities.has_ability(member, "Gluttony", game=self): #Increased hunger rate
+                cost *= 2
+
             member.current_belly = max(0.0, member.current_belly - cost)
             
             #Warning calculation (rounded up)
@@ -3658,12 +3778,17 @@ class Game:
                         fainted_members.append(member)
                 else:
                     #Natural recovery: base 1% of max HP per turn
-                    #Blocked by DoT status effects (Poison, Toxic, or Burn)
-                    if not (member.status_effects.get("Poison") or member.status_effects.get("Toxic") or member.status_effects.get("Burn")):
+                    #Blocked by DoT status effects (Poison, Toxic, or Burn) or Solar Power in Sunny/Harsh Sunlight
+                    eff_w = abilities.get_effective_weather(member, self)
+                    solar_blocked = (
+                        eff_w in ("Sunny", "Harsh Sunlight")
+                        and abilities.has_ability(member, "Solar Power", game=self)
+                    )
+                    if not solar_blocked and not (member.status_effects.get("Poison") or member.status_effects.get("Toxic") or member.status_effects.get("Burn")):
                         max_hp = member.stats["HP"]
-                        types = member.species_data.get("types", [])
-                        if self.weather == "Grassy Terrain":
-                            if "Flying" in types:
+                        types = getattr(member, "types", member.species_data.get("types", []))
+                        if eff_w == "Grassy Terrain":
+                            if not is_pokemon_grounded(member, self):
                                 recovery_pct = 0.01
                             elif "Grass" in types:
                                 recovery_pct = 0.03
@@ -3671,8 +3796,32 @@ class Game:
                                 recovery_pct = 0.02
                         else:
                             recovery_pct = 0.01
-                            if self.weather == "Sunny" and "Grass" in types:
+                            if eff_w == "Sunny" and "Grass" in types:
                                 recovery_pct = 0.02
+
+                        #Abilities that interact with weather, eww
+                        if eff_w == "Rain":
+                            if abilities.has_ability(member, "Rain Dish", game=self):
+                                recovery_pct *= 2.0
+                            if abilities.has_ability(member, "Dry Skin", game=self):
+                                recovery_pct *= 2.0
+                        elif eff_w == "Heavy Rain":
+                            if abilities.has_ability(member, "Rain Dish", game=self):
+                                recovery_pct *= 3.0
+                            if abilities.has_ability(member, "Dry Skin", game=self):
+                                recovery_pct *= 3.0
+                        elif eff_w == "Thunderstorm":
+                            if abilities.has_ability(member, "Rain Dish", game=self):
+                                recovery_pct *= 4.0
+                            if abilities.has_ability(member, "Dry Skin", game=self):
+                                recovery_pct *= 4.0
+
+                        if abilities.has_ability(member, "Ice Body", game=self):
+                            if eff_w in ("Snow", "Hail"):
+                                recovery_pct *= 2.0
+                            elif eff_w == "Blizzard":
+                                recovery_pct *= 3.0
+
                         if member.status_effects.get("Aqua Ring"):
                             recovery_pct *= 2.0
                         if member.status_effects.get("Ingrain", 0) > 0:
@@ -3763,33 +3912,57 @@ class Game:
                         p.change_movement_speed(curr_stage + 1, self, is_decay=True)
 
         #Rain cures Burn
-        if self.weather == "Rain":
-            for p in list(self.party + self.spawned_pokemon):
-                if p.status_effects.get("Burn"):
-                    p.cure_status("Burn", self)
+        for p in list(self.party + self.spawned_pokemon):
+            if p.status_effects.get("Burn") and abilities.get_effective_weather(p, self) == "Rain":
+                p.cure_status("Burn", self)
 
         #Process status damage and decrement status durations for all Pokémon on the floor
         for p in list(self.party + self.spawned_pokemon):
             if int(p.current_hp) <= 0:
                 continue
 
+            #Clear per-turn Download tracking
+            p.download_triggered_this_turn = None
+
             #Enemy Aqua Ring recovery (2 HP/turn)
             if p in self.spawned_pokemon and p not in self.party and p.status_effects.get("Aqua Ring") and int(p.current_hp) > 0:
                 p.current_hp = min(float(p.stats["HP"]), p.current_hp + 2.0)
 
+            eff_w = abilities.get_effective_weather(p, self)
+            has_magic_guard = abilities.has_ability(p, "Magic Guard", game=self)
+
+            #Dry Skin & Solar Power Sun HP drain
+            if not has_magic_guard and eff_w in ("Sunny", "Harsh Sunlight"):
+                sun_drain = 0
+                if abilities.has_ability(p, "Dry Skin", game=self):
+                    sun_drain += 1
+                    p.last_damage_source = "Dry Skin"
+                if abilities.has_ability(p, "Solar Power", game=self) and self.turn_number % 10 == 0:
+                    sun_drain += 1
+                    p.last_damage_source = "Solar Power"
+                if sun_drain > 0:
+                    p.current_hp -= sun_drain
+                    if int(p.current_hp) <= 0:
+                        if self.is_in_team_sight(p):
+                            self.log_pokemon_defeat(p)
+                        self.handle_enemy_defeat(p)
+                        self.remove_defeated_pokemon(p)
+                        continue
+
             #1. Periodic status damage (Poison, Burn)
             damage_to_apply = 0
-            if p.status_effects.get("Toxic"):
-                damage_to_apply += 1
-                p.last_damage_source = "poison"
-            else:
-                if p.status_effects.get("Poison") and self.turn_number % 2 == 0:
+            if not has_magic_guard:
+                if p.status_effects.get("Toxic"):
                     damage_to_apply += 1
                     p.last_damage_source = "poison"
+                else:
+                    if p.status_effects.get("Poison") and self.turn_number % 2 == 0:
+                        damage_to_apply += 1
+                        p.last_damage_source = "poison"
 
-            if p.status_effects.get("Burn") and self.turn_number % 2 == 0:
-                damage_to_apply += 1
-                p.last_damage_source = "burn"
+                if p.status_effects.get("Burn") and self.turn_number % 2 == 0:
+                    damage_to_apply += 1
+                    p.last_damage_source = "burn"
 
             if damage_to_apply > 0:
                 p.current_hp -= damage_to_apply
@@ -3803,11 +3976,11 @@ class Game:
                     continue  #Pokémon fainted, skip duration decrement
 
             #2. Periodic weather damage (Hail, Sandstorm)
-            if self.weather in ("Hail", "Sandstorm") and (p.status_effects.get("Digging", 0) > 0 or p.status_effects.get("Diving", 0) > 0):
+            if eff_w in ("Hail", "Sandstorm") and (p.status_effects.get("Digging", 0) > 0 or p.status_effects.get("Diving", 0) > 0 or has_magic_guard or abilities.has_ability(p, "Overcoat", game=self)):
                 pass
-            elif self.weather == "Hail":
-                p_types = p.species_data.get("types", [])
-                if not any(t in p_types for t in ["Ice", "Fire", "Rock"]):
+            elif eff_w == "Hail":
+                p_types = getattr(p, "types", p.species_data.get("types", []))
+                if not any(t in p_types for t in ["Ice", "Fire", "Rock"]) and not abilities.has_ability(p, "Ice Body", game=self) and not abilities.has_ability(p, "Snow Cloak", game=self):
                     p.last_damage_source = "Hail"
                     p.current_hp -= 1.0
                     if self.is_in_team_sight(p):
@@ -3823,9 +3996,9 @@ class Game:
                         self.leech_seed_sources.pop(p, None)
                         continue
 
-            elif self.weather == "Sandstorm":
-                p_types = p.species_data.get("types", [])
-                if not any(t in p_types for t in ["Steel", "Ground", "Rock"]):
+            elif eff_w == "Sandstorm":
+                p_types = getattr(p, "types", p.species_data.get("types", []))
+                if not any(t in p_types for t in ["Steel", "Ground", "Rock"]) and not abilities.has_ability(p, "Sand Veil", game=self) and not abilities.has_ability(p, "Sand Force", game=self):
                     p.last_damage_source = "Sandstorm"
                     p.current_hp -= 1.0
                     if self.is_in_team_sight(p):
@@ -3842,22 +4015,32 @@ class Game:
                         continue
 
             #3. Leech Seed periodic damage
-            if p.status_effects.get("Leech Seed", 0) > 0 and int(p.current_hp) > 0:
+            if not has_magic_guard and p.status_effects.get("Leech Seed", 0) > 0 and int(p.current_hp) > 0:
                 leech_dmg = min(3, int(p.current_hp))
                 if leech_dmg > 0:
                     src = self.leech_seed_sources.get(p)
                     p.last_damage_source = f"{src.name}'s Leech Seed" if src else "Leech Seed"
                     p.current_hp -= leech_dmg
-                    
+
                     src = self.leech_seed_sources.get(p)
                     if src and int(src.current_hp) > 0:
-                        src.current_hp = min(float(src.stats["HP"]), src.current_hp + leech_dmg)
-                        self.log_message(f"{src.name} absorbed HP from {p.name}!")
-                        
+                        if abilities.has_ability(p, "Liquid Ooze", game=self, attacker=src):
+                            if not abilities.has_ability(src, "Magic Guard", game=self):
+                                src.last_damage_source = f"{p.name}'s Liquid Ooze"
+                                src.current_hp -= leech_dmg
+                                self.log_message(f"{src.name} was hurt by {p.name}'s Liquid Ooze!")
+                                if int(src.current_hp) <= 0:
+                                    self.log_pokemon_defeat(src)
+                                    self.handle_enemy_defeat(src, p)
+                                    self.remove_defeated_pokemon(src)
+                        else:
+                            src.current_hp = min(float(src.stats["HP"]), src.current_hp + leech_dmg)
+                            self.log_message(f"{src.name} absorbed HP from {p.name}!")
+
                     if p.status_effects.get("Confusion", 0) > 0:
                         if random.randint(1, 100) <= 50:
                             p.cure_status("Confusion", self)
-                            
+
                     if int(p.current_hp) <= 0:
                         self.log_pokemon_defeat(p)
                         self.handle_enemy_defeat(p, src)
@@ -3872,11 +4055,21 @@ class Game:
         self.update_whirlpool_bindings()
 
         #5. Decrement status durations
+        neg_decay_statuses = {
+            "Sleep", "Paralysis", "Frozen", "Flinch", "Petrified", "Confusion", "Leech Seed",
+            "Sand Tomb", "Whirlpool", "Perishing", "Encore", "Resting", "Stuck", "Drowsy",
+            "Terrified", "Blind", "Puppet", "Hallucinating", "Cowering", "Silenced", "Infatuated",
+        }
         for p in list(self.party + self.spawned_pokemon):
             if int(p.current_hp) <= 0:
                 continue
+            eff_w = abilities.get_effective_weather(p, self)
+            has_natural_cure = abilities.has_ability(p, "Natural Cure", game=self)
+            has_healer_ally = abilities.any_adjacent_ally_has_ability(p, "Healer", game=self)
+            has_early_bird = abilities.has_ability(p, "Early Bird", game=self)
+
             #All statuses that last a certain number of turns (and not semi-permanent statuses) go here
-            for status in ["Sleep", "Paralysis", "Frozen", "Flinch", "Petrified", "Confusion", "Leech Seed", "Protect", "Safeguard", "Focus Energy", "Light Screen", "Reflect", "Sand Tomb", "Whirlpool", "Perishing", "Counter", "Mirror Coat", "Endure", "Paused", "Ingrain", "Destiny Bond", "Encore", "Magnet Rise", "Telekinesis", "Resting", "Stuck", "Quick Guard", "Wide Guard", "Vital Throw", "Drowsy", "Decoy", "Landed", "Terrified", "Blind", "Mobile", "Puppet", "Hallucinating", "Snatch", "Cowering", "Rebound", "Silenced", "Invisible", "Enraged", "Biding", "Substitute", "Aurora Veil"]:
+            for status in ["Sleep", "Paralysis", "Frozen", "Flinch", "Petrified", "Confusion", "Leech Seed", "Protect", "Safeguard", "Focus Energy", "Light Screen", "Reflect", "Sand Tomb", "Whirlpool", "Perishing", "Counter", "Mirror Coat", "Endure", "Paused", "Ingrain", "Destiny Bond", "Encore", "Magnet Rise", "Telekinesis", "Resting", "Stuck", "Quick Guard", "Wide Guard", "Vital Throw", "Drowsy", "Decoy", "Landed", "Terrified", "Blind", "Mobile", "Puppet", "Hallucinating", "Snatch", "Cowering", "Rebound", "Silenced", "Invisible", "Enraged", "Biding", "Substitute", "Aurora Veil", "Infatuated"]:
                 val = p.status_effects.get(status, 0)
                 if status == "Petrified" and p in self.spawned_pokemon:
                     #Enemy petrification only wears off when attacked
@@ -3884,10 +4077,19 @@ class Game:
 
                 if isinstance(val, int) and 0 < val < 90000:
                     dec = 1
-                    if status == "Frozen" and self.weather == "Sunny":
+                    if status == "Frozen" and eff_w == "Sunny":
                         dec = 2
-                    elif status == "Frozen" and self.weather == "Harsh Sunlight":
+                    elif status == "Frozen" and eff_w == "Harsh Sunlight":
                         dec = val
+
+                    if status in neg_decay_statuses:
+                        if has_natural_cure:
+                            dec *= 2
+                        if has_healer_ally:
+                            dec *= 2
+                    if status == "Sleep" and has_early_bird:
+                        dec *= 2
+
                     new_val = max(0, val - dec)
                     if new_val == 0:
                         p.cure_status(status, self)
@@ -3907,10 +4109,76 @@ class Game:
                     if random.random() < 0.10:
                         p.cure_random_negative_status(self)
 
-        if self.weather == "Heavy Rain":
-            for p in list(self.party + self.spawned_pokemon):
-                if p.status_effects.get("Burn"):
-                    p.cure_status("Burn", self)
+        #Burn cure in heavy rain and check for hydration
+        for p in list(self.party + self.spawned_pokemon):
+            if int(getattr(p, "current_hp", 0)) <= 0:
+                continue
+            if p.status_effects.get("Burn") and abilities.get_effective_weather(p, self) == "Heavy Rain":
+                p.cure_status("Burn", self)
+            abilities.apply_hydration_check(p, self)
+
+        #Cud Chew: process berry retrigger after 2 turns
+        for p in list(self.party + self.spawned_pokemon):
+            if int(getattr(p, "current_hp", 0)) <= 0 or not getattr(p, "cud_chew_queue", None):
+                continue
+            remaining_cc = []
+            for entry in list(p.cud_chew_queue):
+                entry["turns_left"] -= 1
+                if entry["turns_left"] <= 0:
+                    if int(getattr(p, "current_hp", 0)) > 0:
+                        b_item = entry["item"]
+                        self.log_message(f"{p.name}'s Cud Chew let it chew its {b_item['name']} again!")
+                        items.apply_item_effect(b_item, p, self, is_thrown=False, from_cud_chew=True)
+                else:
+                    remaining_cc.append(entry)
+            p.cud_chew_queue = remaining_cc
+
+        #Process Curious Medicine once per floor on lowered ally stats
+        for p in list(self.party + self.spawned_pokemon):
+            if int(getattr(p, "current_hp", 0)) <= 0:
+                continue
+            if not getattr(p, "curious_medicine_used_this_floor", False) and abilities.has_ability(p, "Curious Medicine", game=self):
+                restored_any = False
+                for ally in abilities.get_allies_of(p, game=self):
+                    if ally is p:
+                        continue
+                    for s_k, s_val in list(ally.stat_modifiers.items()):
+                        if s_val < 0:
+                            ally.stat_modifiers[s_k] = 0
+                            restored_any = True
+                if restored_any:
+                    p.curious_medicine_used_this_floor = True
+                    self.log_message(f"{p.name}'s Curious Medicine reset its allies' lowered stats!")
+
+        #Process Magnet Pull (pull Steel foes within 3 tiles onto adjacent empty tiles)
+        for p in list(self.party + self.spawned_pokemon):
+            if int(getattr(p, "current_hp", 0)) <= 0 or not abilities.has_ability(p, "Magnet Pull", game=self):
+                continue
+            px, py = get_pokemon_position(self, p)
+            for foe in abilities.get_enemies_of(p, game=self):
+                foe_types = getattr(foe, "types", foe.species_data.get("types", []))
+                if "Steel" not in foe_types or abilities.has_ability(foe, "Suction Cups", game=self, attacker=p):
+                    continue
+                fx, fy = get_pokemon_position(self, foe)
+                dist = max(abs(fx - px), abs(fy - py))
+                if 2 <= dist <= 3:
+                    candidates = []
+                    for ady in (-1, 0, 1):
+                        for adx in (-1, 0, 1):
+                            if adx == 0 and ady == 0:
+                                continue
+                            nx, ny = px + adx, py + ady
+                            if 0 <= nx < self.floor.width and 0 <= ny < self.floor.height:
+                                if self.floor.grid[ny][nx] == FLOOR_CHAR and self.get_poke_at(nx, ny) is None:
+                                    d_to_foe = abs(nx - fx) + abs(ny - fy)
+                                    candidates.append((d_to_foe, nx, ny))
+                    if candidates:
+                        candidates.sort(key=lambda t: t[0])
+                        _, nx, ny = candidates[0]
+                        self.set_poke_pos(foe, nx, ny)
+                        if getattr(foe, "napping", False):
+                            foe.napping = False
+                        self.log_message(f"{foe.name} was pulled in by {p.name}'s Magnet Pull!")
 
         #Decrement weather turns if active
         if getattr(self, "weather_turns_left", 0) > 0:
@@ -4192,6 +4460,8 @@ class Game:
 
     def trigger_crash_damage(self, attacker: Pokemon):
         """Applies crash damage equal to half max HP (rounded down) for moves that cause it."""
+        if abilities.has_ability(attacker, "Magic Guard", game=self): #Magic Guard: don't do crash damage
+            return
         crash = max(1, int(attacker.stats.get("HP", 1.0)) // 2)
         attacker.current_hp = float(int(attacker.current_hp) - crash)
         self.log_message(f"{attacker.name} kept going and crashed!")
@@ -4272,7 +4542,8 @@ class Game:
                     corr_reduction += 1
                 elif getattr(self, "weather", None) == "Fog":
                     corr_reduction += 2
-                member_radius = max(1, member_radius - corr_reduction)
+                illuminate_bonus = 2 * abilities.get_team_ability_count("Illuminate", self)
+                member_radius = max(1, member_radius - corr_reduction + illuminate_bonus)
 
             for dy in range(-member_radius, member_radius + 1):
                 for dx in range(-member_radius, member_radius + 1):
@@ -4784,6 +5055,23 @@ class Game:
             from targeting import get_pokemon_position
             pos = get_pokemon_position(self, pokemon)
 
+        #Receiver: trigger on living allies before removing fainted Pokemon
+        first_ab = abilities.get_first_base_ability(pokemon)
+        if first_ab:
+            for ally in abilities.get_allies_of(pokemon, game=self):
+                if ally is pokemon:
+                    continue
+                if abilities.has_ability(ally, "Receiver", game=self):
+                    slots = abilities.get_effective_ability_slots_with_thresholds(ally)
+                    curr_iq = int(getattr(ally, "iq", 0))
+                    for idx, (s_ab, req_iq) in enumerate(slots):
+                        if curr_iq >= req_iq and abilities.canonicalize_ability_name(s_ab) == "Receiver":
+                            if not hasattr(ally, "replaced_abilities") or ally.replaced_abilities is None:
+                                ally.replaced_abilities = {}
+                            ally.replaced_abilities[idx] = first_ab
+                            self.log_message(f"{ally.name}'s Receiver copied {pokemon.name}'s {first_ab}!")
+                            break
+
         if self.is_team_pokemon(pokemon):
             was_visible = True
         elif pos is not None and hasattr(self, "_compute_currently_visible"):
@@ -4844,6 +5132,10 @@ class Game:
         from dungeon import WALL_CHAR, FLOOR_CHAR
         from targeting import get_pokemon_position
         from combat import calculate_damage
+
+        if abilities.any_floor_pokemon_has_ability("Damp", self):
+            self.log_message("Damp prevented the explosion!")
+            return
 
         radius = (size - 1) // 2
 
@@ -4911,6 +5203,8 @@ class Game:
 
         for target, d in target_pokes:
             if int(target.current_hp) <= 0:
+                continue
+            if abilities.has_ability(target, "Magic Guard", game=self):
                 continue
 
             if fixed_center_damage is not None and fixed_adjacent_damage is not None:
@@ -5052,12 +5346,25 @@ class Game:
             self.last_move_used_successfully = (move, attacker)
         if move.get("name") == "Charge":
             attacker.apply_status("Charging", self, duration=1)
+
+        sf_active = abilities.has_ability(attacker, "Sheer Force", game=self) and abilities.has_sheer_force_boosted_effect(move)
+        sd_active = (
+            attacker != defender
+            and move.get("category") in ("Physical", "Special")
+            and abilities.has_ability(defender, "Shield Dust", game=self, attacker=attacker)
+        )
+        sg_mult = 2.0 if (move.get("category") in ("Physical", "Special") and abilities.has_ability(attacker, "Serene Grace", game=self)) else 1.0
+
         for effect in move.get("effects", []):
             eff_type = effect.get("effect_type")
             if eff_type in ("multi_hit", "recoil"):
                 continue
-                
-            chance = effect.get("chance", 1.0)
+            if sf_active and abilities.is_sheer_force_effect(effect):
+                continue
+            if sd_active and abilities.is_sheer_force_effect(effect) and effect.get("target", "defender") != "attacker":
+                continue
+
+            chance = min(1.0, float(effect.get("chance", 1.0)) * sg_mult)
             import random as rand
             if rand.random() > chance:
                 continue
@@ -5078,9 +5385,9 @@ class Game:
                 stat = effect.get("stat")
                 stages = effect.get("stages", 0)
                 if stat:
-                    eff_target.apply_stat_modifier(stat, stages, self)
+                    eff_target.apply_stat_modifier(stat, stages, self, source_pokemon=attacker, is_move_effect=True)
                     
-            elif eff_type == "status_apply":
+            elif eff_type in ("status_apply", "status", "status_condition"):
                 status_name = effect.get("status")
                 duration = effect.get("duration")
                 is_damaging = move.get("category") in ("Physical", "Special")
@@ -5101,17 +5408,24 @@ class Game:
                                 eff_target.cure_status("Sleep", self)
                             elif eff_target.status_effects.get("Resting", 0) > 0:
                                 eff_target.cure_status("Resting", self)
-                            eff_target.apply_status("Terrified", self, duration=rem_sleep)
+                            eff_target.apply_status("Terrified", self, duration=rem_sleep, source_pokemon=attacker)
                             continue
                         elif not attacker_is_team and target_is_team:
                             if eff_target.status_effects.get("Sleep", 0) > 0:
                                 eff_target.cure_status("Sleep", self)
                             elif eff_target.status_effects.get("Resting", 0) > 0:
                                 eff_target.cure_status("Resting", self)
-                            eff_target.apply_status("Puppet", self, duration=rem_sleep)
+                            eff_target.apply_status("Puppet", self, duration=rem_sleep, source_pokemon=attacker)
                             continue
-                        
-                applied = eff_target.apply_status(status_name, self, duration=duration, from_damaging_move=is_damaging)
+
+                if status_name == "Slow":
+                    eff_target.change_movement_speed(eff_target.movement_speed_stage - 1, self, is_move_effect=True)
+                    continue
+                elif status_name == "2x Speed":
+                    eff_target.change_movement_speed(eff_target.movement_speed_stage + 1, self, is_move_effect=True)
+                    continue
+
+                applied = eff_target.apply_status(status_name, self, duration=duration, from_damaging_move=is_damaging, source_pokemon=attacker)
                 if applied:
                     if status_name == "Leech Seed":
                         self.leech_seed_sources[eff_target] = attacker
@@ -5169,13 +5483,15 @@ class Game:
                 for neg_status in ["Sleep", "Paralysis", "Poison", "Toxic", "Burn", "Frozen", "Flinch", "Petrified", "Confusion", "Leech Seed", "Slow", "Encore", "Stuck", "Terrified", "Blind", "Puppet", "Hallucinating"]:
                     eff_target.cure_status(neg_status, self)
             elif eff_type == "tri_attack_effects":
-                import random
-                if random.randint(1, 100) <= 20:
-                    eff_target.apply_status("Paralysis", self, from_damaging_move=True)
-                if random.randint(1, 100) <= 20:
-                    eff_target.apply_status("Frozen", self, from_damaging_move=True)
-                if random.randint(1, 100) <= 20:
-                    eff_target.apply_status("Burn", self, from_damaging_move=True)
+                if not sf_active and not sd_active:
+                    import random
+                    tri_pct = 40 if sg_mult > 1.0 else 20
+                    if random.randint(1, 100) <= tri_pct:
+                        eff_target.apply_status("Paralysis", self, from_damaging_move=True, source_pokemon=attacker)
+                    if random.randint(1, 100) <= tri_pct:
+                        eff_target.apply_status("Frozen", self, from_damaging_move=True, source_pokemon=attacker)
+                    if random.randint(1, 100) <= tri_pct:
+                        eff_target.apply_status("Burn", self, from_damaging_move=True, source_pokemon=attacker)
             elif eff_type == "fire_spin":
                 already_bound = False
                 for binding in self.fire_spin_bindings:
@@ -5479,6 +5795,10 @@ class Game:
                 eff_target.change_movement_speed(0, self)
                 self.log_message(f"{eff_target.name}'s stat changes were neutralized!")
             elif eff_type == "whirlwind":
+                if attacker != defender and (attacker in self.party) != (defender in self.party):
+                    if abilities.has_ability(defender, "Suction Cups", game=self, attacker=attacker):
+                        self.log_message(f"{defender.name}'s Suction Cups anchored it in place!")
+                        continue
                 from combat import calculate_damage
 
                 ax, ay = get_pokemon_position(self, attacker)
@@ -6104,6 +6424,60 @@ class Game:
                 defender.team_attackers = set()
             defender.team_attackers.add(attacker)
 
+        if attacker is not defender:
+            if self.are_allies(attacker, defender) and move.get("category") in ("Physical", "Special"):
+                if abilities.has_ability(defender, "Telepathy", game=self, attacker=attacker):
+                    self.log_message(f"{defender.name} avoided the attack with Telepathy!")
+                    return
+
+            if not free and abilities.has_ability(defender, "Pressure", game=self, attacker=attacker):
+                extra_pp = max(1, int(move.get("pp_cost", 1) * 0.5))
+                attacker.current_pp = max(0, attacker.current_pp - extra_pp)
+
+            if move.get("category") == "Status" and not move.get("_bounced", False):
+                if abilities.has_ability(defender, "Magic Bounce", game=self, attacker=attacker):
+                    bounced_move = move.copy()
+                    bounced_move["_bounced"] = True
+                    self.log_message(f"{defender.name}'s Magic Bounce reflected {move['name']}!")
+                    self._process_single_target_hit(defender, attacker, bounced_move, is_multi_target=False, free=True)
+                    return
+
+            if move.get("sound_based", False) and abilities.has_ability(defender, "Soundproof", game=self, attacker=attacker):
+                self.log_message(f"{defender.name}'s Soundproof blocks {move['name']}!")
+                return
+
+            if abilities.is_powder_move(move) and abilities.has_ability(defender, "Overcoat", game=self, attacker=attacker):
+                self.log_message(f"{defender.name}'s Overcoat blocks {move['name']}!")
+                return
+
+            move_type = move.get("type")
+            if move_type == "Electric" and abilities.has_ability(defender, "Lightning Rod", game=self, attacker=attacker):
+                self.log_message(f"{defender.name}'s Lightning Rod absorbed the move!")
+                defender.apply_stat_modifier("Special_Attack", 1, self, is_move_effect=False)
+                return
+            if move_type == "Electric" and abilities.has_ability(defender, "Volt Absorb", game=self, attacker=attacker):
+                heal = max(1, int(defender.stats["HP"] * 0.25))
+                defender.current_hp = min(float(defender.stats["HP"]), defender.current_hp + heal)
+                self.log_message(f"{defender.name}'s Volt Absorb absorbed the move!")
+                return
+            if move_type == "Water" and (
+                abilities.has_ability(defender, "Water Absorb", game=self, attacker=attacker)
+                or abilities.has_ability(defender, "Dry Skin", game=self, attacker=attacker)
+            ):
+                ab_used = "Water Absorb" if abilities.has_ability(defender, "Water Absorb", game=self, attacker=attacker) else "Dry Skin"
+                heal = max(1, int(defender.stats["HP"] * 0.25))
+                defender.current_hp = min(float(defender.stats["HP"]), defender.current_hp + heal)
+                self.log_message(f"{defender.name}'s {ab_used} absorbed the move!")
+                return
+            if move_type == "Fire" and abilities.has_ability(defender, "Flash Fire", game=self, attacker=attacker):
+                defender.flash_fire_boosted = True
+                self.log_message(f"{defender.name}'s Flash Fire activated!")
+                return
+            if move_type == "Grass" and abilities.has_ability(defender, "Sap Sipper", game=self, attacker=attacker):
+                self.log_message(f"{defender.name}'s Sap Sipper absorbed the move!")
+                defender.apply_stat_modifier("Attack", 1, self, is_move_effect=False)
+                return
+
         #Check Rebound status immunity & damage reflection
         if attacker != defender and defender.status_effects.get("Rebound", 0) > 0 and move.get("category") in ("Physical", "Special"):
             ax, ay = get_pokemon_position(self, attacker)
@@ -6117,7 +6491,6 @@ class Game:
                 raw_dmg, _, _ = calculate_damage(attacker, defender, move, self)
                 reflected_dmg = max(1, int(raw_dmg * 0.25))
                 self.apply_direct_damage(attacker, reflected_dmg, attacker=defender)
-                self.log_message(f"{attacker.name} took {reflected_dmg} damage from the reflection!")
                 return
 
         #Check Protect immunity
@@ -6728,6 +7101,9 @@ class Game:
 
         #Explosion & Self-Destruct custom handling
         if move.get("name") in ("Explosion", "Self-Destruct"):
+            if abilities.any_floor_pokemon_has_ability("Damp", self):
+                self.log_message("Damp prevented the explosion!")
+                return
             ax, ay = get_pokemon_position(self, attacker)
             size = 7 if move["name"] == "Explosion" else 5
             power = move.get("power", 250 if move["name"] == "Explosion" else 200)
@@ -7229,6 +7605,15 @@ class Game:
 
         #OHKO move custom handling
         if move.get("name") in ("Fissure", "Sheer Cold", "Guillotine"):
+            if attacker is not defender and abilities.has_ability(defender, "Sturdy", game=self, attacker=attacker):
+                self.log_message(f"{defender.name} is unaffected thanks to Sturdy!")
+                tx, ty = get_pokemon_position(self, defender)
+                self.flash_damages[(tx, ty)] = ("0", "MISS")
+                self.trigger_damage_flash()
+                if attacker.status_effects.get("Laser Focus"):
+                    attacker.cure_status("Laser Focus", self)
+                return
+
             #Guillotine always fails against Ghost Pokémon
             if move.get("name") == "Guillotine":
                 def_types = getattr(defender, "temp_types", None) or getattr(defender, "types", defender.species_data.get("types", []))
@@ -7251,26 +7636,30 @@ class Game:
                         attacker.cure_status("Laser Focus", self)
                     return
 
-                #Fissure always fails against Flying Pokémon
-                if move.get("name") == "Fissure":
-                    if "Flying" in defender.species_data.get("types", []):
-                        self.log_message(f"It had no effect on {defender.name}!")
-                        tx, ty = get_pokemon_position(self, defender)
-                        self.flash_damages[(tx, ty)] = ("0", "MISS")
-                        self.trigger_damage_flash()
-                        if attacker.status_effects.get("Laser Focus"):
-                            attacker.cure_status("Laser Focus", self)
-                        return
+                #Fissure always fails against ungrounded Pokémon
+                from combat import is_pokemon_grounded
+                if not is_pokemon_grounded(defender, game=self, attacker=attacker):
+                    self.log_message(f"It had no effect on {defender.name}!")
+                    tx, ty = get_pokemon_position(self, defender)
+                    self.flash_damages[(tx, ty)] = ("0", "MISS")
+                    self.trigger_damage_flash()
+                    if attacker.status_effects.get("Laser Focus"):
+                        attacker.cure_status("Laser Focus", self)
+                    return
 
-            #Accuracy check: dependent on user's Speed and target's Speed (bypassed if Lock-On active)
+            #Accuracy check: dependent on user's Speed and target's Speed (bypassed if Lock-On or No Guard)
             has_lock_on = bool(attacker.status_effects.get("Lock-On"))
-            if not has_lock_on:
+            has_no_guard = attacker is not defender and (
+                abilities.has_ability(attacker, "No Guard", game=self)
+                or abilities.has_ability(defender, "No Guard", game=self, attacker=attacker)
+            )
+            if not has_lock_on and not has_no_guard:
                 u_speed = attacker.get_modified_stat("Speed", self)
                 t_speed = defender.get_modified_stat("Speed", self)
                 
-                u_stage = attacker.movement_speed_stage
+                u_stage = abilities.get_effective_movement_speed_stage(attacker, self)
                 u_mult = 0.5 if u_stage == -1 else float(1 + u_stage)
-                t_stage = defender.movement_speed_stage
+                t_stage = abilities.get_effective_movement_speed_stage(defender, self)
                 t_mult = 0.5 if t_stage == -1 else float(1 + t_stage)
                 
                 u_speed_eff = u_speed * u_mult
@@ -7290,7 +7679,7 @@ class Game:
                 ratio = u_speed_eff / max(1.0, float(t_speed_eff))
                 acc = min(60.0, 20.0 * ratio)
                 
-                if (random.random() * 100.0 > acc) or self._did_defender_evade_by_iq(attacker, defender):
+                if (random.random() * 100.0 > acc) or self._did_defender_evade_by_iq(attacker, defender, bypasses_accuracy=False):
                     self.log_message(f"{defender.name} avoided the attack!")
                     tx, ty = get_pokemon_position(self, defender)
                     self.flash_damages[(tx, ty)] = ("/", "MISS")
@@ -7299,11 +7688,15 @@ class Game:
                         attacker.cure_status("Laser Focus", self)
                     return
 
+            self._apply_screen_cleaner(attacker, defender)
+
             #Defeats defender instantly
             h_before = int(defender.current_hp)
             damage = h_before
             if not self._try_iq_survival(defender, h_before, damage):
                 defender.current_hp = 0.0
+            hp_lost = h_before - int(defender.current_hp)
+            self._apply_post_hit_survival_triggers(attacker, defender, hp_lost)
             
             #Standard cures on hit
             if defender.napping:
@@ -7326,6 +7719,7 @@ class Game:
             if int(defender.current_hp) <= 0:
                 attacker.defeat_pokemon(defender, game=self)
                 self.remove_defeated_pokemon(defender, (tx, ty))
+                self._handle_ko_abilities(attacker, defender, move, 0, tile=(tx, ty))
 
             if attacker.status_effects.get("Laser Focus"):
                 attacker.cure_status("Laser Focus", self)
@@ -7348,28 +7742,21 @@ class Game:
 
             #Accuracy check (Super Fang has 90% accuracy)
             acc = move.get("accuracy", 90)
-            acc_stage = attacker.stat_modifiers.get("Accuracy", 0)
-            acc_stage = max(-6, min(6, acc_stage))
-            acc_mult = (3.0 + acc_stage) / 3.0 if acc_stage >= 0 else 3.0 / (3.0 + abs(acc_stage))
+            modified_acc = self._calculate_modified_accuracy(attacker, defender, acc, move)
+            has_lock_on = bool(attacker.status_effects.get("Lock-On"))
+            bypass_acc = has_lock_on or modified_acc is None
+            if not bypass_acc:
+                if (random.randint(1, 100) > modified_acc) or self._did_defender_evade_by_iq(attacker, defender, bypasses_accuracy=False):
+                    self.log_message(f"{defender.name} avoided the attack!")
+                    tx, ty = get_pokemon_position(self, defender)
+                    self.flash_damages[(tx, ty)] = ("/", "MISS")
+                    self.trigger_damage_flash()
+                    #Laser Focus wears off
+                    if attacker.status_effects.get("Laser Focus"):
+                        attacker.cure_status("Laser Focus", self)
+                    return
 
-            ev_stage = defender.stat_modifiers.get("Evasion", 0)
-            ev_stage = max(-6, min(6, ev_stage))
-            ev_mult = (3.0 + ev_stage) / 3.0 if ev_stage >= 0 else 3.0 / (3.0 + abs(ev_stage))
-
-            modified_acc = acc * acc_mult / ev_mult
-            if self.gravity:
-                modified_acc *= 1.5
-            if getattr(self, "weather", None) == "Fog":
-                modified_acc *= 0.8
-            if (random.randint(1, 100) > modified_acc) or self._did_defender_evade_by_iq(attacker, defender):
-                self.log_message(f"{defender.name} avoided the attack!")
-                tx, ty = get_pokemon_position(self, defender)
-                self.flash_damages[(tx, ty)] = ("/", "MISS")
-                self.trigger_damage_flash()
-                #Laser Focus wears off
-                if attacker.status_effects.get("Laser Focus"):
-                    attacker.cure_status("Laser Focus", self)
-                return
+            self._apply_screen_cleaner(attacker, defender)
 
             if int(defender.current_hp) <= 1:
                 damage = 0
@@ -7380,7 +7767,9 @@ class Game:
                     damage = max(1, int(damage * 0.5))
 
             if damage > 0:
-                defender.current_hp = float(int(defender.current_hp) - damage)
+                h_before = int(defender.current_hp)
+                defender.current_hp = float(h_before - damage)
+                self._apply_post_hit_survival_triggers(attacker, defender, damage)
 
                 #Standard cures on hit
                 if defender.napping:
@@ -7432,28 +7821,19 @@ class Game:
 
             #Accuracy check
             acc = move.get("accuracy", 100)
-            acc_stage = attacker.stat_modifiers.get("Accuracy", 0)
-            acc_stage = max(-6, min(6, acc_stage))
-            acc_mult = (3.0 + acc_stage) / 3.0 if acc_stage >= 0 else 3.0 / (3.0 + abs(acc_stage))
-
-            ev_stage = defender.stat_modifiers.get("Evasion", 0)
-            ev_stage = max(-6, min(6, ev_stage))
-            ev_mult = (3.0 + ev_stage) / 3.0 if ev_stage >= 0 else 3.0 / (3.0 + abs(ev_stage))
-
-            modified_acc = acc * acc_mult / ev_mult
-            if self.gravity:
-                modified_acc *= 1.5
-            if getattr(self, "weather", None) == "Fog":
-                modified_acc *= 0.8
-            if (random.randint(1, 100) > modified_acc) or self._did_defender_evade_by_iq(attacker, defender):
-                self.log_message(f"{defender.name} avoided the attack!")
-                tx, ty = get_pokemon_position(self, defender)
-                self.flash_damages[(tx, ty)] = ("/", "MISS")
-                self.trigger_damage_flash()
-                #Laser Focus wears off
-                if attacker.status_effects.get("Laser Focus"):
-                    attacker.cure_status("Laser Focus", self)
-                return
+            modified_acc = self._calculate_modified_accuracy(attacker, defender, acc, move)
+            has_lock_on = bool(attacker.status_effects.get("Lock-On"))
+            bypass_acc = has_lock_on or modified_acc is None
+            if not bypass_acc:
+                if (random.randint(1, 100) > modified_acc) or self._did_defender_evade_by_iq(attacker, defender, bypasses_accuracy=False):
+                    self.log_message(f"{defender.name} avoided the attack!")
+                    tx, ty = get_pokemon_position(self, defender)
+                    self.flash_damages[(tx, ty)] = ("/", "MISS")
+                    self.trigger_damage_flash()
+                    #Laser Focus wears off
+                    if attacker.status_effects.get("Laser Focus"):
+                        attacker.cure_status("Laser Focus", self)
+                    return
 
             if int(attacker.current_hp) >= int(defender.current_hp):
                 self.log_message("But it failed!")
@@ -7461,8 +7841,10 @@ class Game:
                 if attacker.status_effects.get("Laser Focus"):
                     attacker.cure_status("Laser Focus", self)
                 return
+            self._apply_screen_cleaner(attacker, defender)
             damage = int(defender.current_hp) - int(attacker.current_hp)
             defender.current_hp = float(int(defender.current_hp) - damage)
+            self._apply_post_hit_survival_triggers(attacker, defender, damage)
 
             #Standard cures on hit
             if defender.napping:
@@ -7514,40 +7896,37 @@ class Game:
 
             curr_power = base_power
             acc = 90
-            acc_stage = attacker.stat_modifiers.get("Accuracy", 0)
-            acc_stage = max(-6, min(6, acc_stage))
-            acc_mult = (3.0 + acc_stage) / 3.0 if acc_stage >= 0 else 3.0 / (3.0 + abs(acc_stage))
-
-            ev_stage = defender.stat_modifiers.get("Evasion", 0)
-            ev_stage = max(-6, min(6, ev_stage))
-            ev_mult = (3.0 + ev_stage) / 3.0 if ev_stage >= 0 else 3.0 / (3.0 + abs(ev_stage))
-
-            modified_acc = acc * acc_mult / ev_mult
-            if self.gravity:
-                modified_acc *= 1.5
-            if getattr(self, "weather", None) == "Fog":
-                modified_acc *= 0.8
+            modified_acc = self._calculate_modified_accuracy(attacker, defender, acc, move)
+            has_lock_on = bool(attacker.status_effects.get("Lock-On"))
+            bypass_acc = has_lock_on or modified_acc is None
 
             hit_count = 0
             for hit_idx in range(hits):
                 if int(defender.current_hp) <= 0:
                     break
 
-                if (random.randint(1, 100) > modified_acc) or self._did_defender_evade_by_iq(attacker, defender):
+                if not bypass_acc and ((random.randint(1, 100) > modified_acc) or self._did_defender_evade_by_iq(attacker, defender, bypasses_accuracy=False)):
                     self.log_message(f"{defender.name} avoided the attack!")
                     tx, ty = get_pokemon_position(self, defender)
                     self.flash_damages[(tx, ty)] = ("/", "MISS")
                     self.trigger_damage_flash()
                     break
 
+                if hit_count == 0:
+                    self._apply_screen_cleaner(attacker, defender)
                 hit_count += 1
                 temp_move = move.copy()
                 temp_move["power"] = curr_power
 
                 damage, is_critical, type_mult = calculate_damage(attacker, defender, temp_move, self)
                 h_before = int(defender.current_hp)
-                if not self._try_iq_survival(defender, h_before, damage):
+                if self._try_sturdy_survival(attacker, defender, h_before, damage):
+                    pass
+                elif not self._try_iq_survival(defender, h_before, damage):
                     defender.current_hp = float(h_before - damage)
+                hp_lost = h_before - int(defender.current_hp)
+                overkill = max(0, damage - h_before) if int(defender.current_hp) <= 0 else 0
+                self._apply_post_hit_survival_triggers(attacker, defender, hp_lost)
 
                 if defender.napping:
                     defender.napping = False
@@ -7574,10 +7953,13 @@ class Game:
                 self.flash_damages[(tx, ty)] = (damage, type_mult, is_critical)
                 self.trigger_damage_flash()
 
+                self._apply_hit_reactions(attacker, defender, temp_move, is_critical, damage, hp_lost=hp_lost)
+
                 if int(defender.current_hp) <= 0:
                     self.log_pokemon_defeat(defender)
                     attacker.defeat_pokemon(defender, game=self)
                     self.remove_defeated_pokemon(defender, (tx, ty))
+                    self._handle_ko_abilities(attacker, defender, temp_move, overkill, tile=(tx, ty))
                     break
 
                 curr_power *= 2
@@ -7607,40 +7989,37 @@ class Game:
             hits = 5
             curr_power = 15
             acc = 90
-            acc_stage = attacker.stat_modifiers.get("Accuracy", 0)
-            acc_stage = max(-6, min(6, acc_stage))
-            acc_mult = (3.0 + acc_stage) / 3.0 if acc_stage >= 0 else 3.0 / (3.0 + abs(acc_stage))
-
-            ev_stage = defender.stat_modifiers.get("Evasion", 0)
-            ev_stage = max(-6, min(6, ev_stage))
-            ev_mult = (3.0 + ev_stage) / 3.0 if ev_stage >= 0 else 3.0 / (3.0 + abs(ev_stage))
-
-            modified_acc = acc * acc_mult / ev_mult
-            if self.gravity:
-                modified_acc *= 1.5
-            if getattr(self, "weather", None) == "Fog":
-                modified_acc *= 0.8
+            modified_acc = self._calculate_modified_accuracy(attacker, defender, acc, move)
+            has_lock_on = bool(attacker.status_effects.get("Lock-On"))
+            bypass_acc = has_lock_on or modified_acc is None
 
             hit_count = 0
             for hit_idx in range(hits):
                 if int(defender.current_hp) <= 0:
                     break
 
-                if (random.randint(1, 100) > modified_acc) or self._did_defender_evade_by_iq(attacker, defender):
+                if not bypass_acc and ((random.randint(1, 100) > modified_acc) or self._did_defender_evade_by_iq(attacker, defender, bypasses_accuracy=False)):
                     self.log_message(f"{defender.name} avoided the attack!")
                     tx, ty = get_pokemon_position(self, defender)
                     self.flash_damages[(tx, ty)] = ("/", "MISS")
                     self.trigger_damage_flash()
                     break
 
+                if hit_count == 0:
+                    self._apply_screen_cleaner(attacker, defender)
                 hit_count += 1
                 temp_move = move.copy()
                 temp_move["power"] = curr_power
 
                 damage, is_critical, type_mult = calculate_damage(attacker, defender, temp_move, self)
                 h_before = int(defender.current_hp)
-                if not self._try_iq_survival(defender, h_before, damage):
+                if self._try_sturdy_survival(attacker, defender, h_before, damage):
+                    pass
+                elif not self._try_iq_survival(defender, h_before, damage):
                     defender.current_hp = float(h_before - damage)
+                hp_lost = h_before - int(defender.current_hp)
+                overkill = max(0, damage - h_before) if int(defender.current_hp) <= 0 else 0
+                self._apply_post_hit_survival_triggers(attacker, defender, hp_lost)
 
                 if defender.napping:
                     defender.napping = False
@@ -7667,10 +8046,13 @@ class Game:
                 self.flash_damages[(tx, ty)] = (damage, type_mult, is_critical)
                 self.trigger_damage_flash()
 
+                self._apply_hit_reactions(attacker, defender, temp_move, is_critical, damage, hp_lost=hp_lost)
+
                 if int(defender.current_hp) <= 0:
                     self.log_pokemon_defeat(defender)
                     attacker.defeat_pokemon(defender, game=self)
                     self.remove_defeated_pokemon(defender, (tx, ty))
+                    self._handle_ko_abilities(attacker, defender, temp_move, overkill, tile=(tx, ty))
                     break
 
                 curr_power *= 2
@@ -7696,14 +8078,27 @@ class Game:
                 atk_types = getattr(attacker, "temp_types", None) or attacker.types
                 if move.get("name") == "Toxic" and "Poison" in atk_types:
                     status_acc = None
-                if status_acc is not None and not attacker.status_effects.get("Lock-On"):
-                    if self._did_defender_evade_by_iq(attacker, defender):
+                has_no_guard = (
+                    abilities.has_ability(attacker, "No Guard", game=self)
+                    or abilities.has_ability(defender, "No Guard", game=self, attacker=attacker)
+                )
+                if status_acc is not None and not attacker.status_effects.get("Lock-On") and not has_no_guard:
+                    if abilities.has_ability(defender, "Wonder Skin", game=self, attacker=attacker) and float(status_acc) > 50.0:
+                        if random.randint(1, 100) > 50:
+                            attacker.last_move_failed_turn = self.turn_number
+                            self.log_message(f"{defender.name} avoided the attack!")
+                            tx, ty = get_pokemon_position(self, defender)
+                            self.flash_damages[(tx, ty)] = ("/", "MISS")
+                            self.trigger_damage_flash()
+                            return
+                    if self._did_defender_evade_by_iq(attacker, defender, bypasses_accuracy=False):
                         attacker.last_move_failed_turn = self.turn_number
                         self.log_message(f"{defender.name} avoided the attack!")
                         tx, ty = get_pokemon_position(self, defender)
                         self.flash_damages[(tx, ty)] = ("/", "MISS")
                         self.trigger_damage_flash()
                         return
+                self._apply_screen_cleaner(attacker, defender)
                 defender.last_hit_by_move = dict(move)
             if attacker != defender and getattr(defender, "napping", False):
                 defender.napping = False
@@ -7731,18 +8126,21 @@ class Game:
         #Accuracy check
         raw_acc = move.get("accuracy")
         move_name = move.get("name")
+        eff_w = abilities.get_effective_weather(attacker, self)
+        if attacker is not defender and abilities.has_ability(defender, "Cloud Nine", game=self, attacker=attacker):
+            eff_w = "Clear"
         if move_name == "Hurricane":
-            if self.weather in ("Rain", "Heavy Rain"):
+            if eff_w in ("Rain", "Heavy Rain"):
                 raw_acc = None
-            elif self.weather in ("Sunny", "Harsh Sunlight"):
+            elif eff_w in ("Sunny", "Harsh Sunlight"):
                 raw_acc = 50
         elif move_name == "Thunder":
-            if self.weather in ("Rain", "Heavy Rain", "Hail", "Snow"):
+            if eff_w in ("Rain", "Heavy Rain", "Hail", "Snow"):
                 raw_acc = None
-            elif self.weather in ("Sunny", "Harsh Sunlight"):
+            elif eff_w in ("Sunny", "Harsh Sunlight"):
                 raw_acc = 50
         elif move_name == "Blizzard":
-            if self.weather in ("Hail", "Snow", "Blizzard"):
+            if eff_w in ("Hail", "Snow", "Blizzard"):
                 raw_acc = None
         elif move_name == "Toxic":
             atk_types = getattr(attacker, "temp_types", None) or attacker.types
@@ -7752,29 +8150,9 @@ class Game:
         #When Minimized, some moves deal 2x damage and bypass accuracy checks
         minimized_double_moves = ("Body Slam", "Stomp", "Astonish", "Extrasensory", "Dragon Rush", "Heavy Slam")
         is_minimized_bypass = bool(defender.status_effects.get("Minimized") and move.get("name") in minimized_double_moves)
-        if raw_acc is not None and not attacker.status_effects.get("Lock-On") and not is_minimized_bypass:
-            acc = float(raw_acc)
-            acc_stage = attacker.stat_modifiers.get("Accuracy", 0)
-            acc_stage = max(-6, min(6, acc_stage))
-            if acc_stage >= 0:
-                acc_mult = (3.0 + acc_stage) / 3.0
-            else:
-                acc_mult = 3.0 / (3.0 + abs(acc_stage))
-
-            ev_stage = defender.stat_modifiers.get("Evasion", 0)
-            ev_stage = max(-6, min(6, ev_stage))
-            if ev_stage >= 0:
-                ev_mult = (3.0 + ev_stage) / 3.0
-            else:
-                ev_mult = 3.0 / (3.0 + abs(ev_stage))
-
-            modified_acc = acc * acc_mult / ev_mult
-            if self.gravity:
-                modified_acc *= 1.5
-            if getattr(self, "weather", None) == "Fog":
-                modified_acc *= 0.8
-
-            if (random.randint(1, 100) > modified_acc) or self._did_defender_evade_by_iq(attacker, defender):
+        modified_acc = self._calculate_modified_accuracy(attacker, defender, raw_acc, move)
+        if modified_acc is not None and not attacker.status_effects.get("Lock-On") and not is_minimized_bypass:
+            if (random.randint(1, 100) > modified_acc) or self._did_defender_evade_by_iq(attacker, defender, bypasses_accuracy=False):
                 attacker.last_move_failed_turn = self.turn_number
                 if defender_visible:
                     self.log_message(f"{defender.name} avoided the attack!")
@@ -7809,6 +8187,8 @@ class Game:
         if self.is_team_pokemon(attacker) and not self.is_team_pokemon(defender):
             defender.has_been_attacked_by_team = True
 
+        self._apply_screen_cleaner(attacker, defender)
+
         if move.get("name") in ("Raging Bull", "Brick Break"):
             for status in ("Light Screen", "Reflect", "Aurora Veil"):
                 if defender.status_effects.get(status, 0) > 0:
@@ -7829,7 +8209,10 @@ class Game:
             if multi_hit_effect:
                 min_hits = multi_hit_effect.get("min_hits", 1)
                 max_hits = multi_hit_effect.get("max_hits", 1)
-                hits = random.randint(min_hits, max_hits)
+                if abilities.has_ability(attacker, "Skill Link", game=self):
+                    hits = max_hits
+                else:
+                    hits = random.randint(min_hits, max_hits)
 
             actual_hits = 0
             for hit_idx in range(hits):
@@ -7839,6 +8222,7 @@ class Game:
                 actual_hits += 1
                 damage, is_critical, type_mult = calculate_damage(attacker, defender, move, self, is_multi_target=is_multi_target)
                 h_before = int(defender.current_hp)
+                overkill = 0
                 if move.get("name") == "Spite":
                     defender.current_pp = max(0, defender.current_pp - damage)
                     self.log_message(f"Spite reduced {defender.name}'s PP by {damage}!")
@@ -7846,12 +8230,17 @@ class Game:
                     if defender.status_effects.get("Endure", 0) > 0 and damage >= defender.current_hp:
                         defender.current_hp = 1.0
                         self.log_message(f"{defender.name} endured the hit!")
+                    elif self._try_sturdy_survival(attacker, defender, h_before, damage):
+                        pass
                     elif self._try_iq_survival(defender, h_before, damage):
                         pass
                     else:
                         defender.last_damage_source = f"{attacker.name}'s {move.get('name', 'move')}"
                         defender.current_hp = float(int(defender.current_hp) - damage)
+                        if int(defender.current_hp) <= 0:
+                            overkill = max(0, damage - h_before)
                 hp_lost = h_before - int(defender.current_hp)
+                self._apply_post_hit_survival_triggers(attacker, defender, hp_lost)
 
                 if move.get("category") in ("Physical", "Special") and damage > 0:
                     defender.damage_hit_turns.append(self.turn_number)
@@ -7925,22 +8314,41 @@ class Game:
                     if effect.get("effect_type") == "drain" and hp_lost > 0:
                         is_drain_move = True
                         heal_amount = max(1, hp_lost // 2) #Always restore at least 1 HP!
-                        attacker.current_hp = min(float(attacker.stats["HP"]), attacker.current_hp + heal_amount)
-                        self.log_message(f"{attacker.name}'s HP was restored.")
                         tx, ty = get_pokemon_position(self, defender)
-                        self.flash_damages[(tx, ty)] = (damage, type_mult, is_critical)
                         ax, ay = get_pokemon_position(self, attacker)
-                        self.flash_damages[(ax, ay)] = (f"{heal_amount}", "HEAL")
-                        self.trigger_damage_flash()
+                        if attacker is not defender and abilities.has_ability(defender, "Liquid Ooze", game=self, attacker=attacker):
+                            attacker.last_damage_source = f"{defender.name}'s Liquid Ooze"
+                            attacker.current_hp -= heal_amount
+                            self.log_message(f"{attacker.name} was hurt by Liquid Ooze!")
+                            self.flash_damages[(tx, ty)] = (damage, type_mult, is_critical)
+                            self.flash_damages[(ax, ay)] = (heal_amount, 1.0)
+                            self.trigger_damage_flash()
+                        else:
+                            attacker.current_hp = min(float(attacker.stats["HP"]), attacker.current_hp + heal_amount)
+                            self.log_message(f"{attacker.name}'s HP was restored.")
+                            self.flash_damages[(tx, ty)] = (damage, type_mult, is_critical)
+                            self.flash_damages[(ax, ay)] = (f"{heal_amount}", "HEAL")
+                            self.trigger_damage_flash()
 
                 if not is_drain_move and (move.get("category") in ("Physical", "Special") or damage > 0):
                     tx, ty = get_pokemon_position(self, defender)
                     self.flash_damages[(tx, ty)] = (damage, type_mult, is_critical)
                     self.trigger_damage_flash()
 
+                if int(attacker.current_hp) <= 0:
+                    if attacker in self.party and self.attempt_revive_member(attacker):
+                        break
+                    self.log_pokemon_defeat(attacker)
+                    self.handle_enemy_defeat(attacker, defender)
+                    self.remove_defeated_pokemon(attacker)
+                    break
+
                 #Handle recoil
+                can_take_recoil = not abilities.has_ability(attacker, "Magic Guard", game=self) and not (
+                    move.get("name") != "Struggle" and abilities.has_ability(attacker, "Rock Head", game=self)
+                )
                 for effect in move.get("effects", []):
-                    if effect.get("effect_type") == "recoil" and damage > 0:
+                    if can_take_recoil and effect.get("effect_type") == "recoil" and damage > 0:
                         chance = effect.get("chance", 1.0)
                         if random.random() <= chance:
                             recoil_pct = effect.get("recoil_percent", 0.0)
@@ -8042,6 +8450,8 @@ class Game:
                                 self.handle_enemy_defeat(enemy, defender)
                                 self.remove_defeated_pokemon(enemy, (ex, ey))
 
+                self._apply_hit_reactions(attacker, defender, move, is_critical, damage, hp_lost=hp_lost)
+
                 if int(defender.current_hp) <= 0:
                     self.log_pokemon_defeat(defender)
                     attacker.defeat_pokemon(defender, game=self)
@@ -8078,6 +8488,7 @@ class Game:
                         }
                         self.place_item_on_floor(tx, ty, money_item)
                     self.remove_defeated_pokemon(defender, (tx, ty))
+                    self._handle_ko_abilities(attacker, defender, move, overkill, tile=(tx, ty))
                     break
 
             if multi_hit_effect and actual_hits > 0:
@@ -8339,6 +8750,207 @@ class Game:
         if status_app and status_app not in NEGATIVE_STATUSES:
             snatcher.apply_status(status_app, self)
 
+    def _calculate_modified_accuracy(self, attacker: Pokemon, defender: Pokemon, raw_acc: float | int | None, move: dict | None = None) -> float | None:
+        """Calculates modified move accuracy accounting for stat stages, weather, and abilities."""
+        if raw_acc is None:
+            return None
+        if attacker is not defender and (
+            abilities.has_ability(attacker, "No Guard", game=self)
+            or abilities.has_ability(defender, "No Guard", game=self, attacker=attacker)
+        ):
+            return None
+
+        acc = float(raw_acc)
+        unaware_def = attacker is not defender and abilities.has_ability(defender, "Unaware", game=self, attacker=attacker)
+        unaware_atk = attacker is not defender and abilities.has_ability(attacker, "Unaware", game=self)
+        keen_eye_atk = attacker is not defender and abilities.has_ability(attacker, "Keen Eye", game=self)
+
+        acc_stage = 0 if unaware_def else attacker.stat_modifiers.get("Accuracy", 0)
+        ev_stage = 0 if unaware_atk else defender.stat_modifiers.get("Evasion", 0)
+        if keen_eye_atk and ev_stage > 0:
+            ev_stage = 0
+
+        acc_stage = max(-6, min(6, acc_stage))
+        ev_stage = max(-6, min(6, ev_stage))
+
+        acc_mult = (3.0 + acc_stage) / 3.0 if acc_stage >= 0 else 3.0 / (3.0 + abs(acc_stage))
+        ev_mult = (3.0 + ev_stage) / 3.0 if ev_stage >= 0 else 3.0 / (3.0 + abs(ev_stage))
+
+        modified_acc = acc * acc_mult / ev_mult
+        if self.gravity:
+            modified_acc *= 1.5
+        if abilities.get_effective_weather(attacker, self) == "Fog" and abilities.get_effective_weather(defender, self) == "Fog":
+            modified_acc *= 0.8
+
+        if move and move.get("category") == "Physical" and abilities.has_ability(attacker, "Hustle", game=self):
+            modified_acc *= 0.8
+
+        if attacker is not defender:
+            def_weather = abilities.get_effective_weather(defender, self)
+            if def_weather == "Sandstorm" and abilities.has_ability(defender, "Sand Veil", game=self, attacker=attacker):
+                modified_acc *= 0.8
+            if def_weather in ("Hail", "Snow", "Blizzard") and abilities.has_ability(defender, "Snow Cloak", game=self, attacker=attacker):
+                modified_acc *= 0.8
+            if defender.status_effects.get("Confusion", 0) > 0 and abilities.has_ability(defender, "Tangled Feet", game=self, attacker=attacker):
+                modified_acc *= 0.5
+            if move and move.get("category") == "Status" and modified_acc > 50.0 and abilities.has_ability(defender, "Wonder Skin", game=self, attacker=attacker):
+                modified_acc = 50.0
+
+        return modified_acc
+
+    def _apply_hit_reactions(self, attacker: Pokemon, defender: Pokemon, move: dict, is_critical: bool, damage: int, hp_lost: int = 0):
+        """Handles reactions between items, moves and abilities that apply on hit."""
+        if attacker is defender:
+            return
+
+        move_name = move.get("name", "")
+        is_contact = bool(move.get("contact", False))
+
+        #Knock Off / Covet / Thief item interactions vs Sticky Hold
+        if move_name == "Knock Off" and getattr(defender, "held_item", None) is not None:
+            if abilities.has_ability(defender, "Sticky Hold", game=self, attacker=attacker):
+                self.log_message(f"{defender.name}'s Sticky Hold kept its held item safe!")
+            else:
+                item_obj = defender.held_item
+                item_name = item_obj.get("name", "item") if isinstance(item_obj, dict) else str(item_obj)
+                defender.held_item = None
+                self.log_message(f"{defender.name}'s {item_name} was knocked off!")
+        elif move_name in ("Covet", "Thief") and getattr(defender, "held_item", None) is not None and getattr(attacker, "held_item", None) is None:
+            if abilities.has_ability(defender, "Sticky Hold", game=self, attacker=attacker):
+                self.log_message(f"{defender.name}'s Sticky Hold prevented item theft!")
+            else:
+                item_obj = defender.held_item
+                item_name = item_obj.get("name", "item") if isinstance(item_obj, dict) else str(item_obj)
+                attacker.held_item = item_obj
+                defender.held_item = None
+                self.log_message(f"{attacker.name} stole {defender.name}'s {item_name}!")
+
+        #Attacker's Poison Touch
+        if is_contact and int(defender.current_hp) > 0 and abilities.has_ability(attacker, "Poison Touch", game=self):
+            if random.random() < 0.30:
+                defender.apply_status("Poison", self, source_pokemon=attacker)
+
+        ax, ay = get_pokemon_position(self, attacker)
+        dx, dy = get_pokemon_position(self, defender)
+        is_adj = max(abs(ax - dx), abs(ay - dy)) <= 1
+
+        #Contact reactions on attacker
+        if is_contact and int(attacker.current_hp) > 0:
+            if abilities.has_ability(defender, "Static", game=self, attacker=attacker) and random.random() < 0.30:
+                attacker.apply_status("Paralysis", self, source_pokemon=defender)
+            if int(attacker.current_hp) > 0 and abilities.has_ability(defender, "Poison Point", game=self, attacker=attacker) and random.random() < 0.30:
+                attacker.apply_status("Poison", self, source_pokemon=defender)
+            if int(attacker.current_hp) > 0 and abilities.has_ability(defender, "Flame Body", game=self, attacker=attacker) and random.random() < 0.30:
+                attacker.apply_status("Burn", self, source_pokemon=defender)
+            if int(attacker.current_hp) > 0 and abilities.has_ability(defender, "Cute Charm", game=self, attacker=attacker):
+                atk_g = getattr(attacker, "gender", None)
+                def_g = getattr(defender, "gender", None)
+                if atk_g in ("Male", "Female") and def_g in ("Male", "Female") and atk_g != def_g and random.random() < 0.30:
+                    attacker.apply_status("Infatuated", self, source_pokemon=defender)
+            if int(attacker.current_hp) > 0 and abilities.has_ability(defender, "Effect Spore", game=self, attacker=attacker):
+                if "Grass" not in attacker.types and not abilities.has_ability(attacker, "Overcoat", game=self):
+                    roll = random.random()
+                    if roll < 0.10:
+                        attacker.apply_status("Poison", self, source_pokemon=defender)
+                    elif roll < 0.20:
+                        attacker.apply_status("Paralysis", self, source_pokemon=defender)
+                    elif roll < 0.30:
+                        attacker.apply_status("Sleep", self, source_pokemon=defender)
+            if int(attacker.current_hp) > 0 and abilities.has_ability(defender, "Tangling Hair", game=self, attacker=attacker):
+                attacker.change_movement_speed(attacker.movement_speed_stage - 1, self, is_move_effect=False)
+            if int(defender.current_hp) > 0 and int(attacker.current_hp) > 0:
+                if getattr(defender, "held_item", None) is None and getattr(attacker, "held_item", None) is not None:
+                    if abilities.has_ability(defender, "Pickpocket", game=self, attacker=attacker):
+                        if abilities.has_ability(attacker, "Sticky Hold", game=self, attacker=defender):
+                            self.log_message(f"{attacker.name}'s Sticky Hold kept its held item safe!")
+                        else:
+                            stolen = attacker.held_item
+                            stolen_name = stolen.get("name", "item") if isinstance(stolen, dict) else str(stolen)
+                            defender.held_item = stolen
+                            attacker.held_item = None
+                            self.log_message(f"{defender.name} stole {attacker.name}'s {stolen_name}!")
+
+        # Adjacent-hit reactions
+        if is_adj:
+            if int(attacker.current_hp) > 0 and abilities.has_ability(defender, "Stench", game=self, attacker=attacker):
+                if random.random() < 0.10:
+                    attacker.apply_status("Terrified", self, source_pokemon=defender)
+            if int(defender.current_hp) > 0 and abilities.has_ability(defender, "Trace", game=self, attacker=attacker):
+                first_ab = abilities.get_first_base_ability(attacker)
+                if first_ab and first_ab != "Trace":
+                    slots = abilities.get_effective_ability_slots_with_thresholds(defender)
+                    curr_iq = max(0, min(100, int(getattr(defender, "iq", 0))))
+                    for idx, (s_ab, req_iq) in enumerate(slots):
+                        if curr_iq >= req_iq and abilities.canonicalize_ability_name(s_ab) == "Trace":
+                            if not hasattr(defender, "replaced_abilities") or defender.replaced_abilities is None:
+                                defender.replaced_abilities = {}
+                            defender.replaced_abilities[idx] = first_ab
+                            self.log_message(f"{defender.name}'s Trace copied {attacker.name}'s {first_ab}!")
+                            break
+
+        # Non-contact hit reactions
+        if move_name and getattr(attacker, "disable_move_effect", None) != move_name:
+            if abilities.has_ability(defender, "Cursed Body", game=self, attacker=attacker) and random.random() < 0.30:
+                attacker.disable_move_effect = move_name
+                self.log_message(f"{defender.name}'s Cursed Body disabled {attacker.name}'s {move_name}!")
+
+        if int(defender.current_hp) > 0:
+            if move.get("category") == "Physical" and abilities.has_ability(defender, "Weak Armor", game=self, attacker=attacker):
+                defender.apply_stat_modifier("Defense", -1, self, is_move_effect=False)
+                defender.apply_stat_modifier("Speed", 1, self, is_move_effect=False)
+                defender.change_movement_speed(defender.movement_speed_stage + 1, self, is_move_effect=False)
+            if move.get("type") in ("Bug", "Dark", "Ghost") and abilities.has_ability(defender, "Rattled", game=self, attacker=attacker):
+                defender.change_movement_speed(defender.movement_speed_stage + 1, self, is_move_effect=False)
+            if move.get("type") == "Dark" and abilities.has_ability(defender, "Justified", game=self, attacker=attacker):
+                defender.apply_stat_modifier("Attack", 1, self, is_move_effect=False)
+            if is_critical and abilities.has_ability(defender, "Anger Point", game=self, attacker=attacker):
+                if defender.stat_modifiers.get("Attack", 0) < 6:
+                    defender.apply_stat_modifier("Attack", 12, self, is_move_effect=False)
+            if hp_lost > 0 and not self.are_allies(attacker, defender) and abilities.has_ability(defender, "Speed Boost", game=self, attacker=attacker):
+                defender.apply_stat_modifier("Speed", 1, self, is_move_effect=False)
+
+    def _try_sturdy_survival(self, attacker: Pokemon | None, defender: Pokemon, hp_before: int, damage: int) -> bool:
+        """Survives a lethal hit at 1 HP if defender is at full HP with Sturdy."""
+        max_hp = int(defender.stats.get("HP", 1))
+        if hp_before >= max_hp and hp_before - damage <= 0:
+            if abilities.has_ability(defender, "Sturdy", game=self, attacker=attacker):
+                defender.current_hp = 1.0
+                self.log_message(f"{defender.name} endured the hit with Sturdy!")
+                return True
+        return False
+
+    def _apply_post_hit_survival_triggers(self, attacker: Pokemon | None, defender: Pokemon, hp_lost: int):
+        """Triggers Berserk and Run Away when defender survives a damaging hit."""
+        if hp_lost <= 0 or int(defender.current_hp) <= 0:
+            return
+        max_hp = int(defender.stats.get("HP", 1))
+        if int(defender.current_hp) <= max_hp // 2 and not getattr(defender, "berserk_triggered_this_floor", False):
+            if abilities.has_ability(defender, "Berserk", game=self, attacker=attacker):
+                defender.berserk_triggered_this_floor = True
+                defender.apply_stat_modifier("Special_Attack", 1, self, is_move_effect=False)
+        defender.check_run_away_trigger(game=self)
+
+    def _apply_screen_cleaner(self, attacker: Pokemon, defender: Pokemon):
+        """Removes Reflect, Light Screen, and Aurora Veil from targets if attacker has Screen Cleaner."""
+        if attacker is not defender and abilities.has_ability(attacker, "Screen Cleaner", game=self):
+            for scr in ("Reflect", "Light Screen", "Aurora Veil"):
+                if defender.status_effects.get(scr, 0) > 0:
+                    defender.cure_status(scr, self)
+
+    def _handle_ko_abilities(self, attacker: Pokemon, defender: Pokemon, move: dict, overkill: int, tile: tuple[int, int] | None = None):
+        """Applies Moxie and Aftermath after a defeated target is removed."""
+        if attacker is defender:
+            return
+        if not self.are_allies(attacker, defender) and int(attacker.current_hp) > 0:
+            if abilities.has_ability(attacker, "Moxie", game=self) and random.random() < 0.30:
+                attacker.apply_stat_modifier("Attack", 1, self, is_move_effect=False)
+        if bool(move.get("contact", False)) and abilities.has_ability(defender, "Aftermath", game=self, attacker=attacker):
+            if not abilities.any_floor_pokemon_has_ability("Damp", self):
+                dx, dy = tile if tile is not None else get_pokemon_position(self, defender)
+                aftermath_power = max(1, int(defender.get_modified_stat("Attack", self)) + max(0, int(overkill)))
+                self.log_message(f"{defender.name}'s Aftermath triggered an explosion!")
+                self.trigger_explosion(dx, dy, size=3, base_power=aftermath_power, attacker=defender, cause_name="Aftermath")
+
     def _execute_move_internal(self, attacker: Pokemon, targets: Pokemon | list[Pokemon], move: dict, free: bool = False):
         """Executiton method for single-target and multi-target moves."""
         if attacker is self.player_pokemon:
@@ -8389,6 +9001,13 @@ class Game:
                     self.apply_snatched_move_effects(snatcher, attacker, move)
                 return
 
+        if not free and attacker.status_effects.get("Infatuated", 0) > 0:
+            if random.random() < 0.50:
+                self.moved_used_this_turn.add(attacker)
+                attacker.last_move_failed_turn = self.turn_number
+                self.log_message(f"{attacker.name} is immobilized by love!")
+                return
+
         if not free:
             try:
                 attacker.use_move(move, game=self)
@@ -8403,17 +9022,21 @@ class Game:
 
         attacker.last_used_move = move["name"]
         attacker.last_used_move_on_floor = move["name"]
+        orig_move = move
 
-        if getattr(self, "weather", None) == "Shadowy Aura":
+        if getattr(self, "weather", None) == "Shadowy Aura" and abilities.get_effective_weather(attacker, self) == "Shadowy Aura":
             move = move.copy()
             move["type"] = "typeless"
 
-        if getattr(self, "weather", None) == "Harsh Sunlight" and move.get("type") == "Water":
+        move = abilities.resolve_move_with_abilities(attacker, move, game=self)
+
+        eff_atk_weather = abilities.get_effective_weather(attacker, self)
+        if eff_atk_weather == "Harsh Sunlight" and move.get("type") == "Water":
             attacker.last_move_failed_turn = self.turn_number
             self.log_message("The Water-type attack evaporated in the harsh sunlight!")
             return
 
-        if getattr(self, "weather", None) == "Heavy Rain" and move.get("type") == "Fire":
+        if eff_atk_weather == "Heavy Rain" and move.get("type") == "Fire":
             attacker.last_move_failed_turn = self.turn_number
             self.log_message("The Fire-type attack fizzled out in the heavy rain!")
             return
@@ -8492,8 +9115,42 @@ class Game:
                 self.log_message("The move failed!")
             return
 
+        if move.get("type") == "Electric" and move.get("range") != "User" and target_list:
+            ax, ay = get_pokemon_position(self, attacker)
+            lr_candidates = [
+                p for p in (self.party + self.spawned_pokemon)
+                if p is not attacker and int(getattr(p, "current_hp", 0)) > 0
+                and abilities.has_ability(p, "Lightning Rod", game=self, attacker=attacker)
+            ]
+            if lr_candidates:
+                lr_target = min(
+                    lr_candidates,
+                    key=lambda p: max(abs(get_pokemon_position(self, p)[0] - ax), abs(get_pokemon_position(self, p)[1] - ay)),
+                )
+                if lr_target not in target_list or len(target_list) > 1:
+                    self.log_message(f"{lr_target.name}'s Lightning Rod drew in the attack!")
+                target_list = [lr_target]
+                is_single = True
+
         valid_targets = [d for d in target_list if int(getattr(d, "current_hp", 0)) > 0]
         is_multi = len(valid_targets) > 1
+
+        if not free and abilities.has_ability(attacker, "Moody", game=self) and int(attacker.current_hp) > 0:
+            moody_stats = ["Attack", "Defense", "Special_Attack", "Special_Defense", "Speed"]
+            up_stat, down_stat = random.sample(moody_stats, 2)
+            attacker.apply_stat_modifier(up_stat, 1, self, is_move_effect=False)
+            attacker.apply_stat_modifier(down_stat, -1, self, is_move_effect=False)
+
+        if not free and abilities.has_ability(attacker, "Download", game=self) and int(attacker.current_hp) > 0:
+            if getattr(attacker, "_download_turn", -1) != self.turn_number:
+                attacker._download_turn = self.turn_number
+                foe_targets = [t for t in valid_targets if t is not attacker and not self.are_allies(attacker, t)]
+                if foe_targets and random.random() < 0.30:
+                    foe = foe_targets[0]
+                    foe_def = foe.get_modified_stat("Defense", game=self)
+                    foe_spdef = foe.get_modified_stat("Special_Defense", game=self)
+                    boost_stat = "Attack" if foe_def < foe_spdef else "Special_Attack"
+                    attacker.apply_stat_modifier(boost_stat, 1, self, is_move_effect=False)
 
         self.play_move_animation(attacker, target_list, move)
 
@@ -8546,6 +9203,38 @@ class Game:
             for p in list(self.party + self.spawned_pokemon):
                 p.apply_status("Trick Room", self, duration=99999)
             self.log_message("The dimensions seemed to be twisted!")
+
+        if (
+            not free
+            and int(attacker.current_hp) > 0
+            and not getattr(attacker, "charging_move", None)
+            and not getattr(self, "mimic_selection_state", None)
+            and move.get("name") not in ("Explosion", "Self-Destruct", "Sleep Talk", "Snatch", "Trick Room")
+        ):
+            double_reason = None
+            if abilities.get_effective_weather(attacker, self) in ("Sunny", "Harsh Sunlight") and abilities.has_ability(attacker, "Chlorophyll", game=self):
+                double_reason = "Chlorophyll"
+            elif getattr(attacker, "held_item", None) is None and abilities.has_ability(attacker, "Unburden", game=self):
+                double_reason = "Unburden"
+            elif (
+                move.get("category") == "Status"
+                and abilities.has_ability(attacker, "Prankster", game=self)
+                and not any("Dark" in getattr(t, "types", []) for t in target_list if t is not attacker)
+            ):
+                double_reason = "Prankster"
+            elif (
+                move.get("category") in ("Physical", "Special")
+                and abilities.has_ability(attacker, "Quick Draw", game=self)
+                and random.random() < 0.30
+            ):
+                double_reason = "Quick Draw"
+
+            if double_reason:
+                remaining = [d for d in target_list if int(getattr(d, "current_hp", 0)) > 0]
+                if remaining:
+                    self.log_message(f"{attacker.name}'s {double_reason} lets it attack again!")
+                    followup_target = remaining[0] if (is_single and len(remaining) == 1) else remaining
+                    self._execute_move_internal(attacker, followup_target, orig_move, free=True)
 
     def execute_single_move(self, attacker: Pokemon, defender: Pokemon, move: dict, free: bool = False):
         """Executes a single-target move, consuming PP and applying the move's effects to the target"""
@@ -8605,6 +9294,10 @@ class Game:
 
     def can_player_step_to(self, dx: int, dy: int) -> bool:
         """Checks if the player can move in direction (dx, dy), checking any obstacles on the target tile."""
+        trapped, _ = abilities.is_trapped_by_ability(self.player_pokemon, self)
+        if trapped:
+            return False
+
         new_x = self.player_x + dx
         new_y = self.player_y + dy
 
@@ -8681,8 +9374,13 @@ class Game:
             self.log_message(f"{self.player_pokemon.name} can't move!")
             return False
 
+        trapped, trap_source = abilities.is_trapped_by_ability(self.player_pokemon, self)
+        if trapped:
+            self.log_message(f"{self.player_pokemon.name} is trapped by {trap_source}!")
+            return False
+
         p_types = getattr(self.player_pokemon, "types", self.player_pokemon.species_data.get("types", []))
-        if getattr(self, "weather", None) == "Strong Winds" and "Flying" not in p_types:
+        if abilities.get_effective_weather(self.player_pokemon, self) == "Strong Winds" and "Flying" not in p_types:
             if random.random() < 0.33:
                 self.start_player_action()
                 self.log_message(f"{self.player_pokemon.name} was pushed back by the strong winds!")
@@ -9394,10 +10092,13 @@ class Game:
                 if target_poke:
                     self.inventory.pop(target_idx)
                     self.waiting_for_orb_direction = None
-                    tx, ty = get_pokemon_position(self, target_poke)
-                    self.set_poke_pos(self.player_pokemon, tx, ty)
-                    self.set_poke_pos(target_poke, px, py)
-                    self.log_message(f"{self.player_pokemon.name} switched places with {target_poke.name}!")
+                    if abilities.has_ability(target_poke, "Suction Cups", game=self, attacker=self.player_pokemon):
+                        self.log_message(f"{target_poke.name} is anchored with Suction Cups!")
+                    else:
+                        tx, ty = get_pokemon_position(self, target_poke)
+                        self.set_poke_pos(self.player_pokemon, tx, ty)
+                        self.set_poke_pos(target_poke, px, py)
+                        self.log_message(f"{self.player_pokemon.name} switched places with {target_poke.name}!")
                     self.on_turn_completed()
                 else:
                     self.log_message("There's no Pokémon in that direction!")
@@ -9420,25 +10121,31 @@ class Game:
                     self.log_message(f"{self.player_pokemon.name} used the {orb_name}!")
 
                     if orb_name == "Blowback Orb":
-                        self.execute_throw_pokemon(target_enemy, dx, dy, max_dist=20, wall_damage=10, poke_damage=10)
+                        if abilities.has_ability(target_enemy, "Suction Cups", game=self, attacker=self.player_pokemon):
+                            self.log_message(f"{target_enemy.name} is anchored with Suction Cups!")
+                        else:
+                            self.execute_throw_pokemon(target_enemy, dx, dy, max_dist=20, wall_damage=10, poke_damage=10)
 
                     elif orb_name == "Decoy Orb":
                         target_enemy.apply_status("Decoy", self)
 
                     elif orb_name == "Hurl Orb":
-                        other_enemies = [e for e in self.spawned_pokemon if e is not target_enemy and int(getattr(e, "current_hp", 0)) > 0]
-                        if other_enemies:
-                            ex, ey = get_pokemon_position(self, target_enemy)
-                            other_enemies.sort(key=lambda o: max(abs(get_pokemon_position(self, o)[0] - ex), abs(get_pokemon_position(self, o)[1] - ey)))
-                            closest = other_enemies[0]
-                            cx, cy = get_pokemon_position(self, closest)
-                            hdx = 1 if cx > ex else (-1 if cx < ex else 0)
-                            hdy = 1 if cy > ey else (-1 if cy < ey else 0)
+                        if abilities.has_ability(target_enemy, "Suction Cups", game=self, attacker=self.player_pokemon):
+                            self.log_message(f"{target_enemy.name} is anchored with Suction Cups!")
                         else:
-                            dirs = [(d1, d2) for d1 in [-1, 0, 1] for d2 in [-1, 0, 1] if not (d1 == 0 and d2 == 0)]
-                            hdx, hdy = random.choice(dirs)
+                            other_enemies = [e for e in self.spawned_pokemon if e is not target_enemy and int(getattr(e, "current_hp", 0)) > 0]
+                            if other_enemies:
+                                ex, ey = get_pokemon_position(self, target_enemy)
+                                other_enemies.sort(key=lambda o: max(abs(get_pokemon_position(self, o)[0] - ex), abs(get_pokemon_position(self, o)[1] - ey)))
+                                closest = other_enemies[0]
+                                cx, cy = get_pokemon_position(self, closest)
+                                hdx = 1 if cx > ex else (-1 if cx < ex else 0)
+                                hdy = 1 if cy > ey else (-1 if cy < ey else 0)
+                            else:
+                                dirs = [(d1, d2) for d1 in [-1, 0, 1] for d2 in [-1, 0, 1] if not (d1 == 0 and d2 == 0)]
+                                hdx, hdy = random.choice(dirs)
 
-                        self.execute_throw_pokemon(target_enemy, hdx, hdy, max_dist=20, wall_damage=15, poke_damage=15)
+                            self.execute_throw_pokemon(target_enemy, hdx, hdy, max_dist=20, wall_damage=15, poke_damage=15)
 
                     elif orb_name == "Itemizer Orb":
                         ex, ey = get_pokemon_position(self, target_enemy)
@@ -9508,7 +10215,9 @@ class Game:
         try:
             h_before = int(target.current_hp)
             actual_dmg = int(min(target.current_hp, damage))
-            if not self._try_iq_survival(target, h_before, damage, from_status=False):
+            if self._try_sturdy_survival(attacker, target, h_before, damage):
+                pass
+            elif not self._try_iq_survival(target, h_before, damage, from_status=False):
                 target.current_hp = float(h_before - actual_dmg)
 
             self.flash_damages[(tx, ty)] = (damage, type_mult, is_critical)
@@ -9524,6 +10233,8 @@ class Game:
                     self.player_pokemon.defeat_pokemon(target, game=self)
 
                 self.remove_defeated_pokemon(target, (tx, ty))
+            else:
+                target.check_run_away_trigger(game=self)
         finally:
             if suppressed_here:
                 self.suppress_target_logs = False
@@ -9779,6 +10490,12 @@ class Game:
                                 return
                                 
                             target = self.player_pokemon
+                            if selected_item.get("edible", False) and abilities.has_adjacent_enemy_with_ability(target, "Unnerve", game=self):
+                                self.log_message(f"{target.name} is too nervous to eat anything!")
+                                self.inventory_state = None
+                                self.render()
+                                return
+
                             if selected_item.get("name") in ("Apple", "Big Apple", "Huge Apple", "Banana") and getattr(target, "current_belly", 0) > getattr(target, "max_belly", 100):
                                 self.log_message(f"{target.name} is too full to eat any more.")
                                 self.inventory_state = None
@@ -9934,6 +10651,12 @@ class Game:
                         return
                     target_member = self.party[state["context_index"]]
                     selected_item = self.inventory[state["selected_index"]]
+                    if selected_item.get("edible", False) and abilities.has_adjacent_enemy_with_ability(target_member, "Unnerve", game=self):
+                        self.log_message(f"{target_member.name} is too nervous to eat anything!")
+                        self.inventory_state = None
+                        self.render()
+                        return
+
                     if selected_item.get("name") in ("Apple", "Big Apple", "Huge Apple", "Banana") and getattr(target_member, "current_belly", 0) > getattr(target_member, "max_belly", 100):
                         self.log_message(f"{target_member.name} is too full to eat any more.")
                         self.inventory_state = None
@@ -10144,12 +10867,20 @@ class Game:
                 is_pierce = bool(self.player_pokemon.status_effects.get("Pierce Throw")) and not is_apricorn
                 if is_pierce:
                     hit_enemies = [hit_type for _, _, hit_type in trajectory if isinstance(hit_type, Pokemon)]
+                    magma_destroyed = False
                     for enemy_hit in hit_enemies:
                         if getattr(enemy_hit, "napping", False):
                             enemy_hit.napping = False
                             enemy_hit.just_woke_up = True
                         ex, ey = get_pokemon_position(self, enemy_hit)
                         enemy_visible = (ex, ey) in currently_visible
+                        if abilities.has_ability(enemy_hit, "Magma Armor", game=self, attacker=self.player_pokemon):
+                            if enemy_visible:
+                                self.log_message(f"{enemy_hit.name}'s Magma Armor incinerated the {thrown_item['name']}!")
+                            else:
+                                self.log_message(f"You hear the {thrown_item['name']} burn up!")
+                            magma_destroyed = True
+                            break
                         if not enemy_visible:
                             self.log_message("You hit something in the distance!")
                             self.suppress_target_logs = True
@@ -10160,13 +10891,14 @@ class Game:
                         else:
                             items.apply_item_effect(thrown_item, enemy_hit, self, is_thrown=True)
 
-                    final_x, final_y, hit_type = trajectory[-1]
-                    if hit_type == "wall":
-                        fx = final_x - dx
-                        fy = final_y - dy
-                        self.place_item_on_floor(fx, fy, thrown_item)
-                    else:
-                        self.place_item_on_floor(final_x, final_y, thrown_item)
+                    if not magma_destroyed:
+                        final_x, final_y, hit_type = trajectory[-1]
+                        if hit_type == "wall":
+                            fx = final_x - dx
+                            fy = final_y - dy
+                            self.place_item_on_floor(fx, fy, thrown_item)
+                        else:
+                            self.place_item_on_floor(final_x, final_y, thrown_item)
                 else:
                     final_x, final_y, hit_type = trajectory[-1]
                     is_visible = (final_x, final_y) in currently_visible
@@ -10200,14 +10932,23 @@ class Game:
                             ev_mult = (3.0 + ev_stage) / 3.0 if ev_stage >= 0 else 3.0 / (3.0 + abs(ev_stage))
 
                             hit_chance = 90.0 * (acc_mult / ev_mult)
+                            has_no_guard = (
+                                abilities.has_ability(self.player_pokemon, "No Guard", game=self)
+                                or abilities.has_ability(enemy_hit, "No Guard", game=self, attacker=self.player_pokemon)
+                            )
 
                             import random
-                            if can_dodge and random.randint(1, 100) > hit_chance:
+                            if can_dodge and not has_no_guard and random.randint(1, 100) > hit_chance:
                                 if enemy_visible:
                                     self.log_message(f"{enemy_hit.name} dodged the {thrown_item['name']}!")
                                 self.place_item_on_floor(final_x, final_y, thrown_item)
                                 if (final_x, final_y) in currently_visible:
                                     self.log_message(f"The thrown {thrown_item['name']} fell to the ground.")
+                            elif abilities.has_ability(enemy_hit, "Magma Armor", game=self, attacker=self.player_pokemon):
+                                if enemy_visible:
+                                    self.log_message(f"{enemy_hit.name}'s Magma Armor incinerated the {thrown_item['name']}!")
+                                else:
+                                    self.log_message(f"You hear the {thrown_item['name']} burn up!")
                             else:
                                 if not enemy_visible:
                                     self.log_message("You hit something in the distance!")
@@ -11331,6 +12072,7 @@ class Game:
 
         #Cure status effects on party
         for member in getattr(self, "party", []):
+            self.reset_member_floor_ability_states(member)
             member.fake_out_used_this_floor = False
             member.disable_move_effect = None
             member.imprisoned_moves.clear()
@@ -11357,6 +12099,8 @@ class Game:
                 member.moves = [dict(m) for m in orig["moves"]]
                 member.stats = dict(orig["stats"])
                 member.transform_original_state = None
+
+        self.apply_floor_entry_abilities(is_new_floor_transition=True)
 
         if hasattr(self, "player_pokemon") and self.player_pokemon:
             self.player_actions_left = self.get_pokemon_actions_this_turn(self.player_pokemon)
@@ -13776,6 +14520,9 @@ class Game:
         self.generate_floor_spawn_list()
         self.spawn_initial_items()
         self.spawn_initial_enemies()
+        for member in getattr(self, "party", []):
+            self.reset_member_floor_ability_states(member)
+        self.apply_floor_entry_abilities(is_new_floor_transition=False)
         self.log_message("You enter the misery dungeon...")
 
         self.render()
@@ -14536,7 +15283,7 @@ class Game:
                         primary_type = ally.types[0] if getattr(ally, "types", None) else (ally.species_data["types"][0] if "types" in ally.species_data and ally.species_data["types"] else "Typeless")
                         color = TYPE_COLORS.get(primary_type, "\033[37m")
                         row_chars.append(f"{color}{slot_str}\033[0m")
-                elif ((src_x, src_y) in currently_visible or getattr(self, "radar_active", False)) and (src_x, src_y) in spawned_map:
+                elif ((src_x, src_y) in currently_visible or getattr(self, "radar_active", False) or abilities.get_team_ability_count("Anticipation", self) > 0) and (src_x, src_y) in spawned_map:
                     is_hallucinating = bool(getattr(self.player_pokemon, "status_effects", {}).get("Hallucinating", 0) > 0)
                     poke = spawned_map[(src_x, src_y)]
                     if is_hallucinating:
@@ -16063,7 +16810,28 @@ class Game:
 
         interior.append("─" * 74)
 
-        #6. Next Level Up Move
+        #6. Abilities
+        interior.append(" Abilities:")
+        ab_slots = abilities.get_effective_ability_slots_with_thresholds(pokemon)
+        if not ab_slots:
+            interior.append("   None")
+        else:
+            curr_iq = int(getattr(pokemon, "iq", 0))
+            for ab_name, req_iq in ab_slots:
+                unlocked = curr_iq >= req_iq
+                if unlocked:
+                    interior.append(f"   - {ab_name}")
+                    ab_desc = abilities.get_ability_description(ab_name)
+                    wrapped_ab_desc = textwrap.wrap(ab_desc, width=68)
+                    for dline in wrapped_ab_desc:
+                        interior.append(f"     {dline}")
+                else:
+                    interior.append(f"   \033[90m- {ab_name}\033[0m")
+                    interior.append(f"     \033[90m[unlocked at {req_iq}% IQ]\033[0m")
+
+        interior.append("─" * 74)
+
+        #7. Next Level Up Move
         candidates = [item for item in pokemon.species_data["level_up_moves"] if item[0] > pokemon.level]
         if candidates:
             min_lvl = min(item[0] for item in candidates)
@@ -16074,6 +16842,7 @@ class Game:
         interior.append(f" Next move: {next_move_str}")
         
         evolutions = pokemon.species_data.get("evolutions", [])
+        #TODO: Instead of hardcoding Tyrogue's evolution, put it into pokemon.json like everything else?
         if pokemon.species_name == "Tyrogue" and not evolutions:
             tyrogue_lines = [
                 "Evolves into Hitmonlee at Level 20 if Attack > Defense",
@@ -16106,14 +16875,15 @@ class Game:
 
         interior.append("─" * 74)
 
-        #7. Status Effects
+        #8. Status Effects
         status_line = self.get_status_line(pokemon, max_len=55)
         if not status_line:
             status_line = "None"
         interior.append(f" Status effects: {status_line}")
         interior.append("─" * 74)
 
-        #8. Closing instructions
+        #9. Closing instructions
+        #TODO: Anchor these to the bottom of the screen
         opts = self.get_summary_context_menu_options(pokemon)
         has_opts = bool(opts)
 
@@ -16142,7 +16912,7 @@ class Game:
 
         rows = []
         if can_scroll_up:
-            rows.append("┌" + "─" * 73 + "\033[92m↑\033[0m")
+            rows.append("┌" + "─" * 74 + "\033[92m↑\033[0m")
         else:
             rows.append("┌" + "─" * 74 + "┐")
 
@@ -16154,7 +16924,7 @@ class Game:
             rows.append("│" + " " * 74 + "│")
 
         if can_scroll_down:
-            rows.append("└" + "─" * 73 + "\033[92m↓\033[0m")
+            rows.append("└" + "─" * 74 + "\033[92m↓\033[0m")
         else:
             rows.append("└" + "─" * 74 + "┘")
 
@@ -17334,6 +18104,7 @@ class Game:
                         
                         #Cure all party members and reset their stats to normal
                         for member in self.party:
+                            self.reset_member_floor_ability_states(member)
                             member.fake_out_used_this_floor = False
                             member.disable_move_effect = None
                             member.imprisoned_moves.clear()
@@ -17369,7 +18140,9 @@ class Game:
                             
                             #Reset last_used_move_on_floor
                             member.last_used_move_on_floor = None
-                        
+
+                        self.apply_floor_entry_abilities(is_new_floor_transition=True)
+
                         #Reset player actions left for the new floor
                         self.player_actions_left = self.get_pokemon_actions_this_turn(self.player_pokemon)
                         

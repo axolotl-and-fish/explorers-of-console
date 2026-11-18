@@ -219,6 +219,7 @@ class Pokemon:
             "Metal Burst": 0,
             "Aurora Veil": 0,
             "Trick Room": 0,
+            "Infatuated": 0,
         }
         self.bide_damage: int = 0
         self.bide_target_tile: tuple[int, int] | None = None
@@ -243,7 +244,16 @@ class Pokemon:
         self.damaged_by_pokemons: dict[Pokemon, int] = {} #Map of attacker -> turn_number when damaged (for Revenge)
         self.id: str | None = None
         self.held_item: dict | None = None
-        self.ability: str | None = None
+        from abilities import assign_ability_slots
+        self.ability_slots: list[str] = assign_ability_slots(self.species_data)
+        self.replaced_abilities: dict[int, str] = {}
+        self.ability: str | None = self.ability_slots[0] if self.ability_slots else None
+        self.run_away_triggered_this_floor: bool = False
+        self.curious_medicine_used_this_floor: bool = False
+        self.berserk_triggered_this_floor: bool = False
+        self.download_triggered_this_turn: int | None = None
+        self.flash_fire_boosted: bool = False
+        self.cud_chew_queue: list[dict] = []
         self.tactic: str | None = None
         self.is_transformed: bool = False
         self.original_species_name: str | None = None
@@ -760,6 +770,10 @@ class Pokemon:
             self._nickname = target_species_name
 
         self.species_data = copy.deepcopy(new_species_data)
+        from abilities import assign_ability_slots
+        self.ability_slots = assign_ability_slots(self.species_data)
+        self.replaced_abilities = {}
+        self.ability = self.ability_slots[0] if self.ability_slots else None
         self.recalculate_stats()
 
         #Heal HP to new max HP if current HP was at old max HP or higher
@@ -926,7 +940,7 @@ class Pokemon:
                     game.log_message(f"{self.name}'s {formatted} increased by {diff}!")
 
     def gain_iq(self, amount: int, game=None) -> int:
-        """Handles IQ gains, recalculates stats, and logs stat gains"""
+        """Handles IQ gains, recalculates stats, and logs stat gains and ability unlocks"""
         old_iq = max(0, min(100, int(getattr(self, "iq", 0))))
         new_iq = max(0, min(100, old_iq + int(amount)))
         gained = new_iq - old_iq
@@ -937,8 +951,25 @@ class Pokemon:
         self.iq = new_iq
         self.recalculate_stats()
         self._log_stat_increases(old_stats, game)
+        if game and hasattr(game, "party") and self in game.party:
+            from abilities import get_effective_ability_slots_with_thresholds
+            for ab_name, req_iq in get_effective_ability_slots_with_thresholds(self):
+                if old_iq < req_iq <= new_iq:
+                    game.log_message(f"{self.name} unlocked the {ab_name} ability!")
         self.check_evolution_notifications(game=game)
         return gained
+
+    def check_run_away_trigger(self, game=None):
+        """Triggers Run Away speed boost once per floor when HP drops below 50%."""
+        if int(getattr(self, "current_hp", 0)) <= 0:
+            return
+        if getattr(self, "run_away_triggered_this_floor", False):
+            return
+        from abilities import has_ability
+        max_hp = float(self.stats.get("HP", 1.0))
+        if self.current_hp < 0.5 * max_hp and has_ability(self, "Run Away", game=game):
+            self.run_away_triggered_this_floor = True
+            self.change_movement_speed(self.movement_speed_stage + 1, game)
 
     def get_iq_survival_chance(self) -> float:
         """Returns probability of surviving a lethal non-status hit at 1 HP from IQ"""
@@ -964,7 +995,7 @@ class Pokemon:
         "Flinch", "Petrified", "Confusion", "Leech Seed", "Slow",
         "Encore", "Stuck", "Terrified", "Blind", "Puppet", "Hallucinating",
         "Taunted", "Drowsy", "Cowering", "Silenced", "Perishing",
-        "Curse", "Sluggish", "Paused",
+        "Curse", "Sluggish", "Paused", "Infatuated",
     )
 
     def get_active_negative_statuses(self) -> list[str]:
@@ -1111,8 +1142,24 @@ class Pokemon:
             return self.temp_types  # type: ignore[return-value]
         return self.species_data.get("types", [])
 
-    def get_modified_stat(self, stat_name: str, game=None) -> int:
-        """Returns the stat value after applying temporary stat modifier stages and weather bonuses."""
+    def get_modified_stat(
+        self,
+        stat_name: str,
+        game=None,
+        attacker=None,
+        ignore_stages: bool = False,
+        apply_defender_allies: bool = True,
+    ) -> int:
+        """Returns the stat value after applying temporary stat modifier stages, weather, and ability bonuses"""
+        from abilities import (
+            count_adjacent_allies_with_ability,
+            get_effective_weather,
+            has_ability,
+            has_adjacent_enemy_with_ability,
+            has_any_major_status,
+            is_immune_to_intimidate,
+        )
+
         actual_stat_name = stat_name
         if game and getattr(game, "wonder_room_turns", 0) > 0:
             if stat_name == "Defense":
@@ -1121,8 +1168,14 @@ class Pokemon:
                 actual_stat_name = "Defense"
 
         base_val = self.stats.get(actual_stat_name, 1)
-        stage = self.stat_modifiers.get(actual_stat_name, 0)
-        
+        if ignore_stages:
+            stage = 0
+        else:
+            stage = self.stat_modifiers.get(actual_stat_name, 0)
+            if actual_stat_name == "Attack" and game is not None:
+                if has_adjacent_enemy_with_ability(self, "Intimidate", game=game) and not is_immune_to_intimidate(self, game=game):
+                    stage -= 1
+
         #Clamp stat stages to [-6, +6] as a safety guard
         stage = max(-6, min(6, stage))
 
@@ -1130,48 +1183,77 @@ class Pokemon:
             multiplier = (2.0 + stage) / 2.0
         else:
             multiplier = 2.0 / (2.0 + abs(stage))
-            
+
         import math
         val = max(1, math.floor(base_val * multiplier))
+
+        eff_weather = get_effective_weather(self, game) if game is not None else "Clear"
 
         #Apply weather-based boosts (Defense / Special Defense / Speed)
         if game and hasattr(game, "weather"):
             p_types = self.types
             if actual_stat_name in ("Defense", "Special_Defense"):
-                if game.weather == "Hail" and "Ice" in p_types:
+                if eff_weather == "Hail" and "Ice" in p_types:
                     val = max(1, math.floor(val * 1.33))
-                elif game.weather == "Sandstorm" and "Ground" in p_types:
+                elif eff_weather == "Sandstorm" and "Ground" in p_types:
                     val = max(1, math.floor(val * 1.33))
-                elif game.weather == "Strong Winds" and "Flying" in p_types:
+                elif eff_weather == "Strong Winds" and "Flying" in p_types:
                     val = max(1, math.floor(val * 1.5))
             elif actual_stat_name == "Speed":
-                if game.weather == "Fog":
+                if eff_weather == "Fog":
                     val = max(1, math.floor(val * 1.33))
-                elif game.weather == "Blizzard" and "Ice" in p_types:
+                elif eff_weather == "Blizzard" and "Ice" in p_types:
                     val = max(1, math.floor(val * 1.5))
-                elif game.weather == "Strong Winds" and "Flying" in p_types:
+                elif eff_weather == "Strong Winds" and "Flying" in p_types:
                     val = max(1, math.floor(val * 1.5))
 
         #Apply status effect changes
         if actual_stat_name == "Attack" and self.status_effects.get("Burn"):
-            val = max(1, math.floor(val * 0.5))
+            if not has_ability(self, "Guts", game=game):
+                val = max(1, math.floor(val * 0.5))
         if actual_stat_name in ("Defense", "Special_Defense") and (self.status_effects.get("Sleep", 0) > 0 or self.status_effects.get("Resting", 0) > 0):
-            val = max(1, math.floor(val * 0.5))
+            if not has_ability(self, "Marvel Scale", game=game, attacker=attacker):
+                val = max(1, math.floor(val * 0.5))
         if actual_stat_name == "Special_Attack" and (self.status_effects.get("Poison") or self.status_effects.get("Toxic")):
             val = max(1, math.floor(val * 0.5))
         if actual_stat_name == "Speed" and self.status_effects.get("Paralysis", 0) > 0:
-            val = max(1, math.floor(val * 0.5))
-        if actual_stat_name == "Defense" and self.status_effects.get("Reflect", 0) > 0:
-            val = max(1, math.floor(val * 2.0))
-        if actual_stat_name == "Special_Defense" and self.status_effects.get("Light Screen", 0) > 0:
-            val = max(1, math.floor(val * 2.0))
+            if not has_ability(self, "Quick Feet", game=game):
+                val = max(1, math.floor(val * 0.5))
+
+        #Apply ability stat multipliers
+        if actual_stat_name == "Attack":
+            if has_any_major_status(self) and has_ability(self, "Guts", game=game):
+                val = max(1, math.floor(val * 1.5))
+            if has_ability(self, "Hustle", game=game):
+                val = max(1, math.floor(val * 1.5))
+            if has_ability(self, "Huge Power", game=game):
+                val = max(1, math.floor(val * 2.0))
+        elif actual_stat_name == "Special_Attack":
+            if eff_weather in ("Sunny", "Harsh Sunlight") and has_ability(self, "Solar Power", game=game):
+                val = max(1, math.floor(val * 1.5))
+        elif actual_stat_name == "Defense":
+            if has_ability(self, "Fur Coat", game=game, attacker=attacker):
+                val = max(1, math.floor(val * 2.0))
+            if has_any_major_status(self) and has_ability(self, "Marvel Scale", game=game, attacker=attacker):
+                val = max(1, math.floor(val * 1.5))
+
+        #Friend Guard: +25% Defense and Special Defense per adjacent ally with Friend Guard
+        if apply_defender_allies and game is not None and actual_stat_name in ("Defense", "Special_Defense"):
+            fg_count = count_adjacent_allies_with_ability(self, "Friend Guard", game=game, attacker=attacker)
+            if fg_count > 0:
+                val = max(1, math.floor(val * (1.0 + 0.25 * fg_count)))
 
         return val
 
-    def apply_stat_modifier(self, stat: str, stages: int, game):
+    def apply_stat_modifier(self, stat: str, stages: int, game, source_pokemon=None, is_move_effect: bool = False):
         """Applies a temporary stat modifier to the Pokémon."""
         if stages == 0:
             return
+
+        from abilities import has_ability
+
+        if is_move_effect and has_ability(self, "Contrary", game=game):
+            stages = -stages
 
         display_names = {
             "Attack": "Attack",
@@ -1203,46 +1285,83 @@ class Pokemon:
             "Accuracy": "\033[95m",         #Pink
         }
 
+        is_foe = False
+        if source_pokemon is not None and source_pokemon is not self:
+            if game is not None and hasattr(game, "party"):
+                is_foe = (self in game.party) != (source_pokemon in game.party)
+            else:
+                is_foe = True
+
         if stages < 0:
-            if game and getattr(game, "weather", None) == "Mist":
+            infiltrating = source_pokemon is not None and has_ability(source_pokemon, "Infiltrator", game=game)
+            if not infiltrating and game and getattr(game, "weather", None) == "Mist":
                 game.log_message(f"Mist protected {self.name}'s stats!")
                 return
+            if is_foe:
+                if has_ability(self, "Clear Body", game=game, attacker=source_pokemon):
+                    if game:
+                        game.log_message(f"{self.name}'s Clear Body prevented its stats from falling!")
+                    return
+                if stat == "Attack" and has_ability(self, "Hyper Cutter", game=game, attacker=source_pokemon):
+                    if game:
+                        game.log_message(f"{self.name}'s Hyper Cutter prevented its Attack from falling!")
+                    return
+                if stat == "Defense" and has_ability(self, "Big Pecks", game=game, attacker=source_pokemon):
+                    if game:
+                        game.log_message(f"{self.name}'s Big Pecks prevented its Defense from falling!")
+                    return
+                if stat == "Accuracy" and has_ability(self, "Keen Eye", game=game, attacker=source_pokemon):
+                    if game:
+                        game.log_message(f"{self.name}'s Keen Eye prevented its Accuracy from falling!")
+                    return
             if current <= -6:
-                game.log_message(f"{self.name}'s {display_stat} cannot go any lower.")
+                if game:
+                    game.log_message(f"{self.name}'s {display_stat} can't go any lower.")
                 return
             new_stage = max(-6, current + stages)
             self.stat_modifiers[stat] = new_stage
-            
-            abs_stages = abs(stages)
-            if abs_stages == 1:
-                game.log_message(f"{self.name}'s {display_stat} fell!")
-            elif abs_stages == 2:
-                game.log_message(f"{self.name}'s {display_stat} fell sharply!")
-            else:
-                game.log_message(f"{self.name}'s {display_stat} fell severely!")
 
+            abs_stages = abs(stages)
             if game:
+                if abs_stages == 1:
+                    game.log_message(f"{self.name}'s {display_stat} fell!")
+                elif abs_stages == 2:
+                    game.log_message(f"{self.name}'s {display_stat} fell sharply!")
+                else:
+                    game.log_message(f"{self.name}'s {display_stat} fell severely!")
+
                 from targeting import get_pokemon_position
                 pos = get_pokemon_position(game, self)
                 if pos:
                     color = STAT_COLORS.get(stat, "\033[37m")
                     game.flash_damages[pos] = ("↓", color)
                     game.trigger_damage_flash()
+
+            if is_foe and new_stage < current:
+                if has_ability(self, "Defiant", game=game):
+                    if game:
+                        game.log_message(f"{self.name}'s Defiant sharply raised its Attack!")
+                    self.apply_stat_modifier("Attack", 2, game)
+                if has_ability(self, "Competitive", game=game):
+                    if game:
+                        game.log_message(f"{self.name}'s Competitive sharply raised its Sp. Attack!")
+                    self.apply_stat_modifier("Special_Attack", 2, game)
         else:
             if current >= 6:
-                game.log_message(f"{self.name}'s {display_stat} cannot go any higher.")
+                if game:
+                    game.log_message(f"{self.name}'s {display_stat} cannot go any higher.")
                 return
             new_stage = min(6, current + stages)
             self.stat_modifiers[stat] = new_stage
 
-            if stages == 1:
-                game.log_message(f"{self.name}'s {display_stat} rose!")
-            elif stages == 2:
-                game.log_message(f"{self.name}'s {display_stat} rose sharply!")
-            else:
-                game.log_message(f"{self.name}'s {display_stat} rose drastically!")
-
             if game:
+                if stages == 1:
+                    game.log_message(f"{self.name}'s {display_stat} rose!")
+                elif stages == 2:
+                    game.log_message(f"{self.name}'s {display_stat} rose sharply!")
+                else:
+                    game.log_message(f"{self.name}'s {display_stat} rose drastically!")
+
                 from targeting import get_pokemon_position
                 pos = get_pokemon_position(game, self)
                 if pos:
@@ -1250,23 +1369,29 @@ class Pokemon:
                     game.flash_damages[pos] = ("↑", color)
                     game.trigger_damage_flash()
 
-    def change_movement_speed(self, new_stage: int, game, is_decay: bool = False):
+    def change_movement_speed(self, new_stage: int, game, is_decay: bool = False, is_move_effect: bool = False):
         """Changes the Pokémon's movement speed stage (between -1 and 3) and sets the temporary turn duration. (-1 = slowed, 1 = 2x speed, 2 = 3x speed, 3 = 4x speed)"""
         orig_suppress = getattr(game, "suppress_target_logs", False) if game else False
         if game and hasattr(game, "is_in_team_sight") and not game.is_in_team_sight(self):
             game.suppress_target_logs = True
         try:
-            self._change_movement_speed_internal(new_stage, game, is_decay=is_decay)
+            self._change_movement_speed_internal(new_stage, game, is_decay=is_decay, is_move_effect=is_move_effect)
         finally:
             if game:
                 game.suppress_target_logs = orig_suppress
 
-    def _change_movement_speed_internal(self, new_stage: int, game, is_decay: bool = False):
+    def _change_movement_speed_internal(self, new_stage: int, game, is_decay: bool = False, is_move_effect: bool = False):
         old_stage = self.movement_speed_stage
 
         if self.status_effects.get("Trick Room", 0) > 0 and not is_decay:
             delta = new_stage - old_stage
             new_stage = old_stage - delta
+
+        if is_move_effect and not is_decay:
+            from abilities import has_ability
+            if has_ability(self, "Contrary", game=game):
+                delta = new_stage - old_stage
+                new_stage = old_stage - delta
 
         #Check boundary conditions when already at max/min speed
         if old_stage >= 3 and new_stage >= 3:
@@ -1321,13 +1446,35 @@ class Pokemon:
             elif new_stage == 3:
                 game.log_message(f"{self.name} is moving at quadruple speed!")
 
-    def apply_status(self, status: str, game, duration: int | None = None, from_damaging_move: bool = False) -> bool:
+    def apply_status(self, status: str, game, duration: int | None = None, from_damaging_move: bool = False, source_pokemon=None, from_synchronize: bool = False) -> bool:
         """Applies a negative status effect to the Pokémon and prints the log message."""
         orig_suppress = getattr(game, "suppress_target_logs", False) if game else False
         if game and hasattr(game, "is_in_team_sight") and not game.is_in_team_sight(self):
             game.suppress_target_logs = True
         try:
-            return bool(self._apply_status_internal(status, game, duration=duration, from_damaging_move=from_damaging_move))
+            applied = bool(self._apply_status_internal(
+                status,
+                game,
+                duration=duration,
+                from_damaging_move=from_damaging_move,
+                source_pokemon=source_pokemon,
+                from_synchronize=from_synchronize,
+            ))
+            if applied and game is not None:
+                from abilities import has_ability
+                canon_status = "Confusion" if status == "Confused" else status
+                if canon_status == "Flinch" and has_ability(self, "Steadfast", game=game):
+                    self.change_movement_speed(self.movement_speed_stage + 1, game)
+                if not from_synchronize and canon_status in ("Poison", "Toxic", "Toxic Poison", "Burn", "Paralysis", "Paralyzed"):
+                    if has_ability(self, "Synchronize", game=game):
+                        from targeting import get_pokemon_position
+                        from abilities import get_enemies_of
+                        sx, sy = get_pokemon_position(game, self)
+                        for foe in get_enemies_of(self, game=game):
+                            fx, fy = get_pokemon_position(game, foe)
+                            if max(abs(fx - sx), abs(fy - sy)) <= 1:
+                                foe.apply_status(status, game, from_damaging_move=True, source_pokemon=self, from_synchronize=True)
+            return applied
         finally:
             if game:
                 game.suppress_target_logs = orig_suppress
@@ -1363,9 +1510,10 @@ class Pokemon:
                 game.flash_damages[pos] = (text, color)
                 game.trigger_damage_flash()
 
-    def _apply_status_internal(self, status: str, game, duration: int | None = None, from_damaging_move: bool = False) -> bool:
+    def _apply_status_internal(self, status: str, game, duration: int | None = None, from_damaging_move: bool = False, source_pokemon=None, from_synchronize: bool = False) -> bool:
         """Applies a negative status effect to the Pokémon and prints the log message."""
         import random
+        from abilities import has_ability, is_immune_to_status_by_ability, get_effective_weather
         if status == "Confused":
             status = "Confusion"
         
@@ -1380,25 +1528,34 @@ class Pokemon:
         if status == "Frozen" and any(t in p_types for t in ("Fire", "Ice")):
             return False
 
-        #Check Safeguard protection
-        if status in ("Sleep", "Paralysis", "Paralyzed", "Poison", "Toxic", "Toxic Poison", "Burn", "Frozen", "Flinch", "Petrified", "Confusion", "Leech Seed", "Fire Spin", "Slow", "Stuck", "Curse", "Cursed", "Drowsy", "Whirlpool", "Perishing", "Terrified", "Puppet", "Hallucinating", "Blind"):
-            if self.status_effects.get("Safeguard", 0) > 0:
+        #Ability immunities for status effects
+        if is_immune_to_status_by_ability(self, status, game=game, attacker=source_pokemon):
+            if not from_damaging_move and game:
+                game.log_message(f"{self.name}'s ability protects it from {status}!")
+            return False
+
+        #Check Safeguard protection (bypassed by Infiltrator)
+        if status in ("Sleep", "Paralysis", "Paralyzed", "Poison", "Toxic", "Toxic Poison", "Burn", "Frozen", "Flinch", "Petrified", "Confusion", "Leech Seed", "Fire Spin", "Slow", "Stuck", "Curse", "Cursed", "Drowsy", "Whirlpool", "Perishing", "Terrified", "Puppet", "Hallucinating", "Blind", "Infatuated"):
+            bypass_safeguard = source_pokemon is not None and has_ability(source_pokemon, "Infiltrator", game=game)
+            if self.status_effects.get("Safeguard", 0) > 0 and not bypass_safeguard:
                 if game:
                     game.log_message(f"{self.name} is protected by Safeguard!")
                 return False
 
-        #Check Electric Terrain immunity for non-Flying Pokemon
+        eff_weather = get_effective_weather(self, game) if game else None
+
+        #Check Electric Terrain immunity for grounded Pokemon
         if status in ("Sleep", "Resting", "Drowsy"):
-            if game and getattr(game, "weather", None) == "Electric Terrain":
-                p_types = getattr(self, "temp_types", None) or self.species_data.get("types", [])
-                if "Flying" not in p_types:
+            if eff_weather == "Electric Terrain":
+                from combat import is_pokemon_grounded
+                if is_pokemon_grounded(self, game, attacker=source_pokemon):
                     return False
 
         #Check Misty Terrain immunity for grounded Pokemon
         if status in ("Sleep", "Resting", "Paralysis", "Poison", "Toxic", "Burn", "Frozen"):
-            if game and getattr(game, "weather", None) == "Misty Terrain":
+            if eff_weather == "Misty Terrain":
                 from combat import is_pokemon_grounded
-                if is_pokemon_grounded(self, game):
+                if is_pokemon_grounded(self, game, attacker=source_pokemon):
                     return False
 
         if status == "Sleep":
@@ -1429,7 +1586,8 @@ class Pokemon:
                 if not from_damaging_move and game:
                     game.log_message(f"{self.name} is already sleeping.")
                 return False
-            self.status_effects["Resting"] = 3
+            rest_turns = 2 if has_ability(self, "Early Bird", game=game) else 3
+            self.status_effects["Resting"] = rest_turns
             if game:
                 game.log_message(f"{self.name} went to sleep!")
             return True
@@ -1467,7 +1625,7 @@ class Pokemon:
             if self.status_effects.get("Frozen", 0) > 0:
                 #Can't burn a frozen target or frozen cures it, let's just ignore or thaw
                 return False
-            if hasattr(game, "weather") and game.weather in ("Rain", "Heavy Rain"):
+            if eff_weather in ("Rain", "Heavy Rain"):
                 #Rain and Heavy Rain prevent burn
                 return False
             if self.status_effects.get("Burn"):
@@ -1480,7 +1638,7 @@ class Pokemon:
             self._trigger_status_popup("Burn", game)
             return True
         elif status == "Frozen":
-            if hasattr(game, "weather") and game.weather == "Harsh Sunlight":
+            if eff_weather == "Harsh Sunlight":
                 #Harsh Sunlight prevents frozen
                 return False
             if self.status_effects.get("Frozen", 0) > 0:
@@ -2007,6 +2165,15 @@ class Pokemon:
             if game:
                 game.log_message(f"{self.name} is affected by Trick Room!")
             return True
+        elif status == "Infatuated":
+            if self.status_effects.get("Infatuated", 0) > 0:
+                if not from_damaging_move and game:
+                    game.log_message(f"{self.name} is already infatuated!")
+                return False
+            self.status_effects["Infatuated"] = duration if duration is not None else random.randint(5, 8)
+            if game:
+                game.log_message(f"{self.name} fell in love!")
+            return True
         return False
 
     def cure_status(self, status: str, game, early: bool = False):
@@ -2345,4 +2512,9 @@ class Pokemon:
                 self.status_effects["Sluggish"] = 0
                 if game:
                     game.log_message(f"{self.name} is no longer sluggish.")
+        elif status == "Infatuated":
+            if self.status_effects.get("Infatuated", 0) > 0:
+                self.status_effects["Infatuated"] = 0
+                if game:
+                    game.log_message(f"{self.name} snapped out of infatuation.")
 
