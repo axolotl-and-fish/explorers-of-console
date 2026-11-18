@@ -1797,6 +1797,17 @@
     "appearance": "♥",
     "color": "yellow",
     "value": 1000,
-    "rarity": "Very Rare"
+    "rarity": "Very Rare",
+	"min_floor": 21
+  },
+  {
+    "name": "Nectar",
+    "edible": true,
+    "description": "+10% Belly, +10 IQ. A delicious and sweet drink that's hard to find anywhere else!",
+    "appearance": "♥",
+    "color": "yellow",
+    "value": 100,
+    "rarity": "Rare",
+    "no_floor_spawn": true
   }
 ]
