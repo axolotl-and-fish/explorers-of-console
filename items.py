@@ -405,7 +405,106 @@ def is_berry(item: dict) -> bool:
     return bool(item.get("berry", False) or "Berry" in name)
 
 
-def apply_item_effect(item: dict, target, game, is_thrown: bool = False, from_cud_chew: bool = False):
+def _restore_hp_item(target, base_heal: float, game, flash_if_zero: bool = True) -> float:
+    """Restores HP from an item, boosted by Wise Healer."""
+    from iq_skills import get_iq_skill_value
+    wise_mult = float(get_iq_skill_value(target, "Wise Healer", game=game, default=1.0))
+    scaled_heal = float(base_heal) * wise_mult
+    old_hp = float(target.current_hp)
+    max_hp = float(target.stats.get("HP", 1))
+    target.current_hp = min(max_hp, old_hp + scaled_heal)
+    healed = float(target.current_hp) - old_hp
+    if (healed > 0 or flash_if_zero) and game:
+        from targeting import get_pokemon_position
+        tx, ty = get_pokemon_position(game, target)
+        if hasattr(game, "flash_damages"):
+            game.flash_damages[(tx, ty)] = (f"{int(healed)}", "HEAL")
+            game.trigger_damage_flash()
+        game.log_message(f"{target.name}'s HP was restored.")
+    return healed
+
+
+def _apply_thrown_item_damage_with_iq(target, name: str, base_dmg: int | None, power: int | None, game):
+    """Applies fixed or calculated thrown weapon damage with Power Toss and Power Pitcher."""
+    from iq_skills import get_thrown_damage_multiplier
+    attacker = getattr(game, "player_pokemon", None)
+    game.log_message(f"The {name} hit {target.name}!")
+    pitcher_mult = get_thrown_damage_multiplier(attacker, game=game) if attacker else 1.0
+    is_critical = False
+    type_mult = 1.0
+    if power is not None:
+        from combat import calculate_damage
+        move_stub = {"name": name, "category": "Physical", "type": "typeless", "power": power}
+        dmg, is_critical, type_mult = calculate_damage(attacker, target, move_stub, game)
+        if is_critical:
+            game.log_message("A critical hit!")
+    else:
+        dmg = int(base_dmg or 1)
+        if attacker and attacker.status_effects.get("Power Toss", 0) > 0:
+            dmg *= 2
+    if pitcher_mult != 1.0:
+        dmg = max(1, int(round(float(dmg) * pitcher_mult)))
+    src = f"{attacker.name}'s {name}" if attacker else name
+    game.apply_direct_damage(target, dmg, attacker=attacker, damage_source=src, is_critical=is_critical, type_mult=type_mult)
+
+
+def _apply_post_eat_iq_skills(
+    item: dict,
+    target,
+    game,
+    belly_before: float | None,
+    is_thrown: bool,
+    from_cud_chew: bool,
+    from_nature_gifter: bool,
+):
+    """Applies Survivalist, Gourmand, and Nature Gifter after eating an edible item."""
+    if is_thrown or not item.get("edible", False):
+        return
+    from abilities import get_allies_of
+    from iq_skills import get_iq_skill_value, has_iq_skill
+
+    name = item.get("name", "")
+    #Survivalist increases Belly restoration
+    if belly_before is not None and hasattr(target, "current_belly") and getattr(target, "current_belly", 0) > belly_before:
+        surv_val = get_iq_skill_value(target, "Survivalist", game=game)
+        if surv_val:
+            surv_mult = float(surv_val[0])
+            gained = float(target.current_belly) - float(belly_before)
+            extra = gained * max(0.0, surv_mult - 1.0)
+            if name == "Banana":
+                cap = float(target.max_belly) * 1.50
+            elif name == "Huge Apple":
+                cap = float(target.max_belly) * 1.20
+            else:
+                cap = max(float(target.max_belly), float(target.current_belly))
+            target.current_belly = min(cap, float(target.current_belly) + extra)
+
+    #Gourmand IQ skill restores HP and PP when eating
+    if not from_cud_chew and not from_nature_gifter:
+        gourmand_pct = get_iq_skill_value(target, "Gourmand", game=game)
+        if gourmand_pct:
+            pct = float(gourmand_pct)
+            max_hp = float(target.stats.get("HP", 1))
+            old_hp = float(target.current_hp)
+            heal_hp = max(1.0, max_hp * pct)
+            target.current_hp = min(max_hp, old_hp + heal_hp)
+            if hasattr(target, "max_pp") and hasattr(target, "current_pp"):
+                pp_gain = max(1, int(round(float(target.max_pp) * pct)))
+                target.current_pp = min(int(target.max_pp), int(target.current_pp) + pp_gain)
+            if game and hasattr(game, "flash_damages") and target.current_hp > old_hp:
+                from targeting import get_pokemon_position
+                tx, ty = get_pokemon_position(game, target)
+                game.flash_damages[(tx, ty)] = (f"{int(target.current_hp - old_hp)}", "HEAL")
+                game.trigger_damage_flash()
+
+    #Nature Gifter shares edible item effects with all living allies
+    if not from_cud_chew and not from_nature_gifter and has_iq_skill(target, "Nature Gifter", game=game):
+        for ally in get_allies_of(target, game=game):
+            if ally is not target and int(getattr(ally, "current_hp", 0)) > 0:
+                apply_item_effect(dict(item), ally, game, is_thrown=False, from_cud_chew=False, from_nature_gifter=True)
+
+
+def apply_item_effect(item: dict, target, game, is_thrown: bool = False, from_cud_chew: bool = False, from_nature_gifter: bool = False):
     """Applies the use or throw effect of an item to a target Pokémon"""
     if hasattr(game, "party") and target not in game.party:
         target.has_been_attacked_by_team = True
@@ -421,10 +520,7 @@ def apply_item_effect(item: dict, target, game, is_thrown: bool = False, from_cu
 
     if is_thrown and not item.get("edible", False) and not is_thrown_weapon(item):
         name = item.get("name", "item")
-        game.log_message(f"The {name} hit {target.name}!")
-        attacker = getattr(game, "player_pokemon", None)
-        src = f"{attacker.name}'s {name}" if attacker else name
-        game.apply_direct_damage(target, 1, attacker=attacker, damage_source=src, type_mult=1.0)
+        _apply_thrown_item_damage_with_iq(target, name, base_dmg=1, power=None, game=game)
         return
 
     if is_tm(item):
@@ -462,6 +558,8 @@ def apply_item_effect(item: dict, target, game, is_thrown: bool = False, from_cu
     if not is_thrown and name in FOOD_ITEMS and getattr(target, "current_belly", 0) > getattr(target, "max_belly", 100):
         game.log_message(f"{target.name} is too full to eat any more.")
         return
+
+    belly_before = float(target.current_belly) if hasattr(target, "current_belly") else None
 
     from abilities import has_ability, get_effective_weather
     if not is_thrown and edible and has_ability(target, "Gluttony", game=game):
@@ -514,6 +612,7 @@ def apply_item_effect(item: dict, target, game, is_thrown: bool = False, from_cu
                 game.log_message(msg)
             else:
                 game.log_message(f"{target.name}'s IQ is already maxed out!")
+        _apply_post_eat_iq_skills(item, target, game, belly_before, is_thrown, from_cud_chew, from_nature_gifter)
         return
 
     if item.get("apricorn", False):
@@ -538,14 +637,7 @@ def apply_item_effect(item: dict, target, game, is_thrown: bool = False, from_cu
             game.log_message(f"{target.name}'s belly was filled slightly!")
 
     if name == "Oran Berry":
-        old_hp = target.current_hp
-        target.current_hp = min(target.stats["HP"], target.current_hp + 100.0)
-        healed = target.current_hp - old_hp
-        from targeting import get_pokemon_position
-        tx, ty = get_pokemon_position(game, target)
-        game.flash_damages[(tx, ty)] = (f"{int(healed)}", "HEAL")
-        game.trigger_damage_flash()
-        game.log_message(f"{target.name}'s HP was restored.")
+        _restore_hp_item(target, 100.0, game, flash_if_zero=True)
         
     elif name == "Apple":
         if hasattr(target, "current_belly"):
@@ -604,6 +696,10 @@ def apply_item_effect(item: dict, target, game, is_thrown: bool = False, from_cu
         if hasattr(target, "current_belly") and getattr(target, "current_belly", 0) <= getattr(target, "max_belly", 100):
             target.current_belly = min(target.max_belly, target.current_belly + 0.30 * target.max_belly)
         neg_chance = 0.20 if has_ability(target, "Gluttony", game=game) else 0.75
+        from iq_skills import get_iq_skill_value
+        surv_val = get_iq_skill_value(target, "Survivalist", game=game)
+        if surv_val:
+            neg_chance = min(neg_chance, float(surv_val[1]))
         if random.random() < neg_chance:
             effects = [
                 "poison", "toxic", "burn", "paralysis", "confusion",
@@ -708,40 +804,16 @@ def apply_item_effect(item: dict, target, game, is_thrown: bool = False, from_cu
         game.log_message(f"{target.name}'s HP was fully restored!")
 
     elif name == "Razz Berry":
-        old_hp = target.current_hp
-        target.current_hp = min(float(target.stats["HP"]), target.current_hp + 100.0)
-        healed = target.current_hp - old_hp
-        if healed > 0:
-            from targeting import get_pokemon_position
-            tx, ty = get_pokemon_position(game, target)
-            game.flash_damages[(tx, ty)] = (f"{int(healed)}", "HEAL")
-            game.trigger_damage_flash()
-            game.log_message(f"{target.name}'s HP was restored.")
+        _restore_hp_item(target, 100.0, game, flash_if_zero=False)
         target.status_effects["Friendly"] = True
         game.log_message(f"{target.name} feels more friendly!")
 
     elif name == "Nanab Berry":
-        old_hp = target.current_hp
-        target.current_hp = min(float(target.stats["HP"]), target.current_hp + 100.0)
-        healed = target.current_hp - old_hp
-        if healed > 0:
-            from targeting import get_pokemon_position
-            tx, ty = get_pokemon_position(game, target)
-            game.flash_damages[(tx, ty)] = (f"{int(healed)}", "HEAL")
-            game.trigger_damage_flash()
-            game.log_message(f"{target.name}'s HP was restored.")
+        _restore_hp_item(target, 100.0, game, flash_if_zero=False)
         target.change_movement_speed(target.movement_speed_stage + 1, game)
 
     elif name == "Pinap Berry":
-        old_hp = target.current_hp
-        target.current_hp = min(float(target.stats["HP"]), target.current_hp + 100.0)
-        healed = target.current_hp - old_hp
-        if healed > 0:
-            from targeting import get_pokemon_position
-            tx, ty = get_pokemon_position(game, target)
-            game.flash_damages[(tx, ty)] = (f"{int(healed)}", "HEAL")
-            game.trigger_damage_flash()
-            game.log_message(f"{target.name}'s HP was restored.")
+        _restore_hp_item(target, 100.0, game, flash_if_zero=False)
         target.status_effects["EXP Up"] = True
         game.log_message(f"{target.name} feels more experienced.")
 
@@ -935,110 +1007,50 @@ def apply_item_effect(item: dict, target, game, is_thrown: bool = False, from_cu
     #Fixed-damage throwing items
     elif name == "Geo Pebble":
         if is_thrown:
-            game.log_message(f"The Geo Pebble hit {target.name}!")
-            attacker = getattr(game, "player_pokemon", None)
-            dmg = 10
-            if attacker and attacker.status_effects.get("Power Toss", 0) > 0:
-                dmg *= 2
-            src = f"{attacker.name}'s {name}" if attacker else name
-            game.apply_direct_damage(target, dmg, attacker=attacker, damage_source=src)
+            _apply_thrown_item_damage_with_iq(target, name, base_dmg=10, power=None, game=game)
         else:
             game.log_message("This message should never appear. If you see it, please contact C4!")
 
     elif name == "Gravelerock":
         if is_thrown:
-            game.log_message(f"The Gravelerock hit {target.name}!")
-            attacker = getattr(game, "player_pokemon", None)
-            dmg = 20
-            if attacker and attacker.status_effects.get("Power Toss", 0) > 0:
-                dmg *= 2
-            src = f"{attacker.name}'s {name}" if attacker else name
-            game.apply_direct_damage(target, dmg, attacker=attacker, damage_source=src)
+            _apply_thrown_item_damage_with_iq(target, name, base_dmg=20, power=None, game=game)
         else:
             game.log_message("This message should never appear. If you see it, please contact C4!")
 
     #Variable-damage throwing items
     elif name == "Iron Thorn":
         if is_thrown:
-            game.log_message(f"The Iron Thorn hit {target.name}!")
-            from combat import calculate_damage
-            attacker = game.player_pokemon
-            thorn_move = {"name": "Iron Thorn", "category": "Physical", "type": "typeless", "power": 40}
-            damage, is_critical, type_mult = calculate_damage(attacker, target, thorn_move, game)
-            if is_critical:
-                game.log_message("A critical hit!")
-            src = f"{attacker.name}'s {name}" if attacker else name
-            game.apply_direct_damage(target, damage, attacker=attacker, damage_source=src, is_critical=is_critical, type_mult=type_mult)
+            _apply_thrown_item_damage_with_iq(target, name, base_dmg=None, power=40, game=game)
         else:
             game.log_message("This message should never appear. If you see it, please contact C4!")
             
     elif name == "Stick":
         if is_thrown:
-            game.log_message(f"The Stick hit {target.name}!")
-            from combat import calculate_damage
-            attacker = game.player_pokemon
-            thorn_move = {"name": "Stick", "category": "Physical", "type": "typeless", "power": 20}
-            damage, is_critical, type_mult = calculate_damage(attacker, target, thorn_move, game)
-            if is_critical:
-                game.log_message("A critical hit!")
-            src = f"{attacker.name}'s {name}" if attacker else name
-            game.apply_direct_damage(target, damage, attacker=attacker, damage_source=src, is_critical=is_critical, type_mult=type_mult)
+            _apply_thrown_item_damage_with_iq(target, name, base_dmg=None, power=20, game=game)
         else:
             game.log_message("This message should never appear. If you see it, please contact C4!")
             
     elif name == "Silver Spike":
         if is_thrown:
-            game.log_message(f"The Silver Spike hit {target.name}!")
-            from combat import calculate_damage
-            attacker = game.player_pokemon
-            thorn_move = {"name": "Silver Spike", "category": "Physical", "type": "typeless", "power": 60}
-            damage, is_critical, type_mult = calculate_damage(attacker, target, thorn_move, game)
-            if is_critical:
-                game.log_message("A critical hit!")
-            src = f"{attacker.name}'s {name}" if attacker else name
-            game.apply_direct_damage(target, damage, attacker=attacker, damage_source=src, is_critical=is_critical, type_mult=type_mult)
+            _apply_thrown_item_damage_with_iq(target, name, base_dmg=None, power=60, game=game)
         else:
             game.log_message("This message should never appear. If you see it, please contact C4!")
             
     elif name == "Gold Fang":
         if is_thrown:
-            game.log_message(f"The Gold Fang hit {target.name}!")
-            from combat import calculate_damage
-            attacker = game.player_pokemon
-            thorn_move = {"name": "Gold Fang", "category": "Physical", "type": "typeless", "power": 200}
-            damage, is_critical, type_mult = calculate_damage(attacker, target, thorn_move, game)
-            if is_critical:
-                game.log_message("A critical hit!")
-            src = f"{attacker.name}'s {name}" if attacker else name
-            game.apply_direct_damage(target, damage, attacker=attacker, damage_source=src, is_critical=is_critical, type_mult=type_mult)
+            _apply_thrown_item_damage_with_iq(target, name, base_dmg=None, power=200, game=game)
         else:
             game.log_message("This message should never appear. If you see it, please contact C4!")
             
     elif name == "Cacnea Spike":
         if is_thrown:
-            game.log_message(f"The Cacnea Spike hit {target.name}!")
-            from combat import calculate_damage
-            attacker = game.player_pokemon
-            thorn_move = {"name": "Cacnea Spike", "category": "Physical", "type": "typeless", "power": 100}
-            damage, is_critical, type_mult = calculate_damage(attacker, target, thorn_move, game)
-            if is_critical:
-                game.log_message("A critical hit!")
-            src = f"{attacker.name}'s {name}" if attacker else name
-            game.apply_direct_damage(target, damage, attacker=attacker, damage_source=src, is_critical=is_critical, type_mult=type_mult)
+            _apply_thrown_item_damage_with_iq(target, name, base_dmg=None, power=100, game=game)
         else:
             game.log_message("This message should never appear. If you see it, please contact C4!")
 
     elif name == "Corsola Twig":
         if is_thrown:
-            game.log_message(f"The Corsola Twig hit {target.name}!")
-            from combat import calculate_damage
-            attacker = game.player_pokemon
-            thorn_move = {"name": "Corsola Twig", "category": "Physical", "type": "typeless", "power": 150}
-            damage, is_critical, type_mult = calculate_damage(attacker, target, thorn_move, game)
-            if is_critical:
-                game.log_message("A critical hit!")
-            src = f"{attacker.name}'s {name}" if attacker else name
-            game.apply_direct_damage(target, damage, attacker=attacker, damage_source=src, is_critical=is_critical, type_mult=type_mult)
+            _apply_thrown_item_damage_with_iq(target, name, base_dmg=None, power=150, game=game)
         else:
             game.log_message("This message should never appear. If you see it, please contact C4!")
             
@@ -1485,6 +1497,8 @@ def apply_item_effect(item: dict, target, game, is_thrown: bool = False, from_cu
                 berry_copy["count"] = 1
                 if target in getattr(game, "party", []) and hasattr(game, "add_item_to_inventory"):
                     if game.add_item_to_inventory(berry_copy):
-                        game.log_message(f"{target.name}'s Harvest restored {name} to the Bag!")
+                        game.log_message(f"{target.name}'s Harvest recovered the {name}!")
                     else:
-                        game.log_message(f"{target.name}'s Harvest activated, but the Bag was full!")
+                        game.log_message(f"{target.name}'s Harvest activated, but the Toolbox is full!")
+
+    _apply_post_eat_iq_skills(item, target, game, belly_before, is_thrown, from_cud_chew, from_nature_gifter)

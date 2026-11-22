@@ -107,6 +107,9 @@ def serialize_pokemon(poke: Pokemon) -> dict:
         "held_item": dict(poke.held_item) if poke.held_item is not None else None,
         "ability": getattr(poke, "ability", None),
         "ability_slots": list(getattr(poke, "ability_slots", [])),
+        "iq_skills": list(getattr(poke, "iq_skills", [])),
+        "practice_swinger_active": getattr(poke, "practice_swinger_active", False),
+        "status_dot_turns": dict(getattr(poke, "status_dot_turns", {})),
         "replaced_abilities": dict(getattr(poke, "replaced_abilities", {})),
         "flash_fire_boosted": getattr(poke, "flash_fire_boosted", False),
         "cud_chew_queue": [dict(entry) for entry in getattr(poke, "cud_chew_queue", [])],
@@ -238,6 +241,13 @@ def deserialize_pokemon(data: dict) -> Pokemon | None:
     poke.ability = data.get("ability")
     if "ability_slots" in data and isinstance(data["ability_slots"], list):
         poke.ability_slots = list(data["ability_slots"])
+    if "iq_skills" in data and isinstance(data["iq_skills"], list):
+        poke.iq_skills = list(data["iq_skills"])
+    else:
+        poke.iq_skills = []
+    poke.practice_swinger_active = bool(data.get("practice_swinger_active", False))
+    raw_dots = data.get("status_dot_turns")
+    poke.status_dot_turns = {str(k): int(v) for k, v in raw_dots.items()} if isinstance(raw_dots, dict) else {}
     if isinstance(data.get("replaced_abilities"), dict):
         poke.replaced_abilities = {int(k): v for k, v in data["replaced_abilities"].items()}
     else:
@@ -577,7 +587,7 @@ def apply_game_state(game, state_dict: dict):
     if target_leader_id and target_leader_id in poke_map and poke_map[target_leader_id] in party_list:
         leader = poke_map[target_leader_id]
     else:
-        # Check if any deserialized party member has is the leader
+        #Check if any deserialized party member is the leader
         leader = next((p for p in party_list if getattr(p, "is_leader", False)), None)
         if leader is None and party_list:
             leader = party_list[0]

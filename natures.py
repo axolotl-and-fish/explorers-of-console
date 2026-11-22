@@ -8,32 +8,32 @@ Defines Pokémon natures, their stat modifiers, and helper utilities.
 
 #Dictionary mapping each nature to a tuple of (increased_stat, decreased_stat).
 NATURES: dict[str, tuple[str | None, str | None]] = {
-    # Attack increased
+    #Attack increased
     "Lonely": ("Attack", "Defense"),
     "Brave": ("Attack", "Speed"),
     "Adamant": ("Attack", "Special_Attack"),
     "Naughty": ("Attack", "Special_Defense"),
-    # Defense increased
+    #Defense increased
     "Bold": ("Defense", "Attack"),
     "Relaxed": ("Defense", "Speed"),
     "Impish": ("Defense", "Special_Attack"),
     "Lax": ("Defense", "Special_Defense"),
-    # Speed increased
+    #Speed increased
     "Timid": ("Speed", "Attack"),
     "Hasty": ("Speed", "Defense"),
     "Jolly": ("Speed", "Special_Attack"),
     "Naive": ("Speed", "Special_Defense"),
-    # Special Attack increased
+    #Special Attack increased
     "Modest": ("Special_Attack", "Attack"),
     "Mild": ("Special_Attack", "Defense"),
     "Quiet": ("Special_Attack", "Speed"),
     "Rash": ("Special_Attack", "Special_Defense"),
-    # Special Defense increased
+    #Special Defense increased
     "Calm": ("Special_Defense", "Attack"),
     "Gentle": ("Special_Defense", "Defense"),
     "Sassy": ("Special_Defense", "Speed"),
     "Careful": ("Special_Defense", "Special_Attack"),
-    # Neutral natures (no stat changes)
+    #Neutral natures
     "Hardy": (None, None),
     "Docile": (None, None),
     "Bashful": (None, None),

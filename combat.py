@@ -373,32 +373,13 @@ def calculate_damage(attacker: Pokemon, defender: Pokemon, move: dict, game=None
     power = max(0, power)
 
     #Calculate base damage
+    if getattr(attacker, "practice_swinger_active", False):
+        from iq_skills import get_iq_skill_value
+        power = float(power) * float(get_iq_skill_value(attacker, "Practice Swinger", game=game, default=1.0))
+
     base_damage = ((((2 * attacker.level) / 5) + 2) * power * (atk / def_stat)) / 50
 
-    #Calculate critical hit chance: 12.5% * (attacker speed / defender speed)
-    atk_speed = max(1, attacker.get_modified_stat("Speed", game))
-    def_speed = max(1, defender.get_modified_stat("Speed", game, attacker=attacker, ignore_stages=ignore_def_stages))
-    has_battle_armor = has_ability(defender, "Battle Armor", game=game, attacker=attacker)
-    crit_power = 2.0 if has_ability(attacker, "Sniper", game=game) else 1.5
-
-    if move.get("_evaluating_category") or has_battle_armor:
-        is_critical = False
-        crit_multiplier = 1.0
-    elif move.get("always_crit") or move.get("guaranteed_crit") or attacker.status_effects.get("Laser Focus") or defender.status_effects.get("Curse"):
-        is_critical = True
-        crit_multiplier = crit_power
-    else:
-        crit_chance = 0.125 * (atk_speed / def_speed)
-        if int(getattr(attacker, "iq", 0)) >= 100:
-            crit_chance *= 2
-        if has_ability(attacker, "Super Luck", game=game):
-            crit_chance *= 2
-        if move.get("high_crit_ratio") or move.get("name") == "Razor Leaf":
-            crit_chance *= 2
-        if attacker.status_effects.get("Focus Energy", 0) > 0:
-            crit_chance *= 4
-        is_critical = random.random() < crit_chance
-        crit_multiplier = crit_power if is_critical else 1.0
+    from iq_skills import get_iq_skill_value, has_iq_skill
 
     #Calculate type effectiveness multiplier
     target_types = list(getattr(defender, "types", defender.species_data.get("types", ["typeless"])))
@@ -419,6 +400,16 @@ def calculate_damage(attacker: Pokemon, defender: Pokemon, move: dict, game=None
     if move.get("type") == "Ground" and not is_grounded and (defender.status_effects.get("Magnet Rise", 0) > 0 or has_ability(defender, "Levitate", game=game, attacker=attacker)):
         type_multiplier = 0.0
 
+    #Erratic Player modifies base SE, NVE, and little-effect multipliers
+    if has_iq_skill(attacker, "Erratic Player", game=game) and type_multiplier > 0.0:
+        if type_multiplier > 1.0:
+            type_multiplier = round(1.0 + (type_multiplier - 1.0) * 2.0, 4)
+        elif type_multiplier <= 0.25:
+            type_multiplier = 0.10
+        elif type_multiplier < 1.0:
+            #Normal -25% tier -> -40% tier
+            type_multiplier = max(0.10, round(1.0 - (1.0 - type_multiplier) * 1.6, 4))
+
     if type_multiplier > 0.0:
         if move.get("type") in ("Fire", "Ice") and has_ability(defender, "Thick Fat", game=game, attacker=attacker):
             type_multiplier = max(0.25, round(type_multiplier - 0.25, 4))
@@ -436,6 +427,34 @@ def calculate_damage(attacker: Pokemon, defender: Pokemon, move: dict, game=None
     if type_multiplier > 1.0 and has_ability(defender, "Filter", game=game, attacker=attacker):
         tiers = round((type_multiplier - 1.0) / 0.25)
         type_multiplier = round(1.0 + 0.10 * tiers, 4)
+
+    #Calculate critical hit chance: 12.5% * (attacker speed / defender speed)
+    atk_speed = max(1, attacker.get_modified_stat("Speed", game))
+    def_speed = max(1, defender.get_modified_stat("Speed", game, attacker=attacker, ignore_stages=ignore_def_stages))
+    has_crit_block = has_ability(defender, "Battle Armor", game=game, attacker=attacker) or has_iq_skill(defender, "Critical Dodger", game=game)
+    crit_power = 2.0 if has_ability(attacker, "Sniper", game=game) else 1.5
+
+    if move.get("_evaluating_category") or has_crit_block:
+        is_critical = False
+        crit_multiplier = 1.0
+    elif move.get("always_crit") or move.get("guaranteed_crit") or attacker.status_effects.get("Laser Focus") or defender.status_effects.get("Curse"):
+        is_critical = True
+        crit_multiplier = crit_power
+    else:
+        crit_chance = 0.125 * (atk_speed / def_speed)
+        crit_chance += float(get_iq_skill_value(attacker, "Sharpshooter", game=game, default=0.0))
+        if type_multiplier > 1.0:
+            crit_chance += float(get_iq_skill_value(attacker, "Type-Advantage Master", game=game, default=0.0))
+        if int(getattr(attacker, "iq", 0)) >= 100:
+            crit_chance *= 2
+        if has_ability(attacker, "Super Luck", game=game):
+            crit_chance *= 2
+        if move.get("high_crit_ratio") or move.get("name") == "Razor Leaf":
+            crit_chance *= 2
+        if attacker.status_effects.get("Focus Energy", 0) > 0:
+            crit_chance *= 4
+        is_critical = random.random() < crit_chance
+        crit_multiplier = crit_power if is_critical else 1.0
 
     #Apply all multipliers
     total_damage = base_damage * crit_multiplier * type_multiplier

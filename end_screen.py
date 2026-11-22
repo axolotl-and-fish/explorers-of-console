@@ -127,7 +127,7 @@ def generate_end_screen_report(game, game_won: bool) -> list[str]:
     """Generates complete uncolored text report lines for the End Screen."""
     lines: list[str] = []
 
-    # Calculate variables for score
+    #Calculate variables for score
     total_exp = getattr(game, "total_enemy_exp", 0)
 
     inventory = getattr(game, "inventory", [])
@@ -207,7 +207,7 @@ def generate_end_screen_report(game, game_won: bool) -> list[str]:
     else:
         rank = "Rookie Rank"
 
-    # Title Banner
+    #Banner
     if game_won:
         lines.append("▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒PMD:▒Explorers▒of▒the▒Console▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒")
         lines.append("▒ █   █  ██   █  ██   ██ ███ █ █ █    ██ ███ █  █  ██   █ █▒")
@@ -233,9 +233,7 @@ def generate_end_screen_report(game, game_won: bool) -> list[str]:
         lines.append("▒     ████ █   █ █   █ █████     ███    █   █████ █   █    ▒")
         lines.append("▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒ver.▒0.2.2▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒")
 
-    # ---------------------------------------------------------
-    # SECTION 1: FINAL SCORE CALCULATION
-    # ---------------------------------------------------------
+    #SECTION 1: FINAL SCORE CALCULATION
     lines.append("─────────────────YOUR─SCORE───────────────────")
     lines.append(f"TOTAL EXP GAINED:                {fmt(total_exp):>11}")
     lines.append("──────────────────────+───────────────────────")

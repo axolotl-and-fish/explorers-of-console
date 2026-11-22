@@ -24,6 +24,7 @@ from combat import calculate_damage
 from targeting import get_valid_targets, get_pokemon_position, get_room_tiles_at, get_confusion_targets, get_actual_target, is_ally_in_way_of_attack, has_clear_path, get_effective_move_range
 import items
 import abilities
+import iq_skills
 from combat import is_pokemon_grounded
 from end_screen import EndScreenController
 
@@ -394,6 +395,8 @@ class Game:
         self.sand_tomb_bindings: list[dict] = []
         self.whirlpool_bindings: list[dict] = []
         self.move_replacement_queue: list[tuple] = [] #List of moves that the Pokémon has learned that are pending
+        self.iq_skill_choice_queue: list[dict] = [] #Pending IQ skill selection prompts
+        self.stair_sensor_overlays: dict[tuple[int, int], str] = {}
 
         self.gravity = False
         self.base_weather = "Clear"
@@ -1775,6 +1778,29 @@ class Game:
         if abilities.has_ability(poke, "Compound Eyes", game=self):
             poke.apply_stat_modifier("Accuracy", 2, self)
 
+        conc_lvl = iq_skills.get_iq_skill_value(poke, "Concentrator", game=self, default=0)
+        if conc_lvl:
+            poke.apply_stat_modifier("Accuracy", conc_lvl, self)
+            poke.apply_stat_modifier("Evasion", -conc_lvl, self)
+
+        aggr_lvl = iq_skills.get_iq_skill_value(poke, "Aggressor", game=self, default=0)
+        if aggr_lvl:
+            poke.apply_stat_modifier("Attack", aggr_lvl, self)
+            poke.apply_stat_modifier("Special_Attack", aggr_lvl, self)
+            poke.apply_stat_modifier("Defense", -aggr_lvl, self)
+            poke.apply_stat_modifier("Special_Defense", -aggr_lvl, self)
+
+        def_lvl = iq_skills.get_iq_skill_value(poke, "Defender", game=self, default=0)
+        if def_lvl:
+            poke.apply_stat_modifier("Defense", def_lvl, self)
+            poke.apply_stat_modifier("Special_Defense", def_lvl, self)
+            poke.apply_stat_modifier("Attack", -def_lvl, self)
+            poke.apply_stat_modifier("Special_Attack", -def_lvl, self)
+
+        qd_lvl = iq_skills.get_iq_skill_value(poke, "Quick Dodger", game=self, default=0)
+        if qd_lvl:
+            poke.apply_stat_modifier("Evasion", qd_lvl, self)
+
         if abilities.has_ability(poke, "Imposter", game=self) and getattr(poke, "transform_original_state", None) is None:
             pool = self.floor_spawn_list if getattr(self, "floor_spawn_list", None) else getattr(self, "all_species_names", [])
             if pool:
@@ -1855,6 +1881,98 @@ class Game:
                         if self.add_item_to_inventory(nectar_item):
                             self.log_message(f"{member.name}'s Honey Gather found Nectar!")
 
+                db_pp = iq_skills.get_iq_skill_value(member, "Deep Breather", game=self, default=0)
+                if db_pp:
+                    old_pp = int(getattr(member, "current_pp", 0))
+                    max_pp = int(getattr(member, "max_pp", 100))
+                    member.current_pp = min(max_pp, old_pp + int(db_pp))
+                    if member.current_pp > old_pp:
+                        self.log_message(f"{member.name} took a deep breath!")
+
+        if is_new_floor_transition:
+            if iq_skills.any_team_has_iq_skill(self, "Acute Sniffer"):
+                item_count = len(getattr(self, "items_on_floor", {}))
+                self.log_message(f"Items on the floor: {item_count}")
+            if iq_skills.any_team_has_iq_skill(self, "Map Surveyor"):
+                self._reveal_map_walls()
+            if iq_skills.any_team_has_iq_skill(self, "Stair Sensor"):
+                self.play_stair_sensor_animation()
+
+    def _reveal_map_walls(self):
+        """Reveals all wall tiles bordering walkable floor tiles onto explored_tiles for Map Surveyor."""
+        if not hasattr(self, "floor") or not getattr(self.floor, "grid", None):
+            return
+        w, h = self.floor.width, self.floor.height
+        for y in range(h):
+            for x in range(w):
+                if self.floor.grid[y][x] != WALL_CHAR:
+                    continue
+                touches_floor = False
+                for dy in (-1, 0, 1):
+                    for dx in (-1, 0, 1):
+                        if dx == 0 and dy == 0:
+                            continue
+                        nx, ny = x + dx, y + dy
+                        if 0 <= nx < w and 0 <= ny < h and self.floor.grid[ny][nx] == FLOOR_CHAR:
+                            touches_floor = True
+                            break
+                    if touches_floor:
+                        break
+                if touches_floor:
+                    self.explored_tiles.add((x, y))
+
+    def _get_stair_sensor_marker(self) -> tuple[tuple[int, int], str] | None:
+        """Returns ((tile_x, tile_y), ascii_arrow_char) adjacent to the leader pointing toward stairs."""
+        stairs = getattr(self, "stairs_position", None)
+        if not stairs or not hasattr(self, "floor"):
+            return None
+        px, py = getattr(self, "player_x", 0), getattr(self, "player_y", 0)
+        sx, sy = stairs
+        dx = 1 if sx > px else (-1 if sx < px else 0)
+        dy = 1 if sy > py else (-1 if sy < py else 0)
+        arrow_map = {
+            (0, -1): "^",
+            (0, 1): "v",
+            (-1, 0): "<",
+            (1, 0): ">",
+            (1, -1): "/",
+            (-1, 1): "/",
+            (-1, -1): "\\",
+            (1, 1): "\\",
+            (0, 0): "*",
+        }
+        char = arrow_map.get((dx, dy), "*")
+        ax = max(0, min(self.floor.width - 1, px + dx))
+        ay = max(0, min(self.floor.height - 1, py + dy))
+        return ((ax, ay), char)
+
+    def play_stair_sensor_animation(self):
+        """Flashes an ASCII directional arrow adjacent to the leader toward the floor stairs."""
+        marker = self._get_stair_sensor_marker()
+        if marker is None:
+            return
+        if getattr(self, "other_animations", "On") == "Off" or getattr(self, "suppress_animation_delay", False):
+            self.stair_sensor_overlays = {}
+            return
+        pos, char = marker
+        overlay_str = char if getattr(self, "compatibility_mode", False) else f"\033[93m{char}\033[0m"
+        with self.animation_pause():
+            for _ in range(3):
+                self.stair_sensor_overlays = {pos: overlay_str}
+                self.render()
+                try:
+                    sys.stdout.flush()
+                except Exception:
+                    pass
+                time.sleep(0.14)
+                self.stair_sensor_overlays = {}
+                self.render()
+                try:
+                    sys.stdout.flush()
+                except Exception:
+                    pass
+                time.sleep(0.10)
+
     def update_enemy_spawning(self):
         """Handles random Pokémon spawns."""
         if len(self.spawned_pokemon) >= 24: #Maximum spawn limit. Turn this up if you dare
@@ -1866,8 +1984,12 @@ class Game:
             self.spawn_random_enemy()
 
     def check_napping_enemies_wakeup(self):
-        """Wakes up napping enemies if a team member is on an adjacent square"""
-        team_coords = [get_pokemon_position(self, p) for p in self.party]
+        """Wakes up napping enemies if a team member is on an adjacent square (unless Sneaky)."""
+        team_coords = [
+            get_pokemon_position(self, p)
+            for p in self.party
+            if not iq_skills.has_iq_skill(p, "Sneaky", game=self)
+        ]
         for enemy in self.spawned_pokemon:
             if enemy.napping:
                 ex, ey = get_pokemon_position(self, enemy)
@@ -1929,6 +2051,15 @@ class Game:
 
         return False
 
+    def has_mobile_movement(self, pokemon: Pokemon | None) -> bool:
+        """Returns True if pokemon can walk through walls via Mobile status or Absolute Mover."""
+        if pokemon is None:
+            return False
+        status_map = getattr(pokemon, "status_effects", {})
+        if isinstance(status_map, dict) and status_map.get("Mobile", 0) > 0:
+            return True
+        return iq_skills.has_iq_skill(pokemon, "Absolute Mover", game=self)
+
     def can_enemy_step_to(self, enemy: Pokemon, x: int, y: int, dx: int, dy: int) -> bool:
         """Returns True if the enemy can move to the tile (x, y)"""
         #Status effects that prevent movement
@@ -1946,7 +2077,7 @@ class Game:
         if not (0 <= x < self.floor.width and 0 <= y < self.floor.height):
             return False
 
-        has_mobile = (enemy.status_effects.get("Mobile", 0) > 0)
+        has_mobile = self.has_mobile_movement(enemy)
         is_wall = (self.floor.grid[y][x] == WALL_CHAR)
 
         if is_wall and not has_mobile:
@@ -1968,6 +2099,45 @@ class Game:
                 return False
 
         return True
+
+    def _select_ai_move_and_target(self, actor: Pokemon, ready_moves: list[tuple[dict, list[Pokemon]]]) -> tuple[dict, Pokemon, list[Pokemon]]:
+        """Handles move selection with AI IQ skills."""
+        if iq_skills.has_iq_skill(actor, "Weak-Type Picker", game=self):
+            scored: list[tuple[tuple[int, float], dict, Pokemon, list[Pokemon]]] = []
+            for m, targets in ready_moves:
+                for t in targets:
+                    sc = iq_skills.score_move_for_weak_type_picker(actor, m, t, self)
+                    scored.append((sc, m, t, targets))
+            if scored:
+                max_tier = max(item[0][0] for item in scored)
+                tier_items = [item for item in scored if item[0][0] == max_tier]
+                if max_tier > 0:
+                    max_score = max(item[0][1] for item in tier_items)
+                    best_items = [item for item in tier_items if abs(item[0][1] - max_score) < 1e-6]
+                else:
+                    best_items = tier_items
+                _, chosen_move, chosen_target, targets = random.choice(best_items)
+                return chosen_move, chosen_target, targets
+
+        if iq_skills.has_iq_skill(actor, "Efficiency Expert", game=self):
+            all_pairs = [(int(getattr(t, "current_hp", 0)), m, t, targets) for m, targets in ready_moves for t in targets]
+            if all_pairs:
+                min_hp = min(p[0] for p in all_pairs)
+                best_pairs = [p for p in all_pairs if p[0] == min_hp]
+                _, chosen_move, chosen_target, targets = random.choice(best_pairs)
+                return chosen_move, chosen_target, targets
+
+        if iq_skills.has_iq_skill(actor, "EXP Go Getter", game=self):
+            all_pairs = [(int(getattr(t, "species_data", {}).get("exp_yield", 50)), m, t, targets) for m, targets in ready_moves for t in targets]
+            if all_pairs:
+                max_exp = max(p[0] for p in all_pairs)
+                best_pairs = [p for p in all_pairs if p[0] == max_exp]
+                _, chosen_move, chosen_target, targets = random.choice(best_pairs)
+                return chosen_move, chosen_target, targets
+
+        chosen_move, targets = random.choice(ready_moves)
+        chosen_target = random.choice(targets)
+        return chosen_move, chosen_target, targets
 
     def get_target_directed_candidate_dirs(self, primary_dir: tuple[int, int]) -> list[tuple[int, int]]:
         """Returns the 8 directions starting with primary_dir, prioritizing CCW over CW (used for AI obstacle avoidance)."""
@@ -2014,7 +2184,7 @@ class Game:
                 if is_party_occupied:
                     if 0 <= nx < self.floor.width and 0 <= ny < self.floor.height:
                         is_wall = (self.floor.grid[ny][nx] == WALL_CHAR)
-                        has_mobile = (enemy.status_effects.get("Mobile", 0) > 0)
+                        has_mobile = self.has_mobile_movement(enemy)
                         if not is_wall or has_mobile:
                             corner_cut = False
                             if not has_mobile and dx != 0 and dy != 0:
@@ -2035,6 +2205,7 @@ class Game:
         else:
             occupied = {get_pokemon_position(self, p) for p in self.party + self.spawned_pokemon if p is not enemy and int(getattr(p, "current_hp", 0)) > 0}
 
+        has_mobile_bfs = self.has_mobile_movement(enemy)
         while queue:
             cx, cy, fdx, fdy = queue.popleft()
             if (cx, cy) == (tx, ty):
@@ -2050,12 +2221,12 @@ class Game:
                     continue
                 if not (0 <= nx < self.floor.width and 0 <= ny < self.floor.height):
                     continue
-                if self.floor.grid[ny][nx] != FLOOR_CHAR:
+                if not has_mobile_bfs and self.floor.grid[ny][nx] != FLOOR_CHAR:
                     continue
                 if (nx, ny) in occupied and (nx, ny) != (tx, ty):
                     continue
                 #Check if cutting corners
-                if dx != 0 and dy != 0:
+                if not has_mobile_bfs and dx != 0 and dy != 0:
                     c1 = self.floor.grid[cy][nx]
                     c2 = self.floor.grid[ny][cx]
                     if c1 == WALL_CHAR or c2 == WALL_CHAR:
@@ -2134,7 +2305,7 @@ class Game:
             return False
         if dx == 0 or dy == 0:
             return True
-        if mon.status_effects.get("Mobile", 0) > 0:
+        if self.has_mobile_movement(mon):
             return True
         from dungeon import WALL_CHAR
         c1 = self.floor.grid[y1][x2]
@@ -2310,7 +2481,7 @@ class Game:
             if p is not mon and int(getattr(p, "current_hp", 0)) > 0
         }
 
-        is_mobile = mon.status_effects.get("Mobile", 0) > 0
+        is_mobile = self.has_mobile_movement(mon)
 
         while queue:
             cx, cy, fdx, fdy = queue.popleft()
@@ -2554,8 +2725,7 @@ class Game:
         if item.get("dropped_by_player", False):
             return
         if item.get("type") == "Money" or item.get("name") == "Poké":
-            amount = item.get("amount", 0)
-            self.money += amount
+            amount = self._collect_money_item(item, ally)
             del self.items_on_floor[(x, y)]
             self.log_message(f"{ally.name} picked up {amount} \033[30;43mP\033[0m.")
             return
@@ -3067,7 +3237,7 @@ class Game:
                         ally.last_dx, ally.last_dy = pdx, pdy
                         continue
 
-                    chosen_move, enemy_targets = random.choice(ready_moves)
+                    chosen_move, chosen_target, enemy_targets = self._select_ai_move_and_target(ally, ready_moves)
                     range_str = chosen_move.get("range", "Adjacent enemy")
                     if range_str == "Enemy in front":
                         range_str = "Adjacent enemy"
@@ -3076,7 +3246,6 @@ class Game:
                     if is_multi:
                         self.execute_multi_move(ally, enemy_targets, chosen_move)
                     elif range_str == "Straight line piercing":
-                        chosen_target = random.choice(enemy_targets)
                         tx, ty = get_pokemon_position(self, chosen_target)
                         dx = 1 if tx > ax else (-1 if tx < ax else 0)
                         dy = 1 if ty > ay else (-1 if ty < ay else 0)
@@ -3085,7 +3254,6 @@ class Game:
                             line_targets = [chosen_target]
                         self.execute_multi_move(ally, line_targets, chosen_move)
                     else:
-                        chosen_target = random.choice(enemy_targets)
                         self.execute_single_move(ally, chosen_target, chosen_move)
                     continue
 
@@ -3383,8 +3551,7 @@ class Game:
                             should_attack = True
 
                     if should_attack:
-                        #Choose a move at random from those with targets in range
-                        chosen_move, team_targets = random.choice(ready_moves)
+                        chosen_move, chosen_target, team_targets = self._select_ai_move_and_target(enemy, ready_moves)
                         range_str = chosen_move.get("range", "Adjacent enemy")
                         if range_str == "Enemy in front":
                             range_str = "Adjacent enemy"
@@ -3393,7 +3560,6 @@ class Game:
                         if is_multi:
                             self.execute_multi_move(enemy, team_targets, chosen_move)
                         elif range_str == "Straight line piercing":
-                            chosen_target = random.choice(team_targets)
                             ex, ey = get_pokemon_position(self, enemy)
                             tx, ty = get_pokemon_position(self, chosen_target)
                             dx = 1 if tx > ex else (-1 if tx < ex else 0)
@@ -3403,8 +3569,6 @@ class Game:
                                 line_targets = [chosen_target]
                             self.execute_multi_move(enemy, line_targets, chosen_move)
                         else:
-                            #Choose a target at random from those in range
-                            chosen_target = random.choice(team_targets)
                             self.execute_single_move(enemy, chosen_target, chosen_move)
                     else:
                         #Target is visible but out of range of attack moves. Check for usable moves that target the user.
@@ -3485,7 +3649,7 @@ class Game:
 
         #3. Speed stage calculations
         stage = abilities.get_effective_movement_speed_stage(pokemon, self)
-        if stage == 3: #4x speed
+        if stage >= 3: #4x speed
             return 4
         elif stage == 2: #3x speed
             return 3
@@ -3732,6 +3896,9 @@ class Game:
             if abilities.has_ability(member, "Gluttony", game=self): #Increased hunger rate
                 cost *= 2
 
+            energy_mult = iq_skills.get_iq_skill_value(member, "Energy Saver", game=self, default=1.0)
+            cost *= energy_mult
+
             member.current_belly = max(0.0, member.current_belly - cost)
             
             #Warning calculation (rounded up)
@@ -3826,6 +3993,8 @@ class Game:
                             recovery_pct *= 2.0
                         if member.status_effects.get("Ingrain", 0) > 0:
                             recovery_pct *= 4.0
+                        qh_mult = iq_skills.get_iq_skill_value(member, "Quick Healer", game=self, default=1.0)
+                        recovery_pct *= qh_mult
                         member.current_hp = min(float(max_hp), member.current_hp + recovery_pct * max_hp)
 
         #Apply Ingrain healing to enemies (4 HP/turn)
@@ -4067,6 +4236,7 @@ class Game:
             has_natural_cure = abilities.has_ability(p, "Natural Cure", game=self)
             has_healer_ally = abilities.any_adjacent_ally_has_ability(p, "Healer", game=self)
             has_early_bird = abilities.has_ability(p, "Early Bird", game=self)
+            has_self_curer = iq_skills.has_iq_skill(p, "Self-Curer", game=self)
 
             #All statuses that last a certain number of turns (and not semi-permanent statuses) go here
             for status in ["Sleep", "Paralysis", "Frozen", "Flinch", "Petrified", "Confusion", "Leech Seed", "Protect", "Safeguard", "Focus Energy", "Light Screen", "Reflect", "Sand Tomb", "Whirlpool", "Perishing", "Counter", "Mirror Coat", "Endure", "Paused", "Ingrain", "Destiny Bond", "Encore", "Magnet Rise", "Telekinesis", "Resting", "Stuck", "Quick Guard", "Wide Guard", "Vital Throw", "Drowsy", "Decoy", "Landed", "Terrified", "Blind", "Mobile", "Puppet", "Hallucinating", "Snatch", "Cowering", "Rebound", "Silenced", "Invisible", "Enraged", "Biding", "Substitute", "Aurora Veil", "Infatuated"]:
@@ -4087,6 +4257,8 @@ class Game:
                             dec *= 2
                         if has_healer_ally:
                             dec *= 2
+                        if has_self_curer:
+                            dec *= 2
                     if status == "Sleep" and has_early_bird:
                         dec *= 2
 
@@ -4101,6 +4273,21 @@ class Game:
                             self.remove_defeated_pokemon(p)
                     else:
                         p.status_effects[status] = new_val
+
+            #Self-Curer: Poison, Toxic, and Burn cure themselves after 10 turns
+            if has_self_curer:
+                dot_turns = getattr(p, "status_dot_turns", None)
+                if dot_turns is None:
+                    dot_turns = {}
+                    p.status_dot_turns = dot_turns
+                for dot_st in ("Poison", "Toxic", "Burn"):
+                    if p.status_effects.get(dot_st):
+                        dot_turns[dot_st] = dot_turns.get(dot_st, 0) + 1
+                        if dot_turns[dot_st] >= 10:
+                            p.cure_status(dot_st, self)
+                            dot_turns[dot_st] = 0
+                    else:
+                        dot_turns[dot_st] = 0
 
         #At 60%+ IQ: 10% chance per turn to cure a random active negative status effect
         for p in list(self.party + self.spawned_pokemon):
@@ -4578,12 +4765,8 @@ class Game:
         else:
             raise ValueError("Unsupported entity representation for position validation")
 
-        #Check if entity has Mobile status effect
-        has_mobile = False
-        if poke_obj is not None:
-            status_map = getattr(poke_obj, "status_effects", {})
-            if isinstance(status_map, dict) and status_map.get("Mobile", 0) > 0:
-                has_mobile = True
+        #Check if entity has Mobile movement (Mobile status or Absolute Mover)
+        has_mobile = self.has_mobile_movement(poke_obj)
 
         #Check validity
         in_bounds = (0 <= x < self.floor.width and 0 <= y < self.floor.height)
@@ -5465,6 +5648,8 @@ class Game:
                 heal_percent = effect.get("heal_percent", 0.0)
                 if heal_percent > 0.0:
                     heal_amt = int(float(eff_target.stats["HP"]) * heal_percent)
+                    wh_mult = iq_skills.get_iq_skill_value(attacker, "Wise Healer", game=self, default=1.0)
+                    heal_amt = int(round(heal_amt * float(wh_mult)))
                     eff_target.current_hp = min(float(eff_target.stats["HP"]), eff_target.current_hp + heal_amt)
                     self.log_message(f"{eff_target.name}'s HP was restored.")
                     tx, ty = get_pokemon_position(self, eff_target)
@@ -6264,7 +6449,7 @@ class Game:
             self.trigger_wonder_tile(p)
         #Moving through walls while Mobile costs additional belly
         if hasattr(self, "floor") and getattr(self.floor, "grid", None) and 0 <= y < self.floor.height and 0 <= x < self.floor.width:
-            if self.floor.grid[y][x] == WALL_CHAR and getattr(p, "status_effects", {}).get("Mobile", 0) > 0:
+            if self.floor.grid[y][x] == WALL_CHAR and self.has_mobile_movement(p):
                 if hasattr(p, "current_belly"):
                     p.current_belly = max(0.0, getattr(p, "current_belly", 0.0) - 10.0)
 
@@ -6417,6 +6602,37 @@ class Game:
             
     def _process_single_target_hit(self, attacker: Pokemon, defender: Pokemon, move: dict, is_multi_target: bool = False, free: bool = False):
         """Processes damaging moves that hit a single target."""
+        if attacker is not defender and not self.are_allies(attacker, defender) and not move.get("_bodyguard_redirected"):
+            if int(getattr(defender, "current_hp", 0)) <= 0.20 * float(defender.stats.get("HP", 1)):
+                dx_bg, dy_bg = get_pokemon_position(self, defender)
+                bg_ally = None
+                for candidate in (self.party + self.spawned_pokemon):
+                    if (
+                        candidate is not defender
+                        and candidate is not attacker
+                        and int(getattr(candidate, "current_hp", 0)) > 0
+                        and self.are_allies(defender, candidate)
+                        and iq_skills.has_iq_skill(candidate, "Bodyguard", game=self)
+                    ):
+                        cx, cy = get_pokemon_position(self, candidate)
+                        if max(abs(cx - dx_bg), abs(cy - dy_bg)) <= 1:
+                            bg_ally = candidate
+                            break
+                if bg_ally is not None:
+                    self.log_message(f"The attack was passed onto {bg_ally.name}!")
+                    redirected_move = move.copy()
+                    redirected_move["_bodyguard_redirected"] = True
+                    self._process_single_target_hit(attacker, bg_ally, redirected_move, is_multi_target=is_multi_target, free=free)
+                    return
+
+        if (
+            attacker is not defender
+            and self.are_allies(attacker, defender)
+            and move.get("category") in ("Physical", "Special")
+            and iq_skills.has_iq_skill(attacker, "Nontraitor", game=self)
+        ):
+            return
+
         defender.has_had_move_used_on_it = True
         if self.is_team_pokemon(attacker) and not self.is_team_pokemon(defender):
             defender.has_been_attacked_by_team = True
@@ -6484,7 +6700,11 @@ class Game:
             dx, dy = get_pokemon_position(self, defender)
             if max(abs(ax - dx), abs(ay - dy)) <= 1:
                 attacker.last_move_failed_turn = self.turn_number
-                self.log_message(f"{defender.name}'s Rebound status reflected the attack!")
+                hr_chance = iq_skills.get_iq_skill_value(attacker, "Hit-and-Runner", game=self, default=0.0)
+                if hr_chance and random.random() < float(hr_chance):
+                    self.log_message(f"{attacker.name} avoided {defender.name}'s counterattack!")
+                    return
+                self.log_message(f"{defender.name}'s Rebound reflected the attack!")
                 tx, ty = get_pokemon_position(self, defender)
                 self.flash_damages[(tx, ty)] = ("/", "MISS")
                 self.trigger_damage_flash()
@@ -6639,7 +6859,11 @@ class Game:
 
         #Handle charging move initialization
         if (move.get("charge_turns") or move["name"] in ("Solar Beam", "Dig", "Dive", "Focus Punch", "Sky Attack", "Razor Wind", "Skull Bash", "Fly")) and not free:
-            if move["name"] == "Solar Beam":
+            if iq_skills.has_iq_skill(attacker, "No-Charger", game=self):
+                if move["name"] == "Fly" and getattr(self, "gravity", False):
+                    self.log_message("Gravity prevents Fly from being used!")
+                    return
+            elif move["name"] == "Solar Beam":
                 self.log_message(f"{attacker.name} took in sunlight!")
                 if self.weather in ("Sunny", "Harsh Sunlight"):
                     pass  #Solar Beam charges instantly in sunny weather!
@@ -7509,6 +7733,8 @@ class Game:
 
             heal_percent = 1.0 / 3.0 if stacks == 1 else (2.0 / 3.0 if stacks == 2 else 1.0)
             heal_amt = int(float(attacker.stats["HP"]) * heal_percent)
+            wh_mult = iq_skills.get_iq_skill_value(attacker, "Wise Healer", game=self, default=1.0)
+            heal_amt = int(round(heal_amt * float(wh_mult)))
             attacker.current_hp = min(float(attacker.stats["HP"]), attacker.current_hp + heal_amt)
             self.log_message(f"{attacker.name}'s HP was restored.")
             tx, ty = get_pokemon_position(self, attacker)
@@ -7747,6 +7973,7 @@ class Game:
             bypass_acc = has_lock_on or modified_acc is None
             if not bypass_acc:
                 if (random.randint(1, 100) > modified_acc) or self._did_defender_evade_by_iq(attacker, defender, bypasses_accuracy=False):
+                    self._mark_practice_swinger_miss(attacker, move)
                     self.log_message(f"{defender.name} avoided the attack!")
                     tx, ty = get_pokemon_position(self, defender)
                     self.flash_damages[(tx, ty)] = ("/", "MISS")
@@ -7826,11 +8053,11 @@ class Game:
             bypass_acc = has_lock_on or modified_acc is None
             if not bypass_acc:
                 if (random.randint(1, 100) > modified_acc) or self._did_defender_evade_by_iq(attacker, defender, bypasses_accuracy=False):
+                    self._mark_practice_swinger_miss(attacker, move)
                     self.log_message(f"{defender.name} avoided the attack!")
                     tx, ty = get_pokemon_position(self, defender)
                     self.flash_damages[(tx, ty)] = ("/", "MISS")
                     self.trigger_damage_flash()
-                    #Laser Focus wears off
                     if attacker.status_effects.get("Laser Focus"):
                         attacker.cure_status("Laser Focus", self)
                     return
@@ -7906,6 +8133,7 @@ class Game:
                     break
 
                 if not bypass_acc and ((random.randint(1, 100) > modified_acc) or self._did_defender_evade_by_iq(attacker, defender, bypasses_accuracy=False)):
+                    self._mark_practice_swinger_miss(attacker, move)
                     self.log_message(f"{defender.name} avoided the attack!")
                     tx, ty = get_pokemon_position(self, defender)
                     self.flash_damages[(tx, ty)] = ("/", "MISS")
@@ -7999,6 +8227,7 @@ class Game:
                     break
 
                 if not bypass_acc and ((random.randint(1, 100) > modified_acc) or self._did_defender_evade_by_iq(attacker, defender, bypasses_accuracy=False)):
+                    self._mark_practice_swinger_miss(attacker, move)
                     self.log_message(f"{defender.name} avoided the attack!")
                     tx, ty = get_pokemon_position(self, defender)
                     self.flash_damages[(tx, ty)] = ("/", "MISS")
@@ -8154,6 +8383,7 @@ class Game:
         if modified_acc is not None and not attacker.status_effects.get("Lock-On") and not is_minimized_bypass:
             if (random.randint(1, 100) > modified_acc) or self._did_defender_evade_by_iq(attacker, defender, bypasses_accuracy=False):
                 attacker.last_move_failed_turn = self.turn_number
+                self._mark_practice_swinger_miss(attacker, move)
                 if defender_visible:
                     self.log_message(f"{defender.name} avoided the attack!")
                 tx, ty = get_pokemon_position(self, defender)
@@ -8324,6 +8554,8 @@ class Game:
                             self.flash_damages[(ax, ay)] = (heal_amount, 1.0)
                             self.trigger_damage_flash()
                         else:
+                            wh_mult = iq_skills.get_iq_skill_value(attacker, "Wise Healer", game=self, default=1.0)
+                            heal_amount = max(1, int(round(heal_amount * float(wh_mult))))
                             attacker.current_hp = min(float(attacker.stats["HP"]), attacker.current_hp + heal_amount)
                             self.log_message(f"{attacker.name}'s HP was restored.")
                             self.flash_damages[(tx, ty)] = (damage, type_mult, is_critical)
@@ -8367,53 +8599,61 @@ class Game:
 
                 #Handle Counter physical damage reflection
                 if move.get("category") == "Physical" and damage > 0 and defender.status_effects.get("Counter", 0) > 0 and attacker != defender and int(attacker.current_hp) > 0:
-                    refl = max(1, damage // 2)
-                    attacker.last_damage_source = f"{defender.name}'s Counter"
-                    h_atk = int(attacker.current_hp)
-                    if not self._try_iq_survival(attacker, h_atk, refl):
-                        attacker.current_hp = float(h_atk - refl)
-                    if self.is_team_pokemon(defender) and not self.is_team_pokemon(attacker):
-                        attacker.has_been_attacked_by_team = True
-                        attacker.has_had_move_used_on_it = True
-                        if not hasattr(attacker, "team_attackers"):
-                            attacker.team_attackers = set()
-                        attacker.team_attackers.add(defender)
-                    self.log_message(f"{defender.name}'s Counter reflected {refl} damage back to {attacker.name}!")
-                    ax, ay = get_pokemon_position(self, attacker)
-                    self.flash_damages[(ax, ay)] = (refl, 1.0)
-                    self.trigger_damage_flash()
-                    if int(attacker.current_hp) <= 0:
-                        if attacker in self.party and self.attempt_revive_member(attacker):
+                    hr_chance = iq_skills.get_iq_skill_value(attacker, "Hit-and-Runner", game=self, default=0.0)
+                    if hr_chance and random.random() < float(hr_chance):
+                        self.log_message(f"{attacker.name} avoided {defender.name}'s Counter!")
+                    else:
+                        refl = max(1, damage // 2)
+                        attacker.last_damage_source = f"{defender.name}'s Counter"
+                        h_atk = int(attacker.current_hp)
+                        if not self._try_iq_survival(attacker, h_atk, refl):
+                            attacker.current_hp = float(h_atk - refl)
+                        if self.is_team_pokemon(defender) and not self.is_team_pokemon(attacker):
+                            attacker.has_been_attacked_by_team = True
+                            attacker.has_had_move_used_on_it = True
+                            if not hasattr(attacker, "team_attackers"):
+                                attacker.team_attackers = set()
+                            attacker.team_attackers.add(defender)
+                        self.log_message(f"{defender.name}'s Counter reflected the damage back to {attacker.name}!")
+                        ax, ay = get_pokemon_position(self, attacker)
+                        self.flash_damages[(ax, ay)] = (refl, 1.0)
+                        self.trigger_damage_flash()
+                        if int(attacker.current_hp) <= 0:
+                            if attacker in self.party and self.attempt_revive_member(attacker):
+                                break
+                            self.log_pokemon_defeat(attacker)
+                            self.handle_enemy_defeat(attacker, defender)
+                            self.remove_defeated_pokemon(attacker, (ax, ay))
                             break
-                        self.log_pokemon_defeat(attacker)
-                        self.handle_enemy_defeat(attacker, defender)
-                        self.remove_defeated_pokemon(attacker, (ax, ay))
-                        break
 
                 #Handle Mirror Coat special damage reflection
                 if move.get("category") == "Special" and damage > 0 and defender.status_effects.get("Mirror Coat", 0) > 0 and attacker != defender and int(attacker.current_hp) > 0:
-                    refl = max(1, damage // 2)
-                    attacker.last_damage_source = f"{defender.name}'s Mirror Coat"
-                    h_atk = int(attacker.current_hp)
-                    if not self._try_iq_survival(attacker, h_atk, refl):
-                        attacker.current_hp = float(h_atk - refl)
-                    if self.is_team_pokemon(defender) and not self.is_team_pokemon(attacker):
-                        attacker.has_been_attacked_by_team = True
-                        attacker.has_had_move_used_on_it = True
-                        if not hasattr(attacker, "team_attackers"):
-                            attacker.team_attackers = set()
-                        attacker.team_attackers.add(defender)
-                    self.log_message(f"{defender.name}'s Mirror Coat reflected {refl} damage back to {attacker.name}!")
-                    ax, ay = get_pokemon_position(self, attacker)
-                    self.flash_damages[(ax, ay)] = (refl, 1.0)
-                    self.trigger_damage_flash()
-                    if int(attacker.current_hp) <= 0:
-                        if attacker in self.party and self.attempt_revive_member(attacker):
+                    hr_chance = iq_skills.get_iq_skill_value(attacker, "Hit-and-Runner", game=self, default=0.0)
+                    if hr_chance and random.random() < float(hr_chance):
+                        self.log_message(f"{attacker.name} avoided {defender.name}'s Mirror Coat!")
+                    else:
+                        refl = max(1, damage // 2)
+                        attacker.last_damage_source = f"{defender.name}'s Mirror Coat"
+                        h_atk = int(attacker.current_hp)
+                        if not self._try_iq_survival(attacker, h_atk, refl):
+                            attacker.current_hp = float(h_atk - refl)
+                        if self.is_team_pokemon(defender) and not self.is_team_pokemon(attacker):
+                            attacker.has_been_attacked_by_team = True
+                            attacker.has_had_move_used_on_it = True
+                            if not hasattr(attacker, "team_attackers"):
+                                attacker.team_attackers = set()
+                            attacker.team_attackers.add(defender)
+                        self.log_message(f"{defender.name}'s Mirror Coat reflected the damage back to {attacker.name}!")
+                        ax, ay = get_pokemon_position(self, attacker)
+                        self.flash_damages[(ax, ay)] = (refl, 1.0)
+                        self.trigger_damage_flash()
+                        if int(attacker.current_hp) <= 0:
+                            if attacker in self.party and self.attempt_revive_member(attacker):
+                                break
+                            self.log_pokemon_defeat(attacker)
+                            self.handle_enemy_defeat(attacker, defender)
+                            self.remove_defeated_pokemon(attacker, (ax, ay))
                             break
-                        self.log_pokemon_defeat(attacker)
-                        self.handle_enemy_defeat(attacker, defender)
-                        self.remove_defeated_pokemon(attacker, (ax, ay))
-                        break
 
                 #Handle Metal Burst damage reflection
                 if damage > 0 and defender.status_effects.get("Metal Burst", 0) > 0:
@@ -8490,6 +8730,9 @@ class Game:
                     self.remove_defeated_pokemon(defender, (tx, ty))
                     self._handle_ko_abilities(attacker, defender, move, overkill, tile=(tx, ty))
                     break
+
+            if actual_hits > 0:
+                self._clear_practice_swinger_after_direct_hit(attacker, move)
 
             if multi_hit_effect and actual_hits > 0:
                 self.log_message(f"Hit {actual_hits} time(s)!")
@@ -8766,7 +9009,11 @@ class Game:
         keen_eye_atk = attacker is not defender and abilities.has_ability(attacker, "Keen Eye", game=self)
 
         acc_stage = 0 if unaware_def else attacker.stat_modifiers.get("Accuracy", 0)
-        ev_stage = 0 if unaware_atk else defender.stat_modifiers.get("Evasion", 0)
+        clutch_bonus = 0
+        if attacker is not defender and int(getattr(defender, "current_hp", 0)) <= 0.20 * float(defender.stats.get("HP", 1)):
+            if not abilities.has_ability(defender, "No Guard", game=self, attacker=attacker):
+                clutch_bonus = int(iq_skills.get_iq_skill_value(defender, "Clutch Player", game=self, default=0) or 0)
+        ev_stage = (0 if unaware_atk else defender.stat_modifiers.get("Evasion", 0)) + clutch_bonus
         if keen_eye_atk and ev_stage > 0:
             ev_stage = 0
 
@@ -8870,7 +9117,7 @@ class Game:
                             attacker.held_item = None
                             self.log_message(f"{defender.name} stole {attacker.name}'s {stolen_name}!")
 
-        # Adjacent-hit reactions
+        #Adjacent-hit reactions
         if is_adj:
             if int(attacker.current_hp) > 0 and abilities.has_ability(defender, "Stench", game=self, attacker=attacker):
                 if random.random() < 0.10:
@@ -8888,7 +9135,7 @@ class Game:
                             self.log_message(f"{defender.name}'s Trace copied {attacker.name}'s {first_ab}!")
                             break
 
-        # Non-contact hit reactions
+        #Non-contact hit reactions
         if move_name and getattr(attacker, "disable_move_effect", None) != move_name:
             if abilities.has_ability(defender, "Cursed Body", game=self, attacker=attacker) and random.random() < 0.30:
                 attacker.disable_move_effect = move_name
@@ -8908,6 +9155,20 @@ class Game:
                     defender.apply_stat_modifier("Attack", 12, self, is_move_effect=False)
             if hp_lost > 0 and not self.are_allies(attacker, defender) and abilities.has_ability(defender, "Speed Boost", game=self, attacker=attacker):
                 defender.apply_stat_modifier("Speed", 1, self, is_move_effect=False)
+
+        if (
+            is_adj
+            and move.get("category") == "Physical"
+            and damage > 0
+            and int(defender.current_hp) > 0
+            and int(attacker.current_hp) > 0
+            and not self.are_allies(attacker, defender)
+        ):
+            cb_chance = iq_skills.get_iq_skill_value(defender, "Counter Basher", game=self, default=0.0)
+            if cb_chance and random.random() < float(cb_chance):
+                counter_dmg = max(1, int(damage // 2))
+                self.log_message(f"{defender.name}'s Counter Basher countered {attacker.name}!")
+                self.apply_direct_damage(attacker, counter_dmg, attacker=defender, damage_source=f"{defender.name}'s Counter Basher")
 
     def _try_sturdy_survival(self, attacker: Pokemon | None, defender: Pokemon, hp_before: int, damage: int) -> bool:
         """Survives a lethal hit at 1 HP if defender is at full HP with Sturdy."""
@@ -8937,18 +9198,84 @@ class Game:
                 if defender.status_effects.get(scr, 0) > 0:
                     defender.cure_status(scr, self)
 
+    def _find_nearest_drop_tile(self, tx: int, ty: int) -> tuple[int, int] | None:
+        """Finds the nearest suitable tile for dropping an item."""
+        if not hasattr(self, "floor") or not getattr(self.floor, "grid", None):
+            return (tx, ty)
+        stairs_pos = getattr(self, "stairs_position", None)
+        if (
+            0 <= tx < self.floor.width
+            and 0 <= ty < self.floor.height
+            and self.floor.grid[ty][tx] == FLOOR_CHAR
+            and (tx, ty) != stairs_pos
+            and (tx, ty) not in self.items_on_floor
+        ):
+            return (tx, ty)
+        for radius in (1, 2):
+            for dy in range(-radius, radius + 1):
+                for dx in range(-radius, radius + 1):
+                    nx, ny = tx + dx, ty + dy
+                    if (
+                        0 <= nx < self.floor.width
+                        and 0 <= ny < self.floor.height
+                        and self.floor.grid[ny][nx] == FLOOR_CHAR
+                        and (nx, ny) != stairs_pos
+                        and (nx, ny) not in self.items_on_floor
+                    ):
+                        return (nx, ny)
+        return None
+
+    def _mark_practice_swinger_miss(self, attacker: Pokemon, move: dict):
+        """Activates Practice Swinger when a damaging move misses."""
+        self._current_move_missed_by_attacker = True
+        if move.get("category") in ("Physical", "Special") and iq_skills.has_iq_skill(attacker, "Practice Swinger", game=self):
+            attacker.practice_swinger_active = True
+
+    def _clear_practice_swinger_after_direct_hit(self, attacker: Pokemon, move: dict):
+        """Clears Practice Swinger if a damaging move hit directly (outside _execute_move_internal batching)."""
+        if not getattr(self, "_defer_ps_clear", False) and move.get("category") in ("Physical", "Special"):
+            attacker.practice_swinger_active = False
+
+    def _try_collector_drop(self, attacker: Pokemon | None, defender: Pokemon | None, tile: tuple[int, int] | None = None):
+        """Rolls Collector drop when a team member defeats an enemy, also dropping any held item."""
+        if attacker is None or defender is None or attacker is defender:
+            return
+        if attacker not in self.party or defender in self.party:
+            return
+        dx, dy = tile if tile is not None else get_pokemon_position(self, defender)
+        held = getattr(defender, "held_item", None)
+        if held is not None:
+            drop_pos = self._find_nearest_drop_tile(dx, dy)
+            if drop_pos is not None:
+                held_copy = dict(held) if isinstance(held, dict) else dict(items.ITEMS_DB.get(str(held), {"name": str(held)}))
+                self.place_item_on_floor(drop_pos[0], drop_pos[1], held_copy)
+                defender.held_item = None
+        coll_chance = iq_skills.get_iq_skill_value(attacker, "Collector", game=self, default=0.0)
+        if coll_chance and random.random() < float(coll_chance):
+            candidates = [k for k in items.get_spawnable_item_keys(self.floor_number) if k in items.ITEMS_DB and k not in ("Poké", "Poke")]
+            if candidates:
+                chosen_key = random.choice(candidates)
+                drop_item = dict(items.ITEMS_DB[chosen_key])
+                if drop_item.get("stackable", False):
+                    drop_item["count"] = 1
+                drop_pos = self._find_nearest_drop_tile(dx, dy)
+                if drop_pos is not None:
+                    self.place_item_on_floor(drop_pos[0], drop_pos[1], drop_item)
+                    self.log_message(f"{defender.name} dropped an item!")
+
     def _handle_ko_abilities(self, attacker: Pokemon, defender: Pokemon, move: dict, overkill: int, tile: tuple[int, int] | None = None):
-        """Applies Moxie and Aftermath after a defeated target is removed."""
+        """Applies Moxie, Collector, and Aftermath after a defeated target is removed."""
         if attacker is defender:
             return
         if not self.are_allies(attacker, defender) and int(attacker.current_hp) > 0:
             if abilities.has_ability(attacker, "Moxie", game=self) and random.random() < 0.30:
                 attacker.apply_stat_modifier("Attack", 1, self, is_move_effect=False)
+        self._try_collector_drop(attacker, defender, tile=tile)
         if bool(move.get("contact", False)) and abilities.has_ability(defender, "Aftermath", game=self, attacker=attacker):
             if not abilities.any_floor_pokemon_has_ability("Damp", self):
                 dx, dy = tile if tile is not None else get_pokemon_position(self, defender)
                 aftermath_power = max(1, int(defender.get_modified_stat("Attack", self)) + max(0, int(overkill)))
-                self.log_message(f"{defender.name}'s Aftermath triggered an explosion!")
+                self.log_message(f"{defender.name} exploded!")
                 self.trigger_explosion(dx, dy, size=3, base_power=aftermath_power, attacker=defender, cause_name="Aftermath")
 
     def _execute_move_internal(self, attacker: Pokemon, targets: Pokemon | list[Pokemon], move: dict, free: bool = False):
@@ -9017,6 +9344,24 @@ class Game:
                 self.log_message(f"Error! {str(e)} Please report this to C4!")
                 return
             self.log_message(f"{attacker.name} used {move['name']}!")
+            ax, ay = get_pokemon_position(self, attacker)
+            adj_foes = [
+                p for p in (self.party + self.spawned_pokemon)
+                if p is not attacker and int(getattr(p, "current_hp", 0)) > 0
+                and not self.are_allies(attacker, p)
+                and max(abs(get_pokemon_position(self, p)[0] - ax), abs(get_pokemon_position(self, p)[1] - ay)) <= 1
+            ]
+            best_intim_foe = None
+            best_intim_chance = 0.0
+            for foe in adj_foes:
+                ch = iq_skills.get_iq_skill_value(foe, "Intimidator", game=self, default=0.0)
+                if ch and float(ch) > best_intim_chance:
+                    best_intim_chance = float(ch)
+                    best_intim_foe = foe
+            if best_intim_foe is not None and random.random() < best_intim_chance:
+                attacker.last_move_failed_turn = self.turn_number
+                self.log_message(f"{best_intim_foe.name}'s Intimidator made {move['name']} fail!")
+                return
         else:
             self.moved_used_this_turn.add(attacker)
 
@@ -9154,9 +9499,18 @@ class Game:
 
         self.play_move_animation(attacker, target_list, move)
 
-        for defender in list(target_list):
-            if int(defender.current_hp) > 0:
-                self._process_single_target_hit(attacker, defender, move, is_multi_target=is_multi, free=free)
+        is_damaging_move = move.get("category") in ("Physical", "Special")
+        ps_armed_before = bool(is_damaging_move and getattr(attacker, "practice_swinger_active", False))
+        self._current_move_missed_by_attacker = False
+        self._defer_ps_clear = True
+        try:
+            for defender in list(target_list):
+                if int(defender.current_hp) > 0:
+                    self._process_single_target_hit(attacker, defender, move, is_multi_target=is_multi, free=free)
+        finally:
+            self._defer_ps_clear = False
+            if ps_armed_before and not self._current_move_missed_by_attacker:
+                attacker.practice_swinger_active = False
 
         if move.get("name") == "Flash":
             self.floor_luminous = True
@@ -9228,6 +9582,10 @@ class Game:
                 and random.random() < 0.30
             ):
                 double_reason = "Quick Draw"
+            else:
+                es_chance = iq_skills.get_iq_skill_value(attacker, "Extra Striker", game=self, default=0.0)
+                if es_chance and random.random() < float(es_chance):
+                    double_reason = "Extra Striker"
 
             if double_reason:
                 remaining = [d for d in target_list if int(getattr(d, "current_hp", 0)) > 0]
@@ -9305,7 +9663,7 @@ class Game:
         if not (0 <= new_x < self.floor.width and 0 <= new_y < self.floor.height):
             return False
 
-        has_mobile = (self.player_pokemon.status_effects.get("Mobile", 0) > 0)
+        has_mobile = self.has_mobile_movement(self.player_pokemon)
         is_wall = (self.floor.grid[new_y][new_x] == WALL_CHAR)
 
         if is_wall and not has_mobile:
@@ -9400,7 +9758,7 @@ class Game:
         if not (0 <= new_x < self.floor.width and 0 <= new_y < self.floor.height):
             return False
 
-        has_mobile = (self.player_pokemon.status_effects.get("Mobile", 0) > 0)
+        has_mobile = self.has_mobile_movement(self.player_pokemon)
         is_wall = (self.floor.grid[new_y][new_x] == WALL_CHAR)
 
         if is_wall and not has_mobile:
@@ -9578,6 +9936,13 @@ class Game:
             member.is_leader = False
             self.party.remove(member)
 
+            if member.current_hp <= 0:
+                for ally in list(self.party):
+                    if int(getattr(ally, "current_hp", 0)) > 0 and iq_skills.has_iq_skill(ally, "Retaliatory", game=self):
+                        ally.apply_stat_modifier("Attack", 3, self, is_move_effect=False)
+                        ally.apply_stat_modifier("Special_Attack", 3, self, is_move_effect=False)
+                        ally.apply_stat_modifier("Accuracy", 3, self, is_move_effect=False)
+
             if hasattr(self, "_auto_switch_acted_members"):
                 self._auto_switch_acted_members.discard(member)
             if is_leader:
@@ -9650,6 +10015,15 @@ class Game:
         if mode != "Unsorted":
             items.sort_inventory_items(self.inventory, mode)
 
+    def _collect_money_item(self, item: dict, picker: Pokemon | None = None) -> int:
+        """Run when picking up a money item, adds the money amount to the player's wallet and applies Coin Watcher bonus if active."""
+        amount = int(item.get("amount", 0))
+        cw_mult = iq_skills.get_iq_skill_value(picker, "Coin Watcher", game=self, default=1.0)
+        if cw_mult and cw_mult != 1.0:
+            amount = max(1, int(round(amount * float(cw_mult)))) if amount > 0 else 0
+        self.money += amount
+        return amount
+
     def check_auto_pickup(self, x: int, y: int):
         """Checks if there is an item at (x, y) and automatically picks it up if inventory space is available. Items that have been dropped are not automatically picked up."""
         if (x, y) not in self.items_on_floor:
@@ -9657,8 +10031,7 @@ class Game:
             
         item = self.items_on_floor[(x, y)]
         if item.get("type") == "Money" or item.get("name") == "Poké":
-            amount = item.get("amount", 0)
-            self.money += amount
+            amount = self._collect_money_item(item, getattr(self, "player_pokemon", None))
             del self.items_on_floor[(x, y)]
             self.log_message(f"Picked up {amount} \033[30;43mP\033[0m.")
             return
@@ -9685,8 +10058,7 @@ class Game:
         item = self.items_on_floor[pos]
         if item.get("type") == "Money" or item.get("name") == "Poké":
             self.start_player_action()
-            amount = item.get("amount", 0)
-            self.money += amount
+            amount = self._collect_money_item(item, getattr(self, "player_pokemon", None))
             del self.items_on_floor[pos]
             self.log_message(f"Picked up {amount} \033[30;43mP\033[0m.")
             self.on_turn_completed()
@@ -10232,6 +10604,7 @@ class Game:
                 else:
                     self.player_pokemon.defeat_pokemon(target, game=self)
 
+                self._try_collector_drop(attacker, target, tile=(tx, ty))
                 self.remove_defeated_pokemon(target, (tx, ty))
             else:
                 target.check_run_away_trigger(game=self)
@@ -10822,7 +11195,10 @@ class Game:
                     else:
                         trajectory.append((curr_x, curr_y, None))
             else:
-                is_pierce = bool(self.player_pokemon.status_effects.get("Pierce Throw")) and not is_apricorn
+                is_pierce = (
+                    bool(self.player_pokemon.status_effects.get("Pierce Throw"))
+                    or iq_skills.has_iq_skill(self.player_pokemon, "Pierce Hurler", game=self)
+                ) and not is_apricorn
                 for step in range(1, 11):
                     tx = self.player_x + step * dx
                     ty = self.player_y + step * dy
@@ -10864,7 +11240,10 @@ class Game:
                     self.flying_item_animation = None
 
             if trajectory:
-                is_pierce = bool(self.player_pokemon.status_effects.get("Pierce Throw")) and not is_apricorn
+                is_pierce = (
+                    bool(self.player_pokemon.status_effects.get("Pierce Throw"))
+                    or iq_skills.has_iq_skill(self.player_pokemon, "Pierce Hurler", game=self)
+                ) and not is_apricorn
                 if is_pierce:
                     hit_enemies = [hit_type for _, _, hit_type in trajectory if isinstance(hit_type, Pokemon)]
                     magma_destroyed = False
@@ -11082,7 +11461,8 @@ class Game:
                     type_bonus = 0.5
 
         friendly_bonus = 1.5 if (self.player_pokemon and self.player_pokemon.status_effects.get("Friendly")) else 1.0
-        chance = hp_term * rate_term * status_bonus * type_bonus * friendly_bonus
+        fast_friend_mult = iq_skills.get_iq_skill_value(self.player_pokemon, "Fast Friend", game=self, default=1.0)
+        chance = hp_term * rate_term * status_bonus * type_bonus * friendly_bonus * float(fast_friend_mult)
         roll = random.random()
 
         if always_recruit or chance >= 1.0 or roll < chance:
@@ -11885,7 +12265,7 @@ class Game:
         """Exports Pokemon spawn simulation results to a formatted text file"""
         filename = f"pokemon_spawns_floor_{floor_number}.txt"
         lines = [
-            f"POKEMON SPAWN TEST RESULTS - {floor_number}F",
+            f"POKÉMON SPAWN TEST RESULTS - {floor_number}F",
             f"Total Spawns Tested: {num_spawns}",
             f"Unique Species Chosen: {len(results)}",
             "=" * 56,
@@ -11903,7 +12283,7 @@ class Game:
         """Exports item spawn simulation results to a formatted text file."""
         filename = f"item_spawns_floor_{floor_number}.txt"
         lines = [
-            f"ITEM SPAWN TEST RESULTS - FLOOR {floor_number}F",
+            f"ITEM SPAWN TEST RESULTS - {floor_number}F",
             f"Total Spawns Tested: {num_spawns}",
             f"Unique Items Chosen: {len(results)}",
             "=" * 56,
@@ -12023,6 +12403,7 @@ class Game:
         self.floor_timer_collapsed = False
         self.map_shake_offset = (0, 0)
         self.collapse_blanked_tiles.clear()
+        self.stair_sensor_overlays.clear()
 
         #Generate new floor
         new_width = getattr(self, "floor_width_override", None)
@@ -12443,7 +12824,7 @@ class Game:
                     self.render()
                     return
                 tile_char = self.floor.grid[cy][cx]
-                is_mobile = getattr(target_mon, "status_effects", {}).get("Mobile", 0) > 0 or (hasattr(target_mon, "iq_skills") and "Mobile" in target_mon.iq_skills)
+                is_mobile = self.has_mobile_movement(target_mon)
                 if tile_char == WALL_CHAR and not is_mobile:
                     self.log_message("Cannot teleport into a wall.")
                     self.render()
@@ -14078,6 +14459,8 @@ class Game:
         self.waiting_for_orb_direction = None
         self.orb_direction_mode = False
         self.move_replacement_queue = []
+        self.iq_skill_choice_queue = []
+        self.stair_sensor_overlays = {}
         self.targeting_mode = False
         self.targeting_move = None
         self.last_target_2_3_tiles = None
@@ -14443,6 +14826,8 @@ class Game:
         self.items_on_floor = {}
         self.active_status_pokemon = None
         self.move_replacement_queue = []
+        self.iq_skill_choice_queue = []
+        self.stair_sensor_overlays = {}
         self.flash_damages = {}
         self.moved_used_this_turn = set()
         self.round_users_this_turn = set()
@@ -15236,7 +15621,9 @@ class Game:
 
                 #Animation overlays
                 anim = self.flying_item_animation
-                if (src_x, src_y) in getattr(self, "poof_overlays", {}):
+                if (src_x, src_y) in getattr(self, "stair_sensor_overlays", {}):
+                    row_chars.append(self.stair_sensor_overlays[(src_x, src_y)])
+                elif (src_x, src_y) in getattr(self, "poof_overlays", {}):
                     row_chars.append(self.poof_overlays[(src_x, src_y)])
                 elif (src_x, src_y) in getattr(self, "explosion_overlays", {}):
                     row_chars.append(self.explosion_overlays[(src_x, src_y)])
@@ -15623,6 +16010,10 @@ class Game:
                 start_x = max(0, (base_width - overlay_width) // 2)
                 start_y = max(0, (len(base_rows) - overlay_height) // 2)
                 rows = self.overlay_rows_on_base(base_rows, nickname_rows, start_x, start_y)
+
+        elif getattr(self, "iq_skill_choice_queue", None):
+            screen_view = "iq_skill_choice"
+            rows = self.render_iq_skill_choice_screen(self.iq_skill_choice_queue[0])
 
         elif getattr(self, "move_replacement_queue", None):
             screen_view = "move_replacement"
@@ -16166,6 +16557,147 @@ class Game:
                 self.render()
         finally:
             self._processing_move_replacement = False
+
+    def prompt_iq_skill_choice(self, pokemon: Pokemon):
+        """Queues an IQ skill selection prompt (1 of 3 skills) when IQ crosses a threshold of 10."""
+        choices = iq_skills.roll_iq_skill_choices(pokemon, game=self, count=3)
+        if not choices:
+            return
+        self.iq_skill_choice_queue.append({
+            "pokemon": pokemon,
+            "choices": choices,
+            "selected_index": 0,
+            "confirm_skip": False,
+        })
+        if getattr(self, "_in_run_loop", False):
+            self.process_iq_skill_choice_queue()
+
+    def handle_iq_skill_choice_input(self, action: str) -> bool:
+        """Handles a single keypress for the front IQ skill choice prompt. Returns True if entry resolved."""
+        if not getattr(self, "iq_skill_choice_queue", None):
+            return False
+        entry = self.iq_skill_choice_queue[0]
+        pokemon = entry["pokemon"]
+        choices = entry["choices"]
+        if not choices:
+            self.iq_skill_choice_queue.pop(0)
+            return True
+
+        if entry.get("confirm_skip", False):
+            if action in ("y", "Y", game_input.CONFIRM, "\r", "\n"):
+                self.iq_skill_choice_queue.pop(0)
+                self.log_message(f"{pokemon.name} declined to learn a new IQ skill.")
+                return True
+            if action in ("n", "N", game_input.QUIT, "\x1b", "ESC", "Esc", "esc", "q", "Q"):
+                entry["confirm_skip"] = False
+            return False
+
+        picked_idx = None
+        if action in ("1", "2", "3"):
+            idx = int(action) - 1
+            if idx < len(choices):
+                picked_idx = idx
+        elif action in (game_input.MOVE_UP, "w", "W", "up", "UP", "k", "K"):
+            entry["selected_index"] = (entry.get("selected_index", 0) - 1) % len(choices)
+            return False
+        elif action in (game_input.MOVE_DOWN, "s", "S", "down", "DOWN", "j", "J"):
+            entry["selected_index"] = (entry.get("selected_index", 0) + 1) % len(choices)
+            return False
+        elif action in (game_input.CONFIRM, "\r", "\n", "z", "Z"):
+            picked_idx = min(len(choices) - 1, max(0, entry.get("selected_index", 0)))
+        elif action in (game_input.QUIT, "\x1b", "ESC", "Esc", "esc", "q", "Q"):
+            entry["confirm_skip"] = True
+            return False
+
+        if picked_idx is not None:
+            chosen_skill = choices[picked_idx]
+            iq_skills.add_or_upgrade_iq_skill(pokemon, chosen_skill, game=self)
+            self.iq_skill_choice_queue.pop(0)
+            self.log_message(f"{pokemon.name} learned the IQ skill {chosen_skill}!")
+            return True
+        return False
+
+    def process_iq_skill_choice_queue(self):
+        """Processes pending IQ skill choice prompts."""
+        if getattr(self, "_processing_iq_skill_choice", False):
+            return
+        self._processing_iq_skill_choice = True
+        try:
+            while getattr(self, "iq_skill_choice_queue", None):
+                self.render()
+                try:
+                    action = game_input.get_key(timeout=None)
+                except (StopIteration, RuntimeError):
+                    self.is_running = False
+                    break
+                if action is None:
+                    continue
+                self.handle_iq_skill_choice_input(action)
+
+            if self.message_log.has_pending():
+                self.process_messages()
+            else:
+                self.render()
+        finally:
+            self._processing_iq_skill_choice = False
+
+    def render_iq_skill_choice_screen(self, entry: dict) -> list[str]:
+        """Renders the modal window for choosing a new IQ skill"""
+        import textwrap
+        pokemon = entry["pokemon"]
+        choices = entry.get("choices", [])
+        sel_idx = entry.get("selected_index", 0)
+        confirm_skip = entry.get("confirm_skip", False)
+        curr_iq = int(getattr(pokemon, "iq", 0))
+        learned_cnt = len(getattr(pokemon, "iq_skills", []) or [])
+
+        interior = []
+        interior.append("")
+        interior.append(f" {pokemon.name} can acquire a new IQ skill!")
+        interior.append(" Choose an IQ skill to learn:")
+        interior.append("─" * 74)
+        interior.append("")
+
+        for idx, sk_disp in enumerate(choices[:3]):
+            base_sk, sk_lvl = iq_skills.parse_iq_skill_name(sk_disp)
+            meta = iq_skills.IQ_SKILLS_DB.get(base_sk, {})
+            pointer = "►" if idx == sel_idx else " "
+            title_line = f" {pointer} {sk_disp}"
+            if idx == sel_idx and not getattr(self, "compatibility_mode", False):
+                title_line = f"\033[93m{title_line}\033[0m"
+            interior.append(title_line)
+            desc = iq_skills.get_iq_skill_description(sk_disp)
+            for dline in textwrap.wrap(desc, width=64):
+                interior.append(f"       {dline}")
+            interior.append("")
+
+        if confirm_skip:
+            interior.append("-" * 74)
+            msg1 = " Are you sure you want to skip learning an IQ skill?"
+            msg2 = " This decision is permanent!"
+            if not getattr(self, "compatibility_mode", False):
+                interior.append(f"\033[93m{msg1}\033[0m")
+                interior.append(f"\033[91m{msg2}\033[0m")
+            else:
+                interior.append(msg1)
+                interior.append(msg2)
+
+        while len(interior) < 44:
+            interior.append("")
+
+        interior.append("─" * 74)
+        if confirm_skip:
+            interior.append(" [Return] Confirm   [Esc] Back")
+        else:
+            interior.append(" [↑/↓] Choose   [Return] Learn Skill")
+
+        rows = []
+        rows.append("┌" + "─" * 74 + "┐")
+        for line in interior[:46]:
+            padded = self.pad_ansi_string(line, 74)
+            rows.append(f"│{padded}│")
+        rows.append("└" + "─" * 74 + "┘")
+        return self.sanitize_rendered_rows(rows)
 
     def render_move_replacement_screen(self, pokemon: Pokemon, new_move: dict) -> list[str]:
         """Renders the window that appears when a Pokémon learns a move while not having any free move slots."""
@@ -16799,7 +17331,8 @@ class Game:
                 type_cat_str = f"{m_type_color}{m_type}\033[0m / {m_cat_color}{m_cat}\033[0m"
 
                 interior.append(f"   • {hk_tag}{m_name} ({type_cat_str})")
-                interior.append(f"     Power: {pwr_str}  Accuracy: {acc_str}  PP Cost: {m['pp_cost']}")
+                eff_pp_cost = pokemon.get_effective_pp_cost(m, self)
+                interior.append(f"     Power: {pwr_str}  Accuracy: {acc_str}  PP Cost: {eff_pp_cost}")
                 m_desc = m.get("description", "")
                 wrapped_m_desc = textwrap.wrap(m_desc, width=68)
                 if wrapped_m_desc:
@@ -16828,6 +17361,26 @@ class Game:
                 else:
                     interior.append(f"   \033[90m- {ab_name}\033[0m")
                     interior.append(f"     \033[90m[unlocked at {req_iq}% IQ]\033[0m")
+
+        interior.append("─" * 74)
+
+        #6b. IQ Skills
+        learned_iq = list(getattr(pokemon, "iq_skills", []) or [])
+        interior.append(f" IQ Skills ({len(learned_iq)}/{iq_skills.MAX_IQ_SKILLS}):")
+        if not learned_iq:
+            interior.append("   None")
+        else:
+            for sk_disp in learned_iq:
+                base_sk, _ = iq_skills.parse_iq_skill_name(sk_disp)
+                active_lvl = iq_skills.get_iq_skill_level(pokemon, base_sk, game=self)
+                inactive_tag = "" if active_lvl > 0 else " [Inactive]"
+                interior.append(f"   - {sk_disp}{inactive_tag}")
+                sk_desc = iq_skills.get_iq_skill_description(sk_disp)
+                for dline in textwrap.wrap(sk_desc, width=68):
+                    interior.append(f"     {dline}")
+        next_iq_thresh = iq_skills.get_next_iq_skill_threshold(getattr(pokemon, "iq", 0))
+        next_iq_str = f"at {next_iq_thresh}% IQ" if next_iq_thresh is not None else "No more"
+        interior.append(f" Next IQ skill: {next_iq_str}")
 
         interior.append("─" * 74)
 
@@ -16947,7 +17500,8 @@ class Game:
                 border_reset = "\033[0m"
             else:
                 #Check if enough PP
-                if self.player_pokemon.current_pp < move["pp_cost"]:
+                eff_pp_cost = self.player_pokemon.get_effective_pp_cost(move, self)
+                if self.player_pokemon.current_pp < eff_pp_cost:
                     border_prefix = "\033[91m"  #Red
                     border_reset = "\033[0m"
                 elif not self.player_pokemon.can_use_move(move, self):
@@ -16977,7 +17531,8 @@ class Game:
                 keys = ["Z", "X", "C", "V"]
                 shortcut_key = keys[slot]
                 shortcut = f"\033[92m[{shortcut_key}]\033[0m"
-                pp_cost_str = f"{move['pp_cost']} PP"
+                eff_pp_cost = self.player_pokemon.get_effective_pp_cost(move, self)
+                pp_cost_str = f"{eff_pp_cost} PP"
                 pp_cost_formatted = f"\033[96m{pp_cost_str}\033[0m"
                 spaces_line1 = 12 - 3 - len(pp_cost_str)
                 line1_content = f"{shortcut}{' ' * spaces_line1}{pp_cost_formatted}"
@@ -17536,6 +18091,10 @@ class Game:
                 self.handle_orb_direction_input(action)
                 continue
 
+            if getattr(self, "iq_skill_choice_queue", None):
+                self.process_iq_skill_choice_queue()
+                continue
+
             if getattr(self, "move_replacement_queue", None):
                 self.process_move_replacement_queue()
                 continue
@@ -18070,6 +18629,7 @@ class Game:
                         #Spawn player & party
                         if hasattr(self, "_auto_switch_acted_members"):
                             self._auto_switch_acted_members.clear()
+                        self.stair_sensor_overlays.clear()
                         self.player_x, self.player_y = self._get_starting_position()
                         self.player_pokemon.x, self.player_pokemon.y = self.player_x, self.player_y
                         self.spawn_party_members()

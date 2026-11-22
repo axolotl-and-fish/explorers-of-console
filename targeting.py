@@ -96,6 +96,10 @@ def get_actual_target(game, attacker: Pokemon, target: Pokemon, move: dict) -> P
 
         obstacle_poke = get_poke_at(curr_x, curr_y)
         if obstacle_poke:
+            from iq_skills import has_iq_skill
+            is_same_side = (attacker in getattr(game, "party", [])) == (obstacle_poke in getattr(game, "party", []))
+            if is_same_side and has_iq_skill(attacker, "Slip-Through", game=game):
+                continue
             return obstacle_poke
 
 
@@ -240,6 +244,10 @@ def get_room_tiles_at(floor, x: int, y: int) -> set[tuple[int, int]]:
 def is_ally_in_way_of_attack(game, attacker: Pokemon, target: Pokemon, move: dict) -> bool:
     """Returns True if another ally Pokémon is blocking the line of attack from attacker to target"""
     if attacker not in game.party:
+        return False
+
+    from iq_skills import has_iq_skill
+    if has_iq_skill(attacker, "Slip-Through", game=game):
         return False
 
     range_str = get_effective_move_range(attacker, move)

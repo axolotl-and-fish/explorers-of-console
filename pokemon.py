@@ -248,6 +248,9 @@ class Pokemon:
         self.ability_slots: list[str] = assign_ability_slots(self.species_data)
         self.replaced_abilities: dict[int, str] = {}
         self.ability: str | None = self.ability_slots[0] if self.ability_slots else None
+        self.iq_skills: list[str] = []
+        self.practice_swinger_active: bool = False
+        self.status_dot_turns: dict[str, int] = {}
         self.run_away_triggered_this_floor: bool = False
         self.curious_medicine_used_this_floor: bool = False
         self.berserk_triggered_this_floor: bool = False
@@ -457,6 +460,25 @@ class Pokemon:
                     except ValueError:
                         pass
 
+    def get_effective_pp_cost(self, move: dict, game=None) -> int:
+        """Returns move PP cost after No-Charger (+50%) and PP Saver (-1/-2/-3, min 1)."""
+        import math
+        from iq_skills import get_iq_skill_level, has_iq_skill
+        raw_cost = int(move.get("pp_cost", 0))
+        if raw_cost <= 0:
+            return 0
+        eff_cost = raw_cost
+        is_charge = bool(
+            move.get("charge_turns")
+            or move.get("name") in ("Solar Beam", "Dig", "Dive", "Focus Punch", "Sky Attack", "Razor Wind", "Skull Bash", "Fly")
+        )
+        if is_charge and has_iq_skill(self, "No-Charger", game=game):
+            eff_cost = math.ceil(eff_cost * 1.5)
+        pp_saver_lvl = get_iq_skill_level(self, "PP Saver", game=game)
+        if pp_saver_lvl > 0:
+            eff_cost = max(1, eff_cost - pp_saver_lvl)
+        return eff_cost
+
     def can_use_move(self, move: dict, game=None) -> bool:
         """Returns True if the Pokémon meets the criteria for a move to be used (and isn't blocked due to PP, Belly, disablement, status effects etc.)"""
         move_name = move.get("name")
@@ -493,7 +515,7 @@ class Pokemon:
         if move_name == "Struggle":
             return True
 
-        if self.current_pp < move["pp_cost"]:
+        if self.current_pp < self.get_effective_pp_cost(move, game):
             return False
 
         if self.status_effects.get("Encore", 0) > 0:
@@ -579,7 +601,7 @@ class Pokemon:
             max_hp = float(getattr(self, "max_hp", None) or self.stats.get("HP", 1))
             cost = float(int(0.5 * max_hp))
             self.current_hp = max(1.0, self.current_hp - cost)
-            self.current_pp -= move["pp_cost"]
+            self.current_pp -= self.get_effective_pp_cost(move, game)
             if game:
                 game.log_message(f"{self.name} was hit by recoil!")
                 from targeting import get_pokemon_position
@@ -587,7 +609,7 @@ class Pokemon:
                 game.flash_damages[(ax, ay)] = (f"{int(cost)}", "\033[91m")
                 game.trigger_damage_flash()
         else:
-            self.current_pp -= move["pp_cost"]
+            self.current_pp -= self.get_effective_pp_cost(move, game)
 
     @property
     def nickname(self) -> str | None:
@@ -842,6 +864,11 @@ class Pokemon:
             if int(getattr(self, "iq", 0)) >= 40:
                 amount = math.floor(amount * 1.2) #20% EXP bonus at 40+ IQ
 
+            from iq_skills import get_iq_skill_value
+            exp_elite_mult = get_iq_skill_value(self, "EXP Elite", game=game, default=1.0)
+            if exp_elite_mult != 1.0:
+                amount = math.floor(amount * float(exp_elite_mult))
+
         if game and amount > 0 and hasattr(game, "party") and self in game.party:
             from game import get_pokemon_position
             px, py = get_pokemon_position(game, self)
@@ -893,7 +920,12 @@ class Pokemon:
 
             if stat == "HP":
                 val = (((2 * base + iv + (ev / 2)) * level) / 100) + level + 10
-                self.stats[stat] = math.floor(val)
+                hp_val = math.floor(val)
+                from iq_skills import get_iq_skill_value
+                bt_mult = float(get_iq_skill_value(self, "Brick Tough", game=None, default=1.0))
+                if bt_mult != 1.0:
+                    hp_val = math.floor(round(hp_val * bt_mult, 9))
+                self.stats[stat] = hp_val
             else:
                 val = (((2 * base + iv + (ev / 2)) * level) / 100) + 5
                 stat_val = math.floor(val)
@@ -956,11 +988,15 @@ class Pokemon:
             for ab_name, req_iq in get_effective_ability_slots_with_thresholds(self):
                 if old_iq < req_iq <= new_iq:
                     game.log_message(f"{self.name} unlocked the {ab_name} ability!")
+            from iq_skills import IQ_THRESHOLDS
+            for threshold in IQ_THRESHOLDS:
+                if old_iq < threshold <= new_iq and hasattr(game, "prompt_iq_skill_choice"):
+                    game.prompt_iq_skill_choice(self)
         self.check_evolution_notifications(game=game)
         return gained
 
     def check_run_away_trigger(self, game=None):
-        """Triggers Run Away speed boost once per floor when HP drops below 50%."""
+        """Triggers Run Away speed boost when HP drops below 50%."""
         if int(getattr(self, "current_hp", 0)) <= 0:
             return
         if getattr(self, "run_away_triggered_this_floor", False):
@@ -970,6 +1006,7 @@ class Pokemon:
         if self.current_hp < 0.5 * max_hp and has_ability(self, "Run Away", game=game):
             self.run_away_triggered_this_floor = True
             self.change_movement_speed(self.movement_speed_stage + 1, game)
+            game.log_message(f"{self.name}'s Run Away activated!")
 
     def get_iq_survival_chance(self) -> float:
         """Returns probability of surviving a lethal non-status hit at 1 HP from IQ"""
@@ -1175,6 +1212,19 @@ class Pokemon:
             if actual_stat_name == "Attack" and game is not None:
                 if has_adjacent_enemy_with_ability(self, "Intimidate", game=game) and not is_immune_to_intimidate(self, game=game):
                     stage -= 1
+            if actual_stat_name in ("Attack", "Special_Attack") and game is not None:
+                from abilities import get_allies_of
+                from iq_skills import get_iq_skill_level
+                from targeting import get_pokemon_position
+                sx, sy = get_pokemon_position(game, self)
+                for ally in get_allies_of(self, game=game):
+                    if ally is self:
+                        continue
+                    ax, ay = get_pokemon_position(game, ally)
+                    if max(abs(ax - sx), abs(ay - sy)) <= 1:
+                        cl_lvl = get_iq_skill_level(ally, "Cheerleader", game=game)
+                        if cl_lvl > 0:
+                            stage += cl_lvl
 
         #Clamp stat stages to [-6, +6] as a safety guard
         stage = max(-6, min(6, stage))
@@ -1561,6 +1611,11 @@ class Pokemon:
         if status == "Sleep":
             if self.status_effects.get("Sleepless"):
                 return False
+            from iq_skills import has_iq_skill
+            if has_iq_skill(self, "Nonsleeper", game=game):
+                if not from_damaging_move and game:
+                    game.log_message(f"{self.name}'s Nonsleeper prevents it from falling asleep!")
+                return False
             if self.status_effects.get("Sleep", 0) > 0 or self.status_effects.get("Resting", 0) > 0:
                 if not from_damaging_move and game:
                     game.log_message(f"{self.name} is already asleep.")
@@ -1607,6 +1662,9 @@ class Pokemon:
                     game.log_message(f"{self.name} is already poisoned.")
                 return False
             self.status_effects["Poison"] = True
+            if not hasattr(self, "status_dot_turns") or self.status_dot_turns is None:
+                self.status_dot_turns = {}
+            self.status_dot_turns["Poison"] = 0
             if game:
                 game.log_message(f"{self.name} was poisoned!")
             self._trigger_status_popup("Poison", game)
@@ -1617,6 +1675,9 @@ class Pokemon:
                     game.log_message(f"{self.name} is already poisoned.")
                 return False
             self.status_effects["Toxic"] = True
+            if not hasattr(self, "status_dot_turns") or self.status_dot_turns is None:
+                self.status_dot_turns = {}
+            self.status_dot_turns["Toxic"] = 0
             if game:
                 game.log_message(f"{self.name} was badly poisoned!")
             self._trigger_status_popup("Toxic", game)
@@ -1633,6 +1694,9 @@ class Pokemon:
                     game.log_message(f"{self.name} is already burned.")
                 return False
             self.status_effects["Burn"] = True
+            if not hasattr(self, "status_dot_turns") or self.status_dot_turns is None:
+                self.status_dot_turns = {}
+            self.status_dot_turns["Burn"] = 0
             if game:
                 game.log_message(f"{self.name} sustained a burn!")
             self._trigger_status_popup("Burn", game)
@@ -2103,7 +2167,7 @@ class Pokemon:
                 game.log_message(f"{self.name} can walk through walls!")
             return True
         elif status == "Puppet":
-            # Only intended to be obtainable by teammate Pokémon
+            #Only intended to be obtainable by teammate Pokémon
             is_team = hasattr(game, "party") and self in game.party
             if not is_team:
                 return False
@@ -2226,6 +2290,8 @@ class Pokemon:
         elif status == "Poison":
             if self.status_effects.get("Poison"):
                 self.status_effects["Poison"] = False
+                if hasattr(self, "status_dot_turns") and isinstance(self.status_dot_turns, dict):
+                    self.status_dot_turns.pop("Poison", None)
                 game.log_message(f"{self.name} was cured of its poisoning.")
         elif status == "Decoy":
             if self.status_effects.get("Decoy", 0) > 0:
@@ -2238,10 +2304,14 @@ class Pokemon:
         elif status == "Toxic":
             if self.status_effects.get("Toxic"):
                 self.status_effects["Toxic"] = False
+                if hasattr(self, "status_dot_turns") and isinstance(self.status_dot_turns, dict):
+                    self.status_dot_turns.pop("Toxic", None)
                 game.log_message(f"{self.name} was cured of its bad poisoning.")
         elif status == "Burn":
             if self.status_effects.get("Burn"):
                 self.status_effects["Burn"] = False
+                if hasattr(self, "status_dot_turns") and isinstance(self.status_dot_turns, dict):
+                    self.status_dot_turns.pop("Burn", None)
                 game.log_message(f"{self.name}'s burn was healed.")
         elif status == "Frozen":
             if self.status_effects.get("Frozen", 0) > 0:

@@ -40,9 +40,9 @@ def load_tms_raw(filepath: str | None = None) -> list[dict]:
         if not isinstance(entry, dict):
             raise ValueError(f"TM entry #{idx} must be a JSON object.")
 
-        # Check allowed keys: only move_name, value, rarity
+        #Check allowed keys: only move_name, value, rarity
         allowed_keys = {"move_name", "value", "rarity"}
-        # Support 'name' or 'move' as aliases for 'move_name'
+        #Support 'name' or 'move' as aliases for 'move_name'
         keys_present = set(entry.keys())
         norm_keys = set()
         for k in keys_present:

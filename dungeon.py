@@ -187,7 +187,7 @@ class DungeonFloor:
                         room_n = self.rooms[neighbor]
                         bounds_cell = self.cell_bounds[cell]
 
-                        if dx == 1 or dx == -1:  # Horizontal neighbors
+                        if dx == 1 or dx == -1:  #Horizontal neighbors
                             #Align vertical bounds of room with room_n for overlap
                             y_start_pos = bounds_cell["y_start"] + 1
                             y_end_pos = bounds_cell["y_end"] - 1
@@ -199,7 +199,7 @@ class DungeonFloor:
                                 room.y1 = new_y1
                                 room.y2 = new_y1 + h_cached - 1
 
-                        elif dy == 1 or dy == -1:  # Vertical neighbors
+                        elif dy == 1 or dy == -1:  #Vertical neighbors
                             #Align horizontal bounds of room with room_n for overlap
                             x_start_pos = bounds_cell["x_start"] + 1
                             x_end_pos = bounds_cell["x_end"] - 1
@@ -429,19 +429,19 @@ class DungeonFloor:
     def _carve_dead_end_from_room(self, room: Room):
         """Carves a dead-end corridor starting from a random boundary of the room"""
         direction = random.choice(["n", "s", "e", "w"])
-        if direction == "n": # north
+        if direction == "n": #North
             x_start = random.randint(room.x1, room.x2)
             y_start = room.y1 - 1
             dx, dy = 0, -1
-        elif direction == "s": # south
+        elif direction == "s": #South
             x_start = random.randint(room.x1, room.x2)
             y_start = room.y2 + 1
             dx, dy = 0, 1
-        elif direction == "w": # west
+        elif direction == "w": #West
             x_start = room.x1 - 1
             y_start = random.randint(room.y1, room.y2)
             dx, dy = -1, 0
-        else:  # east
+        else:  #East
             x_start = room.x2 + 1
             y_start = random.randint(room.y1, room.y2)
             dx, dy = 1, 0

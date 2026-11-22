@@ -275,7 +275,7 @@ def get_unlocked_abilities(pokemon) -> list[str]:
         ab for ab, req_iq in get_effective_ability_slots_with_thresholds(pokemon)
         if iq >= req_iq
     ]
-    # Also support legacy direct pokemon.ability attribute if set without slots
+    #For save files from before 0.3.0
     legacy = canonicalize_ability_name(getattr(pokemon, "ability", None))
     if legacy and legacy not in unlocked and not getattr(pokemon, "ability_slots", None):
         unlocked.append(legacy)
@@ -491,6 +491,9 @@ def get_effective_movement_speed_stage(pokemon, game=None) -> int:
         elif weather == "Blizzard":
             stage += 2
     if has_any_major_status(pokemon) and has_ability(pokemon, "Quick Feet", game=game):
+        stage += 1
+    from iq_skills import has_iq_skill
+    if has_iq_skill(pokemon, "Time Tripper", game=game):
         stage += 1
 
     return min(3, max(-1, stage))

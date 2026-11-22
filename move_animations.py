@@ -107,7 +107,7 @@ class MoveAnimationFrame:
     """Represents a single frame of a visual move animation.
 
     Attributes:
-        overlays: Dict mapping (x, y) coordinates to rendered ANSI character strings.
+        overlays: Dict mapping (x, y) coordinates to rendered character strings.
         delay: Sleep delay in seconds for this frame.
         shake: Screen shake magnitude (0 = none, 1 = slight, 2 = heavy).
     """
@@ -116,12 +116,10 @@ class MoveAnimationFrame:
     delay: float = 0.035
     shake: int = 0
 
-# ------------------------------------
 # Geometry and Ray Calculation Helpers
-# ------------------------------------
 
 def clamp_to_floor(floor: Any, x: int, y: int) -> bool:
-    """Returns True if (x, y) is within floor boundaries."""
+    """Returns True if (x, y) is within floor boundaries"""
     if floor is None:
         return False
     w = getattr(floor, "width", 56)
@@ -216,10 +214,7 @@ def get_facing_vector(game: Any, attacker: Pokemon, target_poke: Pokemon | None 
     return 0, 1
 
 
-# -----------------------------
-# Frame Builders for Categories
-# -----------------------------
-
+#Frame Builders for Categories
 def _build_projectile_frames(
     game: Any, attacker: Pokemon, targets: list[Pokemon], move: dict, cfg: dict
 ) -> list[MoveAnimationFrame]:
@@ -652,10 +647,8 @@ def _build_contact_frames(
     return frames
 
 
-# ------------------
-# Animation Registry
-# ------------------
 
+#Animation Registry
 ANIMATION_REGISTRY: dict[str, dict[str, Any]] = {
     #Projectiles
     "projectile": {
@@ -1325,10 +1318,7 @@ ANIMATION_REGISTRY: dict[str, dict[str, Any]] = {
 }
 
 
-# -----------------------------
-# Fallback Mapping & Resolution
-# -----------------------------
-
+#Fallback Mapping & Resolution
 DEFAULT_MOVE_ANIMATIONS: dict[str, str] = {
     #Projectiles
     "Water Gun": "water_gun",
