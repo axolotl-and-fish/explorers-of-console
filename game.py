@@ -925,6 +925,9 @@ class Game:
         if weather in msg_map:
             self.log_message(msg_map[weather])
 
+        for p_w in list(getattr(self, "party", []) + getattr(self, "spawned_pokemon", [])):
+            abilities.announce_weather_stat_abilities(self, p_w)
+
         if weather in ANIMATED_PARTICLE_WEATHERS:
             self._current_particle_weather = weather
             self.init_weather_particles(weather)
@@ -1756,6 +1759,8 @@ class Game:
         member.berserk_triggered_this_floor = False
         member.flash_fire_boosted = False
         member.download_triggered_this_turn = None
+        member._mold_breaker_announced = False
+        member._announced_weather_stat_abilities = None
         if hasattr(member, "cud_chew_queue") and isinstance(member.cud_chew_queue, list):
             member.cud_chew_queue.clear()
 
@@ -1775,16 +1780,29 @@ class Game:
                 dur = random.randint(dur_range[0], dur_range[1])
                 self.set_weather(w_name, duration=dur, source=poke if w_name == "Misty Terrain" else None)
 
+        in_sight = (poke in getattr(self, "party", [])) or self.is_in_team_sight(poke)
+
+        if abilities.has_ability(poke, "Mold Breaker", game=self) and not getattr(poke, "_mold_breaker_announced", False):
+            poke._mold_breaker_announced = True
+            if in_sight:
+                self.log_message(f"{poke.name} breaks the mold!")
+
         if abilities.has_ability(poke, "Compound Eyes", game=self):
+            if in_sight:
+                self.log_message(f"{poke.name}'s Compound Eyes activated!")
             poke.apply_stat_modifier("Accuracy", 2, self)
 
         conc_lvl = iq_skills.get_iq_skill_value(poke, "Concentrator", game=self, default=0)
         if conc_lvl:
+            if in_sight:
+                self.log_message(f"{poke.name}'s Concentrator activated!")
             poke.apply_stat_modifier("Accuracy", conc_lvl, self)
             poke.apply_stat_modifier("Evasion", -conc_lvl, self)
 
         aggr_lvl = iq_skills.get_iq_skill_value(poke, "Aggressor", game=self, default=0)
         if aggr_lvl:
+            if in_sight:
+                self.log_message(f"{poke.name}'s Aggressor activated!")
             poke.apply_stat_modifier("Attack", aggr_lvl, self)
             poke.apply_stat_modifier("Special_Attack", aggr_lvl, self)
             poke.apply_stat_modifier("Defense", -aggr_lvl, self)
@@ -1792,6 +1810,8 @@ class Game:
 
         def_lvl = iq_skills.get_iq_skill_value(poke, "Defender", game=self, default=0)
         if def_lvl:
+            if in_sight:
+                self.log_message(f"{poke.name}'s Defender activated!")
             poke.apply_stat_modifier("Defense", def_lvl, self)
             poke.apply_stat_modifier("Special_Defense", def_lvl, self)
             poke.apply_stat_modifier("Attack", -def_lvl, self)
@@ -1799,7 +1819,14 @@ class Game:
 
         qd_lvl = iq_skills.get_iq_skill_value(poke, "Quick Dodger", game=self, default=0)
         if qd_lvl:
+            if in_sight:
+                self.log_message(f"{poke.name}'s Quick Dodger activated!")
             poke.apply_stat_modifier("Evasion", qd_lvl, self)
+
+        if iq_skills.has_iq_skill(poke, "Time Tripper", game=self) and in_sight:
+            self.log_message(f"{poke.name}'s Time Tripper activated!")
+
+        abilities.announce_weather_stat_abilities(self, poke)
 
         if abilities.has_ability(poke, "Imposter", game=self) and getattr(poke, "transform_original_state", None) is None:
             pool = self.floor_spawn_list if getattr(self, "floor_spawn_list", None) else getattr(self, "all_species_names", [])
@@ -4101,7 +4128,7 @@ class Game:
             has_magic_guard = abilities.has_ability(p, "Magic Guard", game=self)
 
             #Dry Skin & Solar Power Sun HP drain
-            if not has_magic_guard and eff_w in ("Sunny", "Harsh Sunlight"):
+            if eff_w in ("Sunny", "Harsh Sunlight"):
                 sun_drain = 0
                 if abilities.has_ability(p, "Dry Skin", game=self):
                     sun_drain += 1
@@ -4110,28 +4137,36 @@ class Game:
                     sun_drain += 1
                     p.last_damage_source = "Solar Power"
                 if sun_drain > 0:
-                    p.current_hp -= sun_drain
-                    if int(p.current_hp) <= 0:
+                    if has_magic_guard:
                         if self.is_in_team_sight(p):
-                            self.log_pokemon_defeat(p)
-                        self.handle_enemy_defeat(p)
-                        self.remove_defeated_pokemon(p)
-                        continue
+                            self.log_message(f"{p.name} was protected by Magic Guard!")
+                    else:
+                        p.current_hp -= sun_drain
+                        if int(p.current_hp) <= 0:
+                            if self.is_in_team_sight(p):
+                                self.log_pokemon_defeat(p)
+                            self.handle_enemy_defeat(p)
+                            self.remove_defeated_pokemon(p)
+                            continue
 
             #1. Periodic status damage (Poison, Burn)
             damage_to_apply = 0
-            if not has_magic_guard:
-                if p.status_effects.get("Toxic"):
+            if p.status_effects.get("Toxic"):
+                damage_to_apply += 1
+                p.last_damage_source = "poison"
+            else:
+                if p.status_effects.get("Poison") and self.turn_number % 2 == 0:
                     damage_to_apply += 1
                     p.last_damage_source = "poison"
-                else:
-                    if p.status_effects.get("Poison") and self.turn_number % 2 == 0:
-                        damage_to_apply += 1
-                        p.last_damage_source = "poison"
 
-                if p.status_effects.get("Burn") and self.turn_number % 2 == 0:
-                    damage_to_apply += 1
-                    p.last_damage_source = "burn"
+            if p.status_effects.get("Burn") and self.turn_number % 2 == 0:
+                damage_to_apply += 1
+                p.last_damage_source = "burn"
+
+            if damage_to_apply > 0 and has_magic_guard:
+                if self.is_in_team_sight(p):
+                    self.log_message(f"{p.name} was protected by Magic Guard!")
+                damage_to_apply = 0
 
             if damage_to_apply > 0:
                 p.current_hp -= damage_to_apply
@@ -4145,46 +4180,58 @@ class Game:
                     continue  #Pokémon fainted, skip duration decrement
 
             #2. Periodic weather damage (Hail, Sandstorm)
-            if eff_w in ("Hail", "Sandstorm") and (p.status_effects.get("Digging", 0) > 0 or p.status_effects.get("Diving", 0) > 0 or has_magic_guard or abilities.has_ability(p, "Overcoat", game=self)):
+            if eff_w in ("Hail", "Sandstorm") and (p.status_effects.get("Digging", 0) > 0 or p.status_effects.get("Diving", 0) > 0 or abilities.has_ability(p, "Overcoat", game=self)):
                 pass
             elif eff_w == "Hail":
                 p_types = getattr(p, "types", p.species_data.get("types", []))
                 if not any(t in p_types for t in ["Ice", "Fire", "Rock"]) and not abilities.has_ability(p, "Ice Body", game=self) and not abilities.has_ability(p, "Snow Cloak", game=self):
-                    p.last_damage_source = "Hail"
-                    p.current_hp -= 1.0
-                    if self.is_in_team_sight(p):
-                        self.log_message(f"{p.name} was pelted by hail!")
-                    if p.status_effects.get("Confusion", 0) > 0:
-                        if random.randint(1, 100) <= 50:
-                            p.cure_status("Confusion", self)
-                    if int(p.current_hp) <= 0:
+                    if has_magic_guard:
                         if self.is_in_team_sight(p):
-                            self.log_pokemon_defeat(p)
-                        self.handle_enemy_defeat(p)
-                        self.remove_defeated_pokemon(p)
-                        self.leech_seed_sources.pop(p, None)
-                        continue
+                            self.log_message(f"{p.name} was protected by Magic Guard!")
+                    else:
+                        p.last_damage_source = "Hail"
+                        p.current_hp -= 1.0
+                        if self.is_in_team_sight(p):
+                            self.log_message(f"{p.name} was pelted by hail!")
+                        if p.status_effects.get("Confusion", 0) > 0:
+                            if random.randint(1, 100) <= 50:
+                                p.cure_status("Confusion", self)
+                        if int(p.current_hp) <= 0:
+                            if self.is_in_team_sight(p):
+                                self.log_pokemon_defeat(p)
+                            self.handle_enemy_defeat(p)
+                            self.remove_defeated_pokemon(p)
+                            self.leech_seed_sources.pop(p, None)
+                            continue
 
             elif eff_w == "Sandstorm":
                 p_types = getattr(p, "types", p.species_data.get("types", []))
                 if not any(t in p_types for t in ["Steel", "Ground", "Rock"]) and not abilities.has_ability(p, "Sand Veil", game=self) and not abilities.has_ability(p, "Sand Force", game=self):
-                    p.last_damage_source = "Sandstorm"
-                    p.current_hp -= 1.0
-                    if self.is_in_team_sight(p):
-                        self.log_message(f"{p.name} was buffeted by the sandstorm!")
-                    if p.status_effects.get("Confusion", 0) > 0:
-                        if random.randint(1, 100) <= 50:
-                            p.cure_status("Confusion", self)
-                    if int(p.current_hp) <= 0:
+                    if has_magic_guard:
                         if self.is_in_team_sight(p):
-                            self.log_pokemon_defeat(p)
-                        self.handle_enemy_defeat(p)
-                        self.remove_defeated_pokemon(p)
-                        self.leech_seed_sources.pop(p, None)
-                        continue
+                            self.log_message(f"{p.name} was protected by Magic Guard!")
+                    else:
+                        p.last_damage_source = "Sandstorm"
+                        p.current_hp -= 1.0
+                        if self.is_in_team_sight(p):
+                            self.log_message(f"{p.name} was buffeted by the sandstorm!")
+                        if p.status_effects.get("Confusion", 0) > 0:
+                            if random.randint(1, 100) <= 50:
+                                p.cure_status("Confusion", self)
+                        if int(p.current_hp) <= 0:
+                            if self.is_in_team_sight(p):
+                                self.log_pokemon_defeat(p)
+                            self.handle_enemy_defeat(p)
+                            self.remove_defeated_pokemon(p)
+                            self.leech_seed_sources.pop(p, None)
+                            continue
 
             #3. Leech Seed periodic damage
-            if not has_magic_guard and p.status_effects.get("Leech Seed", 0) > 0 and int(p.current_hp) > 0:
+            if p.status_effects.get("Leech Seed", 0) > 0 and int(p.current_hp) > 0:
+                if has_magic_guard:
+                    if self.is_in_team_sight(p):
+                        self.log_message(f"{p.name} was protected by Magic Guard!")
+                    continue
                 leech_dmg = min(3, int(p.current_hp))
                 if leech_dmg > 0:
                     src = self.leech_seed_sources.get(p)
@@ -4194,7 +4241,10 @@ class Game:
                     src = self.leech_seed_sources.get(p)
                     if src and int(src.current_hp) > 0:
                         if abilities.has_ability(p, "Liquid Ooze", game=self, attacker=src):
-                            if not abilities.has_ability(src, "Magic Guard", game=self):
+                            if abilities.has_ability(src, "Magic Guard", game=self):
+                                if self.is_in_team_sight(src):
+                                    self.log_message(f"{src.name} was protected by Magic Guard!")
+                            else:
                                 src.last_damage_source = f"{p.name}'s Liquid Ooze"
                                 src.current_hp -= leech_dmg
                                 self.log_message(f"{src.name} was hurt by {p.name}'s Liquid Ooze!")
@@ -4648,6 +4698,7 @@ class Game:
     def trigger_crash_damage(self, attacker: Pokemon):
         """Applies crash damage equal to half max HP (rounded down) for moves that cause it."""
         if abilities.has_ability(attacker, "Magic Guard", game=self): #Magic Guard: don't do crash damage
+            self.log_message(f"{attacker.name} was protected by Magic Guard!")
             return
         crash = max(1, int(attacker.stats.get("HP", 1.0)) // 2)
         attacker.current_hp = float(int(attacker.current_hp) - crash)
@@ -5388,6 +5439,7 @@ class Game:
             if int(target.current_hp) <= 0:
                 continue
             if abilities.has_ability(target, "Magic Guard", game=self):
+                self.log_message(f"{target.name} was protected by Magic Guard!")
                 continue
 
             if fixed_center_damage is not None and fixed_adjacent_damage is not None:
@@ -6647,6 +6699,7 @@ class Game:
                     return
 
             if not free and abilities.has_ability(defender, "Pressure", game=self, attacker=attacker):
+                self.log_message(f"{defender.name} exerted its Pressure!")
                 extra_pp = max(1, int(move.get("pp_cost", 1) * 0.5))
                 attacker.current_pp = max(0, attacker.current_pp - extra_pp)
 
@@ -8576,11 +8629,17 @@ class Game:
                     break
 
                 #Handle recoil
-                can_take_recoil = not abilities.has_ability(attacker, "Magic Guard", game=self) and not (
+                has_mg_recoil = abilities.has_ability(attacker, "Magic Guard", game=self)
+                can_take_recoil = not has_mg_recoil and not (
                     move.get("name") != "Struggle" and abilities.has_ability(attacker, "Rock Head", game=self)
                 )
                 for effect in move.get("effects", []):
-                    if can_take_recoil and effect.get("effect_type") == "recoil" and damage > 0:
+                    if effect.get("effect_type") == "recoil" and damage > 0:
+                        if has_mg_recoil:
+                            self.log_message(f"{attacker.name} was protected by Magic Guard!")
+                            break
+                        if not can_take_recoil:
+                            continue
                         chance = effect.get("chance", 1.0)
                         if random.random() <= chance:
                             recoil_pct = effect.get("recoil_percent", 0.0)
@@ -9013,6 +9072,9 @@ class Game:
         if attacker is not defender and int(getattr(defender, "current_hp", 0)) <= 0.20 * float(defender.stats.get("HP", 1)):
             if not abilities.has_ability(defender, "No Guard", game=self, attacker=attacker):
                 clutch_bonus = int(iq_skills.get_iq_skill_value(defender, "Clutch Player", game=self, default=0) or 0)
+                if clutch_bonus > 0 and getattr(defender, "_clutch_player_logged_turn", -1) != getattr(self, "turn_number", 0):
+                    defender._clutch_player_logged_turn = getattr(self, "turn_number", 0)
+                    self.log_message(f"{defender.name}'s Clutch Player activated!")
         ev_stage = (0 if unaware_atk else defender.stat_modifiers.get("Evasion", 0)) + clutch_bonus
         if keen_eye_atk and ev_stage > 0:
             ev_stage = 0
@@ -9075,7 +9137,7 @@ class Game:
         #Attacker's Poison Touch
         if is_contact and int(defender.current_hp) > 0 and abilities.has_ability(attacker, "Poison Touch", game=self):
             if random.random() < 0.30:
-                defender.apply_status("Poison", self, source_pokemon=attacker)
+                defender.apply_status("Poison", self, source_pokemon=attacker, custom_message=f"{defender.name} was poisoned by Poison Touch!")
 
         ax, ay = get_pokemon_position(self, attacker)
         dx, dy = get_pokemon_position(self, defender)
@@ -9084,11 +9146,11 @@ class Game:
         #Contact reactions on attacker
         if is_contact and int(attacker.current_hp) > 0:
             if abilities.has_ability(defender, "Static", game=self, attacker=attacker) and random.random() < 0.30:
-                attacker.apply_status("Paralysis", self, source_pokemon=defender)
+                attacker.apply_status("Paralysis", self, source_pokemon=defender, custom_message=f"{defender.name}'s Static paralyzed {attacker.name}!")
             if int(attacker.current_hp) > 0 and abilities.has_ability(defender, "Poison Point", game=self, attacker=attacker) and random.random() < 0.30:
                 attacker.apply_status("Poison", self, source_pokemon=defender)
             if int(attacker.current_hp) > 0 and abilities.has_ability(defender, "Flame Body", game=self, attacker=attacker) and random.random() < 0.30:
-                attacker.apply_status("Burn", self, source_pokemon=defender)
+                attacker.apply_status("Burn", self, source_pokemon=defender, custom_message=f"{defender.name}'s Flame Body burned {attacker.name}!")
             if int(attacker.current_hp) > 0 and abilities.has_ability(defender, "Cute Charm", game=self, attacker=attacker):
                 atk_g = getattr(attacker, "gender", None)
                 def_g = getattr(defender, "gender", None)
@@ -9097,13 +9159,16 @@ class Game:
             if int(attacker.current_hp) > 0 and abilities.has_ability(defender, "Effect Spore", game=self, attacker=attacker):
                 if "Grass" not in attacker.types and not abilities.has_ability(attacker, "Overcoat", game=self):
                     roll = random.random()
-                    if roll < 0.10:
-                        attacker.apply_status("Poison", self, source_pokemon=defender)
-                    elif roll < 0.20:
-                        attacker.apply_status("Paralysis", self, source_pokemon=defender)
-                    elif roll < 0.30:
-                        attacker.apply_status("Sleep", self, source_pokemon=defender)
+                    if roll < 0.30:
+                        self.log_message(f"{attacker.name} was covered in Effect Spores!")
+                        if roll < 0.10:
+                            attacker.apply_status("Poison", self, source_pokemon=defender)
+                        elif roll < 0.20:
+                            attacker.apply_status("Paralysis", self, source_pokemon=defender)
+                        else:
+                            attacker.apply_status("Sleep", self, source_pokemon=defender)
             if int(attacker.current_hp) > 0 and abilities.has_ability(defender, "Tangling Hair", game=self, attacker=attacker):
+                self.log_message(f"{attacker.name} got all tangled up by {defender.name}!")
                 attacker.change_movement_speed(attacker.movement_speed_stage - 1, self, is_move_effect=False)
             if int(defender.current_hp) > 0 and int(attacker.current_hp) > 0:
                 if getattr(defender, "held_item", None) is None and getattr(attacker, "held_item", None) is not None:
@@ -9121,6 +9186,7 @@ class Game:
         if is_adj:
             if int(attacker.current_hp) > 0 and abilities.has_ability(defender, "Stench", game=self, attacker=attacker):
                 if random.random() < 0.10:
+                    self.log_message(f"A horrible Stench came out of {defender.name}!")
                     attacker.apply_status("Terrified", self, source_pokemon=defender)
             if int(defender.current_hp) > 0 and abilities.has_ability(defender, "Trace", game=self, attacker=attacker):
                 first_ab = abilities.get_first_base_ability(attacker)
@@ -9143,17 +9209,21 @@ class Game:
 
         if int(defender.current_hp) > 0:
             if move.get("category") == "Physical" and abilities.has_ability(defender, "Weak Armor", game=self, attacker=attacker):
+                self.log_message(f"{defender.name}'s Weak Armor activated!")
                 defender.apply_stat_modifier("Defense", -1, self, is_move_effect=False)
                 defender.apply_stat_modifier("Speed", 1, self, is_move_effect=False)
                 defender.change_movement_speed(defender.movement_speed_stage + 1, self, is_move_effect=False)
             if move.get("type") in ("Bug", "Dark", "Ghost") and abilities.has_ability(defender, "Rattled", game=self, attacker=attacker):
+                self.log_message(f"{defender.name}'s Rattled activated!")
                 defender.change_movement_speed(defender.movement_speed_stage + 1, self, is_move_effect=False)
             if move.get("type") == "Dark" and abilities.has_ability(defender, "Justified", game=self, attacker=attacker):
+                self.log_message(f"{defender.name}'s Justified activated!")
                 defender.apply_stat_modifier("Attack", 1, self, is_move_effect=False)
             if is_critical and abilities.has_ability(defender, "Anger Point", game=self, attacker=attacker):
                 if defender.stat_modifiers.get("Attack", 0) < 6:
-                    defender.apply_stat_modifier("Attack", 12, self, is_move_effect=False)
+                    defender.apply_stat_modifier("Attack", 12, self, is_move_effect=False, custom_message=f"{defender.name}'s Anger Point maximized its Attack!")
             if hp_lost > 0 and not self.are_allies(attacker, defender) and abilities.has_ability(defender, "Speed Boost", game=self, attacker=attacker):
+                self.log_message(f"{defender.name}'s Speed Boost activated!")
                 defender.apply_stat_modifier("Speed", 1, self, is_move_effect=False)
 
         if (
@@ -9188,6 +9258,7 @@ class Game:
         if int(defender.current_hp) <= max_hp // 2 and not getattr(defender, "berserk_triggered_this_floor", False):
             if abilities.has_ability(defender, "Berserk", game=self, attacker=attacker):
                 defender.berserk_triggered_this_floor = True
+                self.log_message(f"{defender.name} went Berserk!")
                 defender.apply_stat_modifier("Special_Attack", 1, self, is_move_effect=False)
         defender.check_run_away_trigger(game=self)
 
@@ -9196,6 +9267,7 @@ class Game:
         if attacker is not defender and abilities.has_ability(attacker, "Screen Cleaner", game=self):
             for scr in ("Reflect", "Light Screen", "Aurora Veil"):
                 if defender.status_effects.get(scr, 0) > 0:
+                    self.log_message(f"{defender.name}'s {scr} was broken!")
                     defender.cure_status(scr, self)
 
     def _find_nearest_drop_tile(self, tx: int, ty: int) -> tuple[int, int] | None:
@@ -9230,6 +9302,7 @@ class Game:
         self._current_move_missed_by_attacker = True
         if move.get("category") in ("Physical", "Special") and iq_skills.has_iq_skill(attacker, "Practice Swinger", game=self):
             attacker.practice_swinger_active = True
+            self.log_message(f"{attacker.name} prepares for its next attack!")
 
     def _clear_practice_swinger_after_direct_hit(self, attacker: Pokemon, move: dict):
         """Clears Practice Swinger if a damaging move hit directly (outside _execute_move_internal batching)."""
@@ -9269,6 +9342,7 @@ class Game:
             return
         if not self.are_allies(attacker, defender) and int(attacker.current_hp) > 0:
             if abilities.has_ability(attacker, "Moxie", game=self) and random.random() < 0.30:
+                self.log_message(f"{attacker.name}'s Moxie activated!")
                 attacker.apply_stat_modifier("Attack", 1, self, is_move_effect=False)
         self._try_collector_drop(attacker, defender, tile=tile)
         if bool(move.get("contact", False)) and abilities.has_ability(defender, "Aftermath", game=self, attacker=attacker):
@@ -9495,6 +9569,7 @@ class Game:
                     foe_def = foe.get_modified_stat("Defense", game=self)
                     foe_spdef = foe.get_modified_stat("Special_Defense", game=self)
                     boost_stat = "Attack" if foe_def < foe_spdef else "Special_Attack"
+                    self.log_message(f"{attacker.name}'s Download activated!")
                     attacker.apply_stat_modifier(boost_stat, 1, self, is_move_effect=False)
 
         self.play_move_animation(attacker, target_list, move)
@@ -9939,6 +10014,7 @@ class Game:
             if member.current_hp <= 0:
                 for ally in list(self.party):
                     if int(getattr(ally, "current_hp", 0)) > 0 and iq_skills.has_iq_skill(ally, "Retaliatory", game=self):
+                        self.log_message(f"{ally.name} is enraged by the loss of {member.name}!")
                         ally.apply_stat_modifier("Attack", 3, self, is_move_effect=False)
                         ally.apply_stat_modifier("Special_Attack", 3, self, is_move_effect=False)
                         ally.apply_stat_modifier("Accuracy", 3, self, is_move_effect=False)

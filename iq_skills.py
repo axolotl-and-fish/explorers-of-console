@@ -28,7 +28,7 @@ IQ_SKILLS_DB: dict[str, dict] = {
         "non_leader_only": False,
         "team_only": True,
         "conflicts": set(),
-        "description": "Attacks used by this Pokémon won't harm its allies.",
+        "description": "Attacks used by this Pokemon won't harm its allies.",
     },
     "Type-Advantage Master": {
         "upgradeable": True,

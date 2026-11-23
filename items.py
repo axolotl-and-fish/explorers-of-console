@@ -206,13 +206,13 @@ def is_tm_compatible_with_pokemon(tm_item: dict | str, pokemon) -> bool:
     target_names = {move_name.lower(), move_name.lower().replace("-", " "), move_name.lower().replace(" ", "-")}
     species_data = getattr(pokemon, "species_data", {}) or {}
 
-    # 1. Check tm_moves field
+    #Check tm_moves field
     tm_moves = species_data.get("tm_moves", [])
     for m in tm_moves:
         if isinstance(m, str) and m.lower() in target_names:
             return True
 
-    # 2. Check level_up_moves field (always compatible if learnable by level up)
+    #Check level_up_moves field (always compatible if learnable by level up)
     level_up_moves = species_data.get("level_up_moves", [])
     for entry in level_up_moves:
         if isinstance(entry, (list, tuple)) and len(entry) == 2:
@@ -496,6 +496,8 @@ def _apply_post_eat_iq_skills(
                 tx, ty = get_pokemon_position(game, target)
                 game.flash_damages[(tx, ty)] = (f"{int(target.current_hp - old_hp)}", "HEAL")
                 game.trigger_damage_flash()
+            if game:
+                game.log_message(f"{target.name}'s Gourmand restored HP & PP!")
 
     #Nature Gifter shares edible item effects with all living allies
     if not from_cud_chew and not from_nature_gifter and has_iq_skill(target, "Nature Gifter", game=game):

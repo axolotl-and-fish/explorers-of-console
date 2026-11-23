@@ -1005,8 +1005,8 @@ class Pokemon:
         max_hp = float(self.stats.get("HP", 1.0))
         if self.current_hp < 0.5 * max_hp and has_ability(self, "Run Away", game=game):
             self.run_away_triggered_this_floor = True
-            self.change_movement_speed(self.movement_speed_stage + 1, game)
             game.log_message(f"{self.name}'s Run Away activated!")
+            self.change_movement_speed(self.movement_speed_stage + 1, game)
 
     def get_iq_survival_chance(self) -> float:
         """Returns probability of surviving a lethal non-status hit at 1 HP from IQ"""
@@ -1210,8 +1210,18 @@ class Pokemon:
         else:
             stage = self.stat_modifiers.get(actual_stat_name, 0)
             if actual_stat_name == "Attack" and game is not None:
-                if has_adjacent_enemy_with_ability(self, "Intimidate", game=game) and not is_immune_to_intimidate(self, game=game):
-                    stage -= 1
+                if has_adjacent_enemy_with_ability(self, "Intimidate", game=game):
+                    if is_immune_to_intimidate(self, game=game):
+                        if has_ability(self, "Oblivious", game=game) and hasattr(game, "turn_number") and not getattr(game, "suppress_target_logs", False):
+                            if not getattr(self, "_oblivious_intimidate_logged", False):
+                                self._oblivious_intimidate_logged = True
+                                if hasattr(game, "log_message"):
+                                    game.log_message(f"{self.name} is too Oblivious to be intimidated!")
+                    else:
+                        stage -= 1
+                        self._oblivious_intimidate_logged = False
+                else:
+                    self._oblivious_intimidate_logged = False
             if actual_stat_name in ("Attack", "Special_Attack") and game is not None:
                 from abilities import get_allies_of
                 from iq_skills import get_iq_skill_level
@@ -1295,7 +1305,7 @@ class Pokemon:
 
         return val
 
-    def apply_stat_modifier(self, stat: str, stages: int, game, source_pokemon=None, is_move_effect: bool = False):
+    def apply_stat_modifier(self, stat: str, stages: int, game, source_pokemon=None, is_move_effect: bool = False, custom_message: str | None = None):
         """Applies a temporary stat modifier to the Pokémon."""
         if stages == 0:
             return
@@ -1405,7 +1415,9 @@ class Pokemon:
             self.stat_modifiers[stat] = new_stage
 
             if game:
-                if stages == 1:
+                if custom_message:
+                    game.log_message(custom_message)
+                elif stages == 1:
                     game.log_message(f"{self.name}'s {display_stat} rose!")
                 elif stages == 2:
                     game.log_message(f"{self.name}'s {display_stat} rose sharply!")
@@ -1496,7 +1508,7 @@ class Pokemon:
             elif new_stage == 3:
                 game.log_message(f"{self.name} is moving at quadruple speed!")
 
-    def apply_status(self, status: str, game, duration: int | None = None, from_damaging_move: bool = False, source_pokemon=None, from_synchronize: bool = False) -> bool:
+    def apply_status(self, status: str, game, duration: int | None = None, from_damaging_move: bool = False, source_pokemon=None, from_synchronize: bool = False, custom_message: str | None = None) -> bool:
         """Applies a negative status effect to the Pokémon and prints the log message."""
         orig_suppress = getattr(game, "suppress_target_logs", False) if game else False
         if game and hasattr(game, "is_in_team_sight") and not game.is_in_team_sight(self):
@@ -1509,20 +1521,29 @@ class Pokemon:
                 from_damaging_move=from_damaging_move,
                 source_pokemon=source_pokemon,
                 from_synchronize=from_synchronize,
+                custom_message=custom_message,
             ))
             if applied and game is not None:
-                from abilities import has_ability
+                from abilities import has_ability, has_any_major_status
                 canon_status = "Confusion" if status == "Confused" else status
+                if canon_status in ("Sleep", "Resting", "Paralysis", "Paralyzed", "Poison", "Toxic", "Toxic Poison", "Burn", "Frozen") and has_ability(self, "Quick Feet", game=game):
+                    game.log_message(f"{self.name}'s Quick Feet activated!")
                 if canon_status == "Flinch" and has_ability(self, "Steadfast", game=game):
+                    game.log_message(f"{self.name}'s Steadfast activated!")
                     self.change_movement_speed(self.movement_speed_stage + 1, game)
                 if not from_synchronize and canon_status in ("Poison", "Toxic", "Toxic Poison", "Burn", "Paralysis", "Paralyzed"):
                     if has_ability(self, "Synchronize", game=game):
                         from targeting import get_pokemon_position
                         from abilities import get_enemies_of
                         sx, sy = get_pokemon_position(game, self)
+                        adj_foes = []
                         for foe in get_enemies_of(self, game=game):
                             fx, fy = get_pokemon_position(game, foe)
                             if max(abs(fx - sx), abs(fy - sy)) <= 1:
+                                adj_foes.append(foe)
+                        if adj_foes:
+                            game.log_message(f"{self.name}'s Synchronize activated!")
+                            for foe in adj_foes:
                                 foe.apply_status(status, game, from_damaging_move=True, source_pokemon=self, from_synchronize=True)
             return applied
         finally:
@@ -1560,10 +1581,10 @@ class Pokemon:
                 game.flash_damages[pos] = (text, color)
                 game.trigger_damage_flash()
 
-    def _apply_status_internal(self, status: str, game, duration: int | None = None, from_damaging_move: bool = False, source_pokemon=None, from_synchronize: bool = False) -> bool:
+    def _apply_status_internal(self, status: str, game, duration: int | None = None, from_damaging_move: bool = False, source_pokemon=None, from_synchronize: bool = False, custom_message: str | None = None) -> bool:
         """Applies a negative status effect to the Pokémon and prints the log message."""
         import random
-        from abilities import has_ability, is_immune_to_status_by_ability, get_effective_weather
+        from abilities import has_ability, get_status_immunity_ability, get_effective_weather
         if status == "Confused":
             status = "Confusion"
         
@@ -1579,18 +1600,46 @@ class Pokemon:
             return False
 
         #Ability immunities for status effects
-        if is_immune_to_status_by_ability(self, status, game=game, attacker=source_pokemon):
-            if not from_damaging_move and game:
-                game.log_message(f"{self.name}'s ability protects it from {status}!")
+        immune_ab = get_status_immunity_ability(self, status, game=game, attacker=source_pokemon)
+        if immune_ab:
+            if game:
+                if immune_ab == "Inner Focus":
+                    game.log_message(f"{self.name} won't flinch because of its Inner Focus!")
+                elif immune_ab == "Limber":
+                    game.log_message(f"{self.name}'s Limber prevents it from being paralyzed!")
+                elif immune_ab == "Insomnia":
+                    if status == "Resting":
+                        game.log_message(f"{self.name}'s Insomnia prevents it from Resting!")
+                    else:
+                        game.log_message(f"{self.name}'s Insomnia prevents it from falling asleep!")
+                elif immune_ab == "Oblivious":
+                    kind = "infatuated" if status == "Infatuated" else "taunted"
+                    game.log_message(f"{self.name} is too Oblivious to be {kind}!")
+                elif immune_ab == "Own Tempo":
+                    game.log_message(f"{self.name}'s Own Tempo prevents it from being confused!")
+                elif immune_ab == "Immunity":
+                    game.log_message(f"{self.name}'s Immunity prevents it from being poisoned!")
+                elif immune_ab == "Pastel Veil":
+                    game.log_message(f"{self.name} was protected by Pastel Veil!")
+                elif immune_ab == "Water Veil":
+                    game.log_message(f"{self.name} was protected by Water Veil!")
+                elif immune_ab == "Leaf Guard":
+                    game.log_message(f"{self.name} was protected by Leaf Guard!")
+                elif not from_damaging_move:
+                    game.log_message(f"{self.name}'s {immune_ab} protects it from {status}!")
             return False
 
         #Check Safeguard protection (bypassed by Infiltrator)
         if status in ("Sleep", "Paralysis", "Paralyzed", "Poison", "Toxic", "Toxic Poison", "Burn", "Frozen", "Flinch", "Petrified", "Confusion", "Leech Seed", "Fire Spin", "Slow", "Stuck", "Curse", "Cursed", "Drowsy", "Whirlpool", "Perishing", "Terrified", "Puppet", "Hallucinating", "Blind", "Infatuated"):
             bypass_safeguard = source_pokemon is not None and has_ability(source_pokemon, "Infiltrator", game=game)
-            if self.status_effects.get("Safeguard", 0) > 0 and not bypass_safeguard:
-                if game:
-                    game.log_message(f"{self.name} is protected by Safeguard!")
-                return False
+            if self.status_effects.get("Safeguard", 0) > 0:
+                if bypass_safeguard:
+                    if game:
+                        game.log_message(f"{self.name}'s Safeguard was bypassed by {source_pokemon.name}'s Infiltrator!")
+                else:
+                    if game:
+                        game.log_message(f"{self.name} is protected by Safeguard!")
+                    return False
 
         eff_weather = get_effective_weather(self, game) if game else None
 
@@ -1653,7 +1702,7 @@ class Pokemon:
                 return False
             self.status_effects["Paralysis"] = 5
             if game:
-                game.log_message(f"{self.name} became paralyzed!")
+                game.log_message(custom_message if custom_message else f"{self.name} became paralyzed!")
             self._trigger_status_popup("Paralysis", game)
             return True
         elif status == "Poison":
@@ -1666,7 +1715,7 @@ class Pokemon:
                 self.status_dot_turns = {}
             self.status_dot_turns["Poison"] = 0
             if game:
-                game.log_message(f"{self.name} was poisoned!")
+                game.log_message(custom_message if custom_message else f"{self.name} was poisoned!")
             self._trigger_status_popup("Poison", game)
             return True
         elif status in ("Toxic", "Toxic Poison"):
@@ -1698,7 +1747,7 @@ class Pokemon:
                 self.status_dot_turns = {}
             self.status_dot_turns["Burn"] = 0
             if game:
-                game.log_message(f"{self.name} sustained a burn!")
+                game.log_message(custom_message if custom_message else f"{self.name} sustained a burn!")
             self._trigger_status_popup("Burn", game)
             return True
         elif status == "Frozen":

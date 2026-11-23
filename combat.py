@@ -12,6 +12,7 @@ from pokemon import Pokemon
 from type_chart import get_effectiveness_multiplier
 from abilities import (
     has_ability,
+    has_any_major_status,
     get_effective_weather,
     get_effective_weight,
     get_effective_movement_speed_stage,
@@ -19,6 +20,11 @@ from abilities import (
     is_reckless_move,
     resolve_move_with_abilities,
 )
+
+
+def _log_combat_msg(game, move: dict, msg: str):
+    if game is not None and not move.get("_evaluating_category") and hasattr(game, "log_message"):
+        game.log_message(msg)
 
 
 def is_pokemon_grounded(pokemon: Pokemon, game=None, attacker=None) -> bool:
@@ -265,14 +271,17 @@ def calculate_damage(attacker: Pokemon, defender: Pokemon, move: dict, game=None
     #Iron Fist: +20% power for punching moves
     if move.get("punching") and has_ability(attacker, "Iron Fist", game=game):
         power = float(power) * 1.2
+        _log_combat_msg(game, move, "Iron Fist boosted its power!")
 
     #Reckless: +20% power for recoil/crash moves (not Struggle)
     if is_reckless_move(move) and has_ability(attacker, "Reckless", game=game):
         power = float(power) * 1.2
+        _log_combat_msg(game, move, "Reckless boosted its power!")
 
     #Analytic: +50% power when user has negative movement speed stage
     if has_ability(attacker, "Analytic", game=game) and get_effective_movement_speed_stage(attacker, game) < 0:
         power = float(power) * 1.5
+        _log_combat_msg(game, move, "Analytic boosted its power!")
 
     #Sand Force: +30% power for Rock/Ground/Steel moves in Sandstorm
     if eff_weather == "Sandstorm" and move.get("type") in ("Rock", "Ground", "Steel") and has_ability(attacker, "Sand Force", game=game):
@@ -291,24 +300,36 @@ def calculate_damage(attacker: Pokemon, defender: Pokemon, move: dict, game=None
         for ab_name, ab_type in pinch_map.items():
             if m_t == ab_type and has_ability(attacker, ab_name, game=game):
                 power = float(power) * 1.5
+                _log_combat_msg(game, move, f"{ab_name} boosted its power!")
 
     #Flash Fire: +50% Fire power when charged
     if getattr(attacker, "flash_fire_boosted", False) and move.get("type") == "Fire" and has_ability(attacker, "Flash Fire", game=game):
         power = float(power) * 1.5
 
+    #Guts: +50% Physical power when affected by a major status condition
+    if category == "Physical" and has_any_major_status(attacker) and has_ability(attacker, "Guts", game=game):
+        _log_combat_msg(game, move, "Guts boosted its power!")
+
     #Same-Type Attack Bonus (STAB)
     attacker_types = getattr(attacker, "types", attacker.species_data.get("types", []))
-    stab_mult = 2.0 if has_ability(attacker, "Adaptability", game=game) else 1.5
+    has_adaptability = has_ability(attacker, "Adaptability", game=game)
+    stab_mult = 2.0 if has_adaptability else 1.5
     if eff_weather != "Shadowy Aura":
+        stab_applied = False
         #Unique/multi-type moves
         if move.get("name") == "Muddy Water":
             if any(t in attacker_types for t in ["Water", "Ground"]):
                 power = power * stab_mult
+                stab_applied = True
         elif move.get("name") == "Tri Attack":
             if any(t in attacker_types for t in ["Fire", "Ice", "Electric"]):
                 power = power * stab_mult
+                stab_applied = True
         elif move.get("type") in attacker_types:
             power = power * stab_mult
+            stab_applied = True
+        if stab_applied and has_adaptability:
+            _log_combat_msg(game, move, "Adaptability boosted its power!")
 
     #Boosts & penalties from weather
     if eff_weather:
@@ -389,6 +410,8 @@ def calculate_damage(attacker: Pokemon, defender: Pokemon, move: dict, game=None
         if not target_types:
             target_types = ["typeless"]
     if has_ability(attacker, "Scrappy", game=game) and move.get("type") in ("Normal", "Fighting"):
+        if "Ghost" in target_types:
+            _log_combat_msg(game, move, "Scrappy boosted its power!")
         target_types = [t for t in target_types if t != "Ghost"]
         if not target_types:
             target_types = ["typeless"]
@@ -427,12 +450,14 @@ def calculate_damage(attacker: Pokemon, defender: Pokemon, move: dict, game=None
     if type_multiplier > 1.0 and has_ability(defender, "Filter", game=game, attacker=attacker):
         tiers = round((type_multiplier - 1.0) / 0.25)
         type_multiplier = round(1.0 + 0.10 * tiers, 4)
+        _log_combat_msg(game, move, f"{defender.name}'s Filter blocked some of the damage!")
 
     #Calculate critical hit chance: 12.5% * (attacker speed / defender speed)
     atk_speed = max(1, attacker.get_modified_stat("Speed", game))
     def_speed = max(1, defender.get_modified_stat("Speed", game, attacker=attacker, ignore_stages=ignore_def_stages))
     has_crit_block = has_ability(defender, "Battle Armor", game=game, attacker=attacker) or has_iq_skill(defender, "Critical Dodger", game=game)
-    crit_power = 2.0 if has_ability(attacker, "Sniper", game=game) else 1.5
+    has_sniper = has_ability(attacker, "Sniper", game=game)
+    crit_power = 2.0 if has_sniper else 1.5
 
     if move.get("_evaluating_category") or has_crit_block:
         is_critical = False
@@ -456,6 +481,9 @@ def calculate_damage(attacker: Pokemon, defender: Pokemon, move: dict, game=None
         is_critical = random.random() < crit_chance
         crit_multiplier = crit_power if is_critical else 1.0
 
+    if is_critical and has_sniper:
+        _log_combat_msg(game, move, "Sniper boosted its power!")
+
     #Apply all multipliers
     total_damage = base_damage * crit_multiplier * type_multiplier
 
@@ -464,6 +492,13 @@ def calculate_damage(attacker: Pokemon, defender: Pokemon, move: dict, game=None
         total_damage = total_damage * 0.75
 
     bypass_screens = has_ability(attacker, "Infiltrator", game=game)
+    if bypass_screens:
+        if category == "Special" and defender.status_effects.get("Light Screen", 0) > 0 and move.get("name") != "Brick Break":
+            _log_combat_msg(game, move, f"{defender.name}'s Light Screen was bypassed by {attacker.name}'s Infiltrator!")
+        if category == "Physical" and defender.status_effects.get("Reflect", 0) > 0 and move.get("name") != "Brick Break":
+            _log_combat_msg(game, move, f"{defender.name}'s Reflect was bypassed by {attacker.name}'s Infiltrator!")
+        if defender.status_effects.get("Aurora Veil", 0) > 0 and move.get("name") not in ("Brick Break", "Raging Bull"):
+            _log_combat_msg(game, move, f"{defender.name}'s Aurora Veil was bypassed by {attacker.name}'s Infiltrator!")
 
     #Light Screen halves Special damage
     if not bypass_screens and category == "Special" and defender.status_effects.get("Light Screen", 0) > 0 and move.get("name") != "Brick Break":
@@ -497,6 +532,7 @@ def calculate_damage(attacker: Pokemon, defender: Pokemon, move: dict, game=None
     #Multiscale halves damage taken when at full HP
     if float(defender.current_hp) >= float(defender.stats.get("HP", 1)) and has_ability(defender, "Multiscale", game=game, attacker=attacker):
         total_damage = total_damage * 0.5
+        _log_combat_msg(game, move, f"{defender.name}'s Multiscale blocked some of the damage!")
 
     #Rivalry modifies damage based on gender
     atk_gender = getattr(attacker, "gender", None)
@@ -506,6 +542,7 @@ def calculate_damage(attacker: Pokemon, defender: Pokemon, move: dict, game=None
             total_damage = total_damage * 0.75
         else:
             total_damage = total_damage * 1.25
+            _log_combat_msg(game, move, "Rivalry boosted its power!")
 
     #Misty Terrain halves Dragon-type move damage against grounded Pokémon
     if eff_weather == "Misty Terrain" and move.get("type") == "Dragon":

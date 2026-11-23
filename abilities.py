@@ -348,8 +348,40 @@ def has_ability(pokemon, ability_name: str, game=None, attacker=None) -> bool:
     #Ability suppressed by Mold Breaker
     if attacker is not None and attacker is not pokemon and canon in MOLD_BREAKER_IGNORED_ABILITIES:
         if has_ability(attacker, "Mold Breaker", game=game):
+            if game is not None and not getattr(attacker, "_mold_breaker_announced", False):
+                attacker._mold_breaker_announced = True
+                if hasattr(game, "log_message"):
+                    game.log_message(f"{attacker.name} breaks the mold!")
             return False
     return True
+
+
+def announce_weather_stat_abilities(game, pokemon) -> None:
+    """Logs '[Pokemon]'s [Ability] activated!' when weather activates a stat/speed ability."""
+    if game is None or pokemon is None or int(getattr(pokemon, "current_hp", 0)) <= 0:
+        return
+    eff_w = get_effective_weather(pokemon, game)
+    checks = (
+        ("Solar Power", eff_w in ("Sunny", "Harsh Sunlight")),
+        ("Sand Veil", eff_w == "Sandstorm"),
+        ("Snow Cloak", eff_w in ("Hail", "Snow", "Blizzard")),
+        ("Surge Surfer", eff_w == "Electric Terrain"),
+        ("Sand Rush", eff_w == "Sandstorm"),
+        ("Swift Swim", eff_w in ("Rain", "Heavy Rain", "Thunderstorm")),
+        ("Slush Rush", eff_w in ("Snow", "Hail", "Blizzard")),
+    )
+    active = {ab for ab, cond in checks if cond and has_ability(pokemon, ab, game=game)}
+    prev = getattr(pokemon, "_announced_weather_stat_abilities", None)
+    prev_w, prev_set = (prev[0], set(prev[1])) if prev else (None, set())
+    newly_active = active if prev_w != eff_w else (active - prev_set)
+    if newly_active and hasattr(game, "log_message"):
+        visible = (pokemon in getattr(game, "party", [])) or (
+            hasattr(game, "is_in_team_sight") and game.is_in_team_sight(pokemon)
+        )
+        if visible:
+            for ab in sorted(newly_active):
+                game.log_message(f"{pokemon.name}'s {ab} activated!")
+    pokemon._announced_weather_stat_abilities = (eff_w, tuple(sorted(active)))
 
 
 def get_effective_weather(pokemon, game=None) -> str:
@@ -499,32 +531,32 @@ def get_effective_movement_speed_stage(pokemon, game=None) -> int:
     return min(3, max(-1, stage))
 
 
-def is_immune_to_status_by_ability(pokemon, status: str, game=None, attacker=None) -> bool:
-    """Returns True if an ability grants immunity to the given status condition"""
+def get_status_immunity_ability(pokemon, status: str, game=None, attacker=None) -> str | None:
+    """Returns the name of the ability granting immunity to the given status, or None."""
     if pokemon is None:
-        return False
+        return None
 
     if status == "Stuck" and has_ability(pokemon, "Run Away", game=game, attacker=attacker):
-        return True
+        return "Run Away"
     if status == "Flinch" and has_ability(pokemon, "Inner Focus", game=game, attacker=attacker):
-        return True
+        return "Inner Focus"
     if status in ("Paralysis", "Paralyzed") and has_ability(pokemon, "Limber", game=game, attacker=attacker):
-        return True
+        return "Limber"
     if status in ("Sleep", "Resting") and has_ability(pokemon, "Insomnia", game=game, attacker=attacker):
-        return True
+        return "Insomnia"
     if status in ("Infatuated", "Taunted") and has_ability(pokemon, "Oblivious", game=game, attacker=attacker):
-        return True
+        return "Oblivious"
     if status in ("Confusion", "Confused") and has_ability(pokemon, "Own Tempo", game=game, attacker=attacker):
-        return True
+        return "Own Tempo"
     if status in ("Poison", "Toxic", "Toxic Poison"):
         if has_ability(pokemon, "Immunity", game=game, attacker=attacker):
-            return True
+            return "Immunity"
         if any_side_has_ability(pokemon, "Pastel Veil", game=game, attacker=attacker):
-            return True
+            return "Pastel Veil"
     if status == "Burn" and any_side_has_ability(pokemon, "Water Veil", game=game, attacker=attacker):
-        return True
+        return "Water Veil"
     if status == "Frozen" and has_ability(pokemon, "Magma Armor", game=game, attacker=attacker):
-        return True
+        return "Magma Armor"
 
     eff_weather = get_effective_weather(pokemon, game)
     leaf_guard_statuses = (
@@ -533,7 +565,7 @@ def is_immune_to_status_by_ability(pokemon, status: str, game=None, attacker=Non
     )
     if eff_weather in ("Sunny", "Harsh Sunlight") and status in leaf_guard_statuses:
         if has_ability(pokemon, "Leaf Guard", game=game, attacker=attacker):
-            return True
+            return "Leaf Guard"
 
     hydration_statuses = (
         "Poison", "Toxic", "Toxic Poison", "Burn", "Paralysis", "Paralyzed",
@@ -541,9 +573,14 @@ def is_immune_to_status_by_ability(pokemon, status: str, game=None, attacker=Non
     )
     if eff_weather in ("Rain", "Heavy Rain", "Thunderstorm") and status in hydration_statuses:
         if has_ability(pokemon, "Hydration", game=game, attacker=attacker):
-            return True
+            return "Hydration"
 
-    return False
+    return None
+
+
+def is_immune_to_status_by_ability(pokemon, status: str, game=None, attacker=None) -> bool:
+    """Returns True if an ability grants immunity to the given status condition"""
+    return get_status_immunity_ability(pokemon, status, game=game, attacker=attacker) is not None
 
 
 def is_immune_to_intimidate(pokemon, game=None) -> bool:
