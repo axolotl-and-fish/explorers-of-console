@@ -17511,28 +17511,27 @@ class Game:
         if not status_line:
             status_line = "None"
         interior.append(f" Status effects: {status_line}")
-        interior.append("─" * 74)
 
         #9. Closing instructions
-        #TODO: Anchor these to the bottom of the screen
         opts = self.get_summary_context_menu_options(pokemon)
         has_opts = bool(opts)
 
         if is_leader:
             if has_opts:
-                interior.append("[Return] Options   [↑/↓] Scroll   [Esc] Close")
-            else:
-                interior.append("[↑/↓] Scroll   [Esc] Close")
+                footer_hints = "[Return] Options   [↑/↓] Scroll   [Esc] Close"
+            else: #This should never happen
+                footer_hints = "[↑/↓] Scroll   [Esc] Close"
         else:
             if has_opts:
-                interior.append("[Return] Options   [Z][X][C][V] Toggle Move   [↑/↓] Scroll   [Esc] Close")
-            else: #This should never happen
-                interior.append("[Z][X][C][V] Toggle Move   [↑/↓] Scroll   [Esc] Close")
+                footer_hints = "[Return] Options   [Z][X][C][V] Toggle Move   [↑/↓] Scroll   [Esc] Close"
+            else: #This should never happen either
+                footer_hints = "[Z][X][C][V] Toggle Move   [↑/↓] Scroll   [Esc] Close"
 
         #Store total lines count for scroll clamping
         total_lines = len(interior)
         self._last_summary_total_lines = total_lines
-        VIEWPORT_HEIGHT = 46
+        VIEWPORT_HEIGHT = 44
+        self._last_summary_viewport_height = VIEWPORT_HEIGHT
         max_offset = max(0, total_lines - VIEWPORT_HEIGHT)
         self.summary_scroll_offset = max(0, min(getattr(self, "summary_scroll_offset", 0), max_offset))
 
@@ -17551,8 +17550,11 @@ class Game:
             padded = self.pad_ansi_string(line, 74)
             rows.append(f"│{padded}│")
 
-        while len(rows) < 47:
+        while len(rows) < 45:
             rows.append("│" + " " * 74 + "│")
+
+        rows.append("│" + "─" * 74 + "│")
+        rows.append(f"│{self.pad_ansi_string(footer_hints, 74)}│")
 
         if can_scroll_down:
             rows.append("└" + "─" * 74 + "\033[92m↓\033[0m")
@@ -17932,8 +17934,9 @@ class Game:
             return
 
         if action in (game_input.MOVE_DOWN, "s", "S", "down", "DOWN"):
-            total_lines = getattr(self, "_last_summary_total_lines", 46)
-            max_offset = max(0, total_lines - 46)
+            viewport_h = getattr(self, "_last_summary_viewport_height", 44)
+            total_lines = getattr(self, "_last_summary_total_lines", viewport_h)
+            max_offset = max(0, total_lines - viewport_h)
             self.summary_scroll_offset = min(max_offset, getattr(self, "summary_scroll_offset", 0) + 1)
             self.render()
             return
