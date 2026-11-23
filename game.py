@@ -8737,7 +8737,7 @@ class Game:
                             if not hasattr(enemy, "team_attackers"):
                                 enemy.team_attackers = set()
                             enemy.team_attackers.add(defender)
-                        self.log_message(f"{defender.name}'s Metal Burst reflected {refl} damage to {enemy.name}!")
+                        self.log_message(f"{defender.name}'s Metal Burst reflected the damage to {enemy.name}!")
                         ex, ey = get_pokemon_position(self, enemy)
                         self.flash_damages[(ex, ey)] = (refl, 1.0)
                         self.trigger_damage_flash()
@@ -8764,8 +8764,10 @@ class Game:
                             if not hasattr(attacker, "team_attackers"):
                                 attacker.team_attackers = set()
                             attacker.team_attackers.add(defender)
-                        self.handle_enemy_defeat(attacker, defender)
-                        self.remove_defeated_pokemon(attacker)
+                        if not (attacker in self.party and self.attempt_revive_member(attacker)):
+                            self.log_pokemon_defeat(attacker)
+                            self.handle_enemy_defeat(attacker, defender)
+                            self.remove_defeated_pokemon(attacker)
                     if move.get("name") == "Fell Stinger":
                         attacker.apply_stat_modifier("Attack", 2, self)
                     if move.get("name") == "Smack Down":
@@ -17442,7 +17444,7 @@ class Game:
 
         #6b. IQ Skills
         learned_iq = list(getattr(pokemon, "iq_skills", []) or [])
-        interior.append(f" IQ Skills ({len(learned_iq)}/{iq_skills.MAX_IQ_SKILLS}):")
+        interior.append(f" IQ Skills:")
         if not learned_iq:
             interior.append("   None")
         else:
